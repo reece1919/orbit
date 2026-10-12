@@ -1,0 +1,16 @@
+{
+  "client_id": "https://reece1919.github.io/orbit/todoist-oauth-client.json",
+  "client_name": "ORBIT Personal Command Center",
+  "client_uri": "https://reece1919.github.io/orbit/",
+  "redirect_uris": [
+    "https://zdurujqwhxqrwbhwzzxg.supabase.co/functions/v1/orbit-todoist?mode=callback"
+  ],
+  "grant_types": [
+    "authorization_code"
+  ],
+  "response_types": [
+    "code"
+  ],
+  "token_endpoint_auth_method": "none",
+  "scope": "data:read_write"
+}
