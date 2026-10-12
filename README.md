@@ -1,6 +1,6 @@
 # ORBIT — Headquarters for Execution, Logic, and Memory
 
-**v0.6 — Adaptive home dashboard for PC, tablet, and iPhone, with ORBIT/GAIA shared sign-in, Todoist, GAIA, and FUEL food journaling.** Other health metrics and money tracking remain paused. Previously saved health/money data, if any, remains inside the legacy browser data and backup format so upgrading does not silently erase it.
+**v0.7 — Secure cross-device Todoist OAuth connection, responsive PC/tablet/iPhone dashboard, shared ORBIT/GAIA sign-in, and GAIA/FUEL integrations.** Other health metrics and money tracking remain paused. Previously saved health/money data, if any, remains inside the legacy browser data and backup format so upgrading does not silently erase it.
 
 ## Adaptive home dashboard (v0.6)
 
@@ -13,6 +13,21 @@
 - The responsive code was checked for JS syntax and required DOM IDs; real-device visual tests on published GitHub Pages are still recommended.
 
 ## Connected features
+
+### Todoist OAuth / v0.7
+
+ORBIT now uses Todoist's [OAuth Client ID Metadata Document](https://developer.todoist.com/api/v1/) support, with PKCE, instead of asking for a user-created developer app or a personal API token.
+
+- `todoist-oauth-client.json`: public metadata. The `client_id` is the HTTPS URL of that file; Todoist fetches it directly. No OAuth client secret is embedded in GitHub.
+- `supabase/functions/orbit-todoist/index.ts`: Supabase Edge Function deployed as `orbit-todoist`. **Callback URL**: `https://zdurujqwhxqrwbhwzzxg.supabase.co/functions/v1/orbit-todoist?mode=callback`. The GET callback is public; POST requests are authenticated with a verified ORBIT Supabase user session inside the function.
+- The frontend invokes POST `status` / `start` / `api` / `disconnect`; tokens never reach the browser through these endpoints. The function only proxies allowed task-list, create-task, and complete-task actions.
+- `public.orbit_todoist_connections` and `public.orbit_todoist_oauth_states` have RLS enabled and are revoked from anon and authenticated database clients. Only the Supabase server-side credential can access these tables.
+- OAuth state and PKCE verifier are short-lived, single-use server-side values. The actual approved access token is AES-GCM encrypted using a purpose-separated HKDF key derived from the server-side Supabase secret. **The encrypted tokens must be migrated/re-authorized before rotating the server credential**; for production, prefer an independently managed encryption key. Never copy service keys to GitHub or ChatGPT.
+- Upon connecting, an existing temporary browser token is discarded. ORBIT then reads tasks through its backend on any device signed into the same GAIA/ORBIT account.
+- A temporary personal-token form remains under Advanced fallback, and only that old path uses per-tab `sessionStorage`.
+- This is **not** a Todoist-created product. ORBIT Personal Command Center is not created by, affiliated with, or supported by Todoist.
+- Read/write task permissions (`data:read_write`) are required. ORBIT doesn't request the separate destructive `data:delete` permission. Disconnect deletes the ORBIT-side connection, but does not necessarily revoke the authorization in Todoist's settings.
+- Validating source syntax and deployment isn't equivalent to successfully completing the live approval flow. **The user must open ORBIT → Todoist & Tasks → Connect with Todoist and approve in Todoist**, then confirm that tasks load and a second device can see them.
 
 ### Todoist
 
@@ -77,7 +92,7 @@ The ORBIT GitHub repository and GAIA repository remain separate. Both Pages site
 
 - ORBIT sign-in and GAIA use the same Supabase browser session. Sign-out on one site also signs out of the other on this browser after session state refresh. GitHub Pages HTML/JS remains public; Supabase owner-only RLS protects GAIA tasks. Never put secret keys in the repository.
 - ORBIT local priorities, projects, routines, and notes are saved to account-namespaced **browser localStorage**, not the database. They are not encrypted, are not cross-device sync, and are not protected from another person with access to the same browser profile or its developer tools. The UI sign-in is not server-side access control for these browser-local records.
-- Personal Todoist API tokens in browser sessionStorage are an interim personal-use solution. They are not as robust as a backend-managed OAuth connection and remain exposed to malicious scripts running on the same origin. Do not install third-party scripts into ORBIT without reviewing them.
+- Personal Todoist API tokens in browser sessionStorage are supported only as a temporary fallback. They are not as robust as a backend-managed OAuth connection and remain exposed to malicious scripts running on the same origin. Do not install third-party scripts into ORBIT without reviewing them.
 - API outages, revoked tokens, missing GAIA sign-in, rate limits or restrictive browser settings will show error/unavailable states rather than fake or cached account data.
 - Data sync is on refresh and tab focus, not realtime push. Todoist fetch is capped at 2,000 tasks and displays a capped list of 100 per view. GAIA private task reads are capped at 1,000 per table.
 - GAIA public notes are published observations, not automated plant health sensors or fixed watering deadlines.
