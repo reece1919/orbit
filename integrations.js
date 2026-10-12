@@ -12,13 +12,11 @@
   const timeText = () => new Date().toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});
   const gaiaRoot='https://reece1919.github.io/gaia/';
   const gaiaCatalog=gaiaRoot+'plants.json';
-  const supabaseUrl='https://zdurujqwhxqrwbhwzzxg.supabase.co';
-  // Publishable key also ships in GAIA's publicly hosted gaia-config.js; not a secret.
-  const publishableKey='sb_publishable_Xa0DTx_PbvtynbiQN6_xNQ_l1D55vzK';
+  // GAIA now shares ORBITAuth's single authenticated Supabase client.
   const TODOIST_API='https://api.todoist.com/api/v1';
-  const sessionKey='helm-todoist-token-v03';
-  let token='';
-  try { token=sessionStorage.getItem(sessionKey)||''; } catch (_) {}
+  let sessionKey='';let token='';let activeAccount='';
+  // Retire the older unscoped browser-tab token so it cannot cross ORBIT accounts.
+  try{sessionStorage.removeItem('helm-todoist-token-v03');}catch(_){}
   let tasks=[]; let todoistSyncTime=''; let todoistError=''; let todoistLoading=false; let todoistPartial=false; let todoistFilter='today';
   let catalog=null; let gaiaLastSync=''; let gaiaPublicError='';
   let gaiaClient=null; let gaiaUser=null; let gaiaPrivateTasks=[]; let gaiaPrivateError=''; let gaiaPrivateLoading=false;
@@ -98,8 +96,9 @@
     if(!token){renderTodoist();return;}
     if(todoistLoading)return;
     todoistLoading=true;todoistError='';renderTodoist();
-    try{const data=await getTodoistTasks();tasks=data.tasks;todoistPartial=data.partial;todoistSyncTime=timeText();}
-    catch(e){todoistError=e.message||'Could not reach Todoist.';}
+    const owner=activeAccount;
+    try{const data=await getTodoistTasks();if(owner!==activeAccount)return;tasks=data.tasks;todoistPartial=data.partial;todoistSyncTime=timeText();}
+    catch(e){if(owner===activeAccount)todoistError=e.message||'Could not reach Todoist.';}
     finally{todoistLoading=false;renderTodoist();}
   }
   async function connectTodoist(e){
@@ -107,7 +106,7 @@
     if(!candidate)return;
     const submit=$('#todoist-connect-form button[type=submit]');submit.disabled=true;submit.textContent='Connecting…';
     try{
-      const data=await getTodoistTasks(candidate);token=candidate;tasks=data.tasks;todoistPartial=data.partial;
+      const owner=activeAccount;const data=await getTodoistTasks(candidate);if(owner!==activeAccount||!owner)throw new Error('Account changed. Please reconnect.');token=candidate;tasks=data.tasks;todoistPartial=data.partial;
       try{sessionStorage.setItem(sessionKey,token);}catch(_) {toast('Tab storage unavailable; reconnect after refresh.');}
       todoistSyncTime=timeText();todoistError='';input.value='';renderTodoist();toast('Todoist connected.');
     }catch(e){input.value='';toast('Could not connect Todoist: '+(e.message||'Check the token.'));}
@@ -162,17 +161,9 @@
     renderGaiaPublic();
   }
   function gaiaPrivateSupported(){return location.origin==='https://reece1919.github.io';}
-  async function loadSupabaseSdk(){
-    if(window.supabase?.createClient)return;
-    await new Promise((resolve,reject)=>{
-      const sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.75.0';sc.async=true;
-      sc.onload=()=>window.supabase?.createClient?resolve():reject(new Error('SDK unavailable'));
-      sc.onerror=()=>reject(new Error('Supabase library was blocked'));document.head.appendChild(sc);
-    });
-  }
   function renderGaiaPrivate(){
     const isSignedIn=Boolean(gaiaUser);
-    note('#gaia-private-status',gaiaPrivateLoading?'Syncing private GAIA tasks…':gaiaPrivateError||(!gaiaPrivateSupported()?'Private tasks become available when ORBIT is deployed on reece1919.github.io (the same host as GAIA).':isSignedIn?`Signed into GAIA · ${gaiaPrivateTasks.filter(t=>!t.done).length} unfinished task(s)`:'Sign in under Account & backup in GAIA, then refresh ORBIT.'));
+    note('#gaia-private-status',gaiaPrivateLoading?'Syncing private GAIA tasks…':gaiaPrivateError||(!gaiaPrivateSupported()?'Private tasks become available when ORBIT is deployed on reece1919.github.io (the same host as GAIA).':isSignedIn?`Signed into ORBIT and GAIA · ${gaiaPrivateTasks.filter(t=>!t.done).length} unfinished task(s)`:'Sign in to ORBIT to see your private GAIA tasks.'));
     const visible=gaiaPrivateTasks.filter(t=>!t.done).sort((a,b)=>(a.due||'9999-12-31').localeCompare(b.due||'9999-12-31')).slice(0,60);
     $('#gaia-private-tasks').innerHTML=(isSignedIn||visible.length)?(visible.length?visible.map(t=>{
       const id=esc(t.id), kind=esc(t.kind);
@@ -181,19 +172,31 @@
     '<p class="watch-detail">Private tasks are hidden until you sign in to GAIA. Published follow-ups will display when the catalog loads.</p>';
   }
   async function initializeGaiaPrivate(){
-    if(gaiaPrivateInitialized)return;
-    gaiaPrivateInitialized=true;
+    if(gaiaPrivateInitialized)return;gaiaPrivateInitialized=true;
     if(!gaiaPrivateSupported()){renderGaiaPrivate();return;}
     gaiaPrivateLoading=true;renderGaiaPrivate();
     try{
-      await loadSupabaseSdk();
-      gaiaClient=window.supabase.createClient(supabaseUrl,publishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false,flowType:'pkce'}});
-      const {data,error}=await gaiaClient.auth.getUser();if(error&&!/session missing/i.test(error.message||''))throw error;
-      gaiaUser=data?.user||null;
+      await window.ORBITAuth.ready;
+      gaiaClient=window.ORBITAuth.client;
+      gaiaUser=window.ORBITAuth.user;
+      if(!gaiaClient)throw new Error('Could not initialize ORBIT authentication.');
       if(gaiaUser)await refreshGaiaPrivate();
-      gaiaClient.auth.onAuthStateChange((_event,session)=>{setTimeout(()=>{if(gaiaUser?.id!==session?.user?.id){gaiaUser=session?.user||null;gaiaPrivateTasks=[];void refreshGaiaPrivate();}},0);});
-    }catch(e){gaiaPrivateError='Could not initialize private GAIA tasks: '+(e.message||'Connection error.');}
+    }catch(e){gaiaPrivateError='Could not connect private GAIA tasks: '+(e.message||'Connection error.');}
     finally{gaiaPrivateLoading=false;renderGaiaPrivate();}
+  }
+  function handleOrbitAccount(user){
+    const next=user?.id||'';
+    if(activeAccount===next&&gaiaUser?.id===next)return;
+    if(!next&&sessionKey){try{sessionStorage.removeItem(sessionKey);}catch(_){}}
+    activeAccount=next;
+    sessionKey=next?'orbit-todoist-v04-'+next:'';
+    token='';tasks=[];todoistError='';todoistSyncTime='';todoistPartial=false;todoistLoading=false;
+    if(next){try{token=sessionStorage.getItem(sessionKey)||'';}catch(_){}}
+    gaiaClient=window.ORBITAuth?.client||gaiaClient;gaiaUser=user||null;gaiaPrivateTasks=[];gaiaPrivateError='';
+    renderTodoist();renderGaiaPrivate();
+    if(gaiaUser&&gaiaClient)void refreshGaiaPrivate();
+    if(token)void refreshTodoist();
+    if(!gaiaUser)renderGaiaPublic();
   }
   async function refreshGaiaPrivate(){
     if(!gaiaClient||!gaiaUser){renderGaiaPrivate();return;}
@@ -243,7 +246,8 @@
   $('#todoist-connect-form').addEventListener('submit',connectTodoist);
   $('#todoist-create-form').addEventListener('submit',createTodoist);
   window.ORBITConnectedTodoist={active:()=>Boolean(token),render:renderTodoist,refreshGaiaPrivate};
-  renderTodoist();renderGaiaPublic();renderGaiaPrivate();void refreshGaiaPublic().then(()=>initializeGaiaPrivate());
-  if(token)void refreshTodoist();
+  document.addEventListener('orbit:auth-changed',event=>handleOrbitAccount(event.detail?.user||null));
+  renderTodoist();renderGaiaPublic();renderGaiaPrivate();
+  void refreshGaiaPublic().then(()=>initializeGaiaPrivate()).then(()=>handleOrbitAccount(window.ORBITAuth?.user||null));
   window.addEventListener('focus',()=>{if(token&&!todoistLoading)void refreshTodoist();if(gaiaClient&&gaiaUser&&!gaiaPrivateLoading)void refreshGaiaPrivate();});
 })();
