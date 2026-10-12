@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="styles.css?v=0.6.2" />
   <script src="auth.js?v=0.6.2" defer></script>
   <script src="app.js?v=0.6.2" defer></script>
-  <script src="integrations.js?v=0.6.3" defer></script>
+  <script src="integrations.js?v=0.7.0" defer></script>
   <script src="fuel.js?v=0.6.2" defer></script>
 </head>
 <body data-theme="dark" data-auth-state="checking">
@@ -58,7 +58,7 @@
       </div>
       <div class="sidebar-bottom">
         <div class="local-badge"><span data-icon="hard-drive"></span><div><strong>CONNECTED WORKSPACE</strong><small>Tasks and plant data from connected sources</small></div></div>
-        <div class="sidebar-footer">ORBIT / SYSTEM 001 <span>v0.6</span></div>
+        <div class="sidebar-footer">ORBIT / SYSTEM 001 <span>v0.7</span></div>
       </div>
     </aside>
     <button type="button" id="nav-backdrop" class="nav-backdrop" aria-label="Close navigation" hidden></button>
@@ -203,12 +203,17 @@
           <section class="module todoist-panel" aria-labelledby="todoist-live-head">
             <div class="module-head"><div><div class="eyebrow small">TODOIST / SOURCE OF TRUTH</div><h3 id="todoist-live-head">Live Todoist tasks</h3></div><div class="live-actions"><button type="button" class="outline-button" data-refresh="todoist">Refresh</button><button type="button" class="primary-button" id="todoist-add" disabled>Add Todoist task</button></div></div>
             <div id="todoist-connect" class="connector-box">
-              <strong>Connect your Todoist account</strong>
-              <p>Use your personal API token from Todoist Settings → Integrations → Developer. Enter it here in your own browser, never in chat or a GitHub file. ORBIT keeps it for this browser tab session only; exports never contain the token.</p>
-              <form id="todoist-connect-form" class="connect-form"><label class="sr-only" for="todoist-token">Todoist personal API token</label><input type="password" id="todoist-token" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste token privately" required><button type="submit" class="primary-button">Connect Todoist</button></form>
-              <p class="watch-detail">Only connect a personal token to your own trusted ORBIT site. A standard OAuth sign-in is a future improvement.</p>
+              <strong>Connect Todoist across all your devices</strong>
+              <p>Authorize ORBIT directly with Todoist. Your approved connection is stored securely on the server, so it works on PC, tablet and iPhone when you sign in to ORBIT.</p>
+              <button type="button" class="primary-button" id="todoist-oauth-connect">Connect with Todoist <span data-icon="arrow-up-right"></span></button>
+              <p id="todoist-oauth-checking" class="watch-detail" hidden>Checking your existing Todoist connection…</p>
+              <p class="watch-detail">ORBIT Personal Command Center is not created by, affiliated with, or supported by Todoist.</p>
+              <details class="todoist-token-fallback"><summary>Temporary API token connection (advanced fallback)</summary>
+                <p>Only use this if Todoist authorization is unavailable. This token stays in the current browser tab and does not sync across devices.</p>
+                <form id="todoist-connect-form" class="connect-form"><label class="sr-only" for="todoist-token">Todoist personal API token</label><input type="password" id="todoist-token" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste token privately" required><button type="submit" class="outline-button">Use temporary token</button></form>
+              </details>
             </div>
-            <div id="todoist-connected" class="connected-toolbar" hidden><span id="todoist-status" class="watch-detail">Connected</span><button type="button" id="todoist-disconnect" class="quiet-pill">Disconnect</button></div>
+            <div id="todoist-connected" class="connected-toolbar" hidden><span id="todoist-status" class="watch-detail">Connected</span><span id="todoist-connection-mode" class="watch-detail"></span><button type="button" id="todoist-disconnect" class="quiet-pill">Disconnect</button></div>
             <div class="focus-filters live-filter-bar" role="group" aria-label="Filter Todoist tasks"><button type="button" class="filter-button selected" data-todoist-filter="today">Today &amp; overdue</button><button type="button" class="filter-button" data-todoist-filter="upcoming">Upcoming</button><button type="button" class="filter-button" data-todoist-filter="all">All open</button></div>
             <div id="todoist-task-list" class="live-task-list"><p class="watch-detail">Todoist will appear here after connecting.</p></div>
           </section>
@@ -231,9 +236,9 @@
           <section class="module setting-card"><div class="settings-icon"><span data-icon="palette"></span></div><h3>Appearance</h3><p>Choose a look for your command center.</p><div class="theme-choices"><button id="theme-dark" type="button" data-theme-choice="dark" class="theme-choice selected"><span data-icon="moon"></span> Midnight</button><button id="theme-light" type="button" data-theme-choice="light" class="theme-choice"><span data-icon="sun"></span> Daylight</button></div></section>
           <section class="module setting-card"><div class="settings-icon"><span data-icon="link"></span></div><h3>Quick launch links</h3><p>Add shortcuts for apps, ChatGPT Projects, or frequently visited pages.</p><div id="settings-links" class="settings-links"></div><button type="button" class="outline-button setting-action" data-action="add-link"><span data-icon="plus"></span> Add shortcut</button></section>
           <section class="module setting-card"><div class="settings-icon"><span data-icon="database"></span></div><h3>Your data</h3><p>Save a backup of your local projects, priorities, routines, links, and notes (plus any legacy local records). Todoist and GAIA are not copied into the backup. Import it on another browser to move your setup. Keep this sensitive export secure.</p><div class="data-actions"><button type="button" class="outline-button" id="export-data"><span data-icon="download"></span> Export backup</button><label class="outline-button file-label"><span data-icon="upload"></span> Import backup <input id="import-data" type="file" accept="application/json,.json" hidden></label></div><div class="settings-warning"><span data-icon="info"></span> Backups are not automatic cloud sync.</div><button type="button" id="orbit-import-legacy" class="outline-button legacy-import" hidden>Import older ORBIT browser data</button></section>
-          <section class="module setting-card"><div class="settings-icon"><span data-icon="shield-check"></span></div><h3>Privacy & integrations</h3><p>Todoist connects through its official API using a token kept in tab-only session storage. Your ORBIT sign-in uses GAIA’s existing Supabase account and owner-restricted tables. Todoist still requires a separate API token. No finance or health syncing.</p><div class="integrations"><div><span class="status-dot ready"></span> GAIA <span>Public catalog + signed-in tasks</span></div><div><span class="status-dot planned"></span> Todoist <span>Direct API; connect from Tasks</span></div><div><span class="status-dot planned"></span> Money &amp; Health <span>Paused</span></div><div><span class="status-dot ready"></span> Supabase authentication <span>Shared with GAIA</span></div><div><span class="status-dot planned"></span> ORBIT notes sync <span>Browser-only for now</span></div></div><button type="button" class="danger-link" id="reset-data">Reset ORBIT data on this device</button></section></div>
+          <section class="module setting-card"><div class="settings-icon"><span data-icon="shield-check"></span></div><h3>Privacy & integrations</h3><p>Todoist supports an encrypted server-side OAuth connection across devices, with a temporary browser-tab token fallback. Your ORBIT sign-in uses GAIA’s existing Supabase account and owner-restricted tables. Todoist normally connects through its approval screen without a personal API token. No finance or health syncing.</p><div class="integrations"><div><span class="status-dot ready"></span> GAIA <span>Public catalog + signed-in tasks</span></div><div><span class="status-dot planned"></span> Todoist <span>Cloud OAuth; connect from Tasks</span></div><div><span class="status-dot planned"></span> Money &amp; Health <span>Paused</span></div><div><span class="status-dot ready"></span> Supabase authentication <span>Shared with GAIA</span></div><div><span class="status-dot planned"></span> ORBIT notes sync <span>Browser-only for now</span></div></div><button type="button" class="danger-link" id="reset-data">Reset ORBIT data on this device</button></section></div>
         </section>
-        <footer class="main-footer"><span>ORBIT HEADQUARTERS <span class="foot-dot">◆</span> BUILT TO KEEP THINGS MOVING</span><span>VERSION 0.6 · ADAPTIVE HOME</span></footer>
+        <footer class="main-footer"><span>ORBIT HEADQUARTERS <span class="foot-dot">◆</span> BUILT TO KEEP THINGS MOVING</span><span>VERSION 0.7 · SECURE TODOIST</span></footer>
       </main>
       <nav class="mobile-nav" aria-label="Quick navigation">
         <button class="mobile-nav-item active" type="button" data-view="home"><span data-icon="layout-dashboard"></span><span>Home</span></button>
