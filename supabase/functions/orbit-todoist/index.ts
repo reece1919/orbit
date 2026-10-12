@@ -60,7 +60,7 @@ function redirect(status){
   return new Response(null,{status:303,headers:{Location:url.href,"Cache-Control":"no-store","Referrer-Policy":"no-referrer"}});
 }
 async function tokenExchange(params){
-  const response=await fetch(OAUTH_TOKEN,{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(params)});
+  const response=await fetch(OAUTH_TOKEN,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded","Accept":"application/json"},body:new URLSearchParams(Object.entries(params).map(([key,value])=>[key,String(value)]))});
   if(!response.ok)throw new Error("Todoist rejected OAuth token exchange ("+response.status+")");
   const data=await response.json();
   if(!data?.access_token || typeof data.access_token!=="string")throw new Error("Todoist returned no token");
