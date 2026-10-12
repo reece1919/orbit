@@ -6,7 +6,8 @@
     "https://zdurujqwhxqrwbhwzzxg.supabase.co/functions/v1/orbit-todoist?mode=callback"
   ],
   "grant_types": [
-    "authorization_code"
+    "authorization_code",
+    "refresh_token"
   ],
   "response_types": [
     "code"
