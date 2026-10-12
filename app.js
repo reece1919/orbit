@@ -1,7 +1,10 @@
 /* ORBIT Headquarters v0.3 — Todoist + GAIA, with local projects and routines. */
 (() => {
   'use strict';
-  const KEY = 'helm-headquarters-v1';
+  const LEGACY_KEY='helm-headquarters-v1';
+  const KEY='orbit-v04-user-';
+  let accountId='';
+  const currentKey=()=>accountId?KEY+accountId:null;
   const ICONS = {
     'layout-dashboard':'<rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/>',
     'grid':'<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
@@ -82,11 +85,11 @@
       links:Array.isArray(data.links)?data.links.slice(0,100).filter(x=>x&&typeof x==='object').map(x=>({id:safeText(x.id,90)||id(),name:safeText(x.name,80),url:safeUrl(x.url)})).filter(x=>x.name&&x.url):base.links
     };
   }
-  function load() {try{const raw=localStorage.getItem(KEY);return raw?normalized(JSON.parse(raw)):defaultState();}catch(e){console.warn('ORBIT data could not be loaded:',e);return defaultState();}}
+  function load() {try{const key=currentKey(),raw=key?localStorage.getItem(key):null;return raw?normalized(JSON.parse(raw)):defaultState();}catch(e){console.warn('ORBIT data could not be loaded:',e);return defaultState();}}
   let state=load();let view='home';let focusFilter='open';let modalKind=null;let editingId=null;let toastTimer;
   const $ = (s) => document.querySelector(s);
   const $$ = (s) => Array.from(document.querySelectorAll(s));
-  function persist(){try{localStorage.setItem(KEY,JSON.stringify(state));return true;}catch(e){toast('Browser storage is unavailable. Export a backup to save your work.');return false;}}
+  function persist(){if(!currentKey())return false;try{localStorage.setItem(currentKey(),JSON.stringify(state));return true;}catch(e){toast('Browser storage is unavailable. Export a backup to save your work.');return false;}}
   function toast(message){const el=$('#toast');el.textContent=message;el.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>{el.hidden=true},3500);}
   const projectType = {
     plants:{icon:'leaf',color:'#a9ddba',bg:'rgba(143,205,162,.11)'},
@@ -291,8 +294,23 @@
     $('#reset-data').addEventListener('click',()=>{if(confirm('Reset all ORBIT data in this browser? This permanently clears your local edits, tasks, and notes. Export a backup first if needed.')){state=defaultState();persist();render();setView('home');toast('ORBIT reset to defaults.');}});
     $('#menu-button').addEventListener('click',()=>$('#sidebar').classList.toggle('open'));
     document.addEventListener('keydown',e=>{if(e.key==='Escape')$('#sidebar').classList.remove('open');});
-    window.addEventListener('storage',e=>{if(e.key===KEY){state=load();render();toast('Updated from another tab.');} else if (e.key==='sb-zdurujqwhxqrwbhwzzxg-auth-token') window.ORBITConnectedTodoist?.refreshGaiaPrivate();});
+    window.addEventListener('storage',e=>{if(e.key===currentKey()&&currentKey()){state=load();render();toast('Updated from another tab.');}});
+    $('#orbit-import-legacy').addEventListener('click',()=>{
+      if(!accountId)return;
+      const legacy=localStorage.getItem(LEGACY_KEY);if(!legacy)return;
+      if(!confirm('Import older browser-local ORBIT data into this signed-in account? Current account-specific data will be replaced. The older copy stays on this device.'))return;
+      try{state=normalized(JSON.parse(legacy));persist();render();updateLegacyButton();toast('Earlier ORBIT data imported.');}
+      catch(err){toast('Old ORBIT data could not be imported: '+err.message);}
+    });
+    document.addEventListener('orbit:auth-changed',e=>{
+      accountId=e.detail?.user?.id||'';state=load();focusFilter='open';render();setView('home');updateLegacyButton();
+    });
+  }
+  function updateLegacyButton(){
+    const el=$('#orbit-import-legacy');
+    el.hidden=!(accountId&&!localStorage.getItem(currentKey())&&localStorage.getItem(LEGACY_KEY));
   }
   function initDate(){const d=new Date();$('#topbar-date').textContent=d.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric',year:'numeric'}).toUpperCase();}
   wire();render();initDate();setView('home');
+  if(window.ORBITAuth?.user){accountId=window.ORBITAuth.user.id;state=load();render();updateLegacyButton();}
 })();
