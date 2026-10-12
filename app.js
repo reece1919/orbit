@@ -62,6 +62,8 @@
       {id:'quick-github',name:'GitHub',url:'https://github.com/reece1919'}
     ]
   });
+  const fuelProject = {id:'fuel',name:'FUEL',description:'Conversational meal logging and your private nutrition journal.',type:'general',status:'Live',url:'https://chatgpt.com/g/g-p-6acd6e86e82081919497cb8e044c60bd/project'};
+  const effectiveProjects = () => state.projects.some(p => p.id === 'fuel' || p.name.toLowerCase() === 'fuel') ? state.projects : [...state.projects.slice(0,1), fuelProject, ...state.projects.slice(1)];
   const safeText = (s,limit=200) => typeof s === 'string' ? s.slice(0,limit) : '';
   function safeUrl(url){
     if(!url) return '';
@@ -109,10 +111,10 @@
     </article>`;
   }
   function renderProjects(){
-    $('#featured-projects').innerHTML=state.projects.slice(0,3).map(cardHtml).join('') || `<div class="empty-state">${icon('folder')}<div><strong>No projects yet</strong><p>Create a project to put it on the dashboard.</p></div></div>`;
-    const q=$('#project-search').value.trim().toLowerCase();const filtered=state.projects.filter(p=>(p.name+' '+p.description).toLowerCase().includes(q));
+    $('#featured-projects').innerHTML=effectiveProjects().slice(0,3).map(cardHtml).join('') || `<div class="empty-state">${icon('folder')}<div><strong>No projects yet</strong><p>Create a project to put it on the dashboard.</p></div></div>`;
+    const q=$('#project-search').value.trim().toLowerCase();const filtered=effectiveProjects().filter(p=>(p.name+' '+p.description).toLowerCase().includes(q));
     $('#all-projects').innerHTML=filtered.length?filtered.map(cardHtml).join(''):`<div class="empty-state">${icon('search')}<div><strong>Nothing found</strong><p>Try another search, or add a new project.</p></div></div>`;
-    $('#project-summary').textContent=`${filtered.length} of ${state.projects.length} projects`;
+    $('#project-summary').textContent=`${filtered.length} of ${effectiveProjects().length} projects`;
   }
   function dateDisplay(value){if(!value)return '';const d=new Date(value+'T12:00:00');return Number.isNaN(d.getTime())?'':d.toLocaleDateString(undefined,{month:'short',day:'numeric'});}
   function taskMeta(t){return `${t.priority==='High'?'High priority':'Normal priority'}${t.due?' · '+dateDisplay(t.due):''}`;}
@@ -133,8 +135,8 @@
     side.querySelectorAll('a').forEach(a=>a.lastElementChild.classList.add('right-icon'));
   }
   function renderCount(){
-    $('#stat-projects').textContent=state.projects.length;
-    $('#nav-project-count').textContent=String(state.projects.length).padStart(2,'0');
+    $('#stat-projects').textContent=effectiveProjects().length;
+    $('#nav-project-count').textContent=String(effectiveProjects().length).padStart(2,'0');
   }
 
   function localDay(d=new Date()){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
@@ -180,11 +182,11 @@
   function renderTheme(){document.body.dataset.theme=state.theme;$$('[data-theme-choice]').forEach(b=>{b.classList.toggle('selected',b.dataset.themeChoice===state.theme);b.setAttribute('aria-pressed',String(b.dataset.themeChoice===state.theme));});}
   function render(){renderProjects();renderTasks();renderLinks();renderCount();renderRoutines();renderAttention();renderTheme();$('#scratchpad').value=state.scratchpad;window.ORBITConnectedTodoist?.render();}
   function setView(next){
-    if(!['home','projects','focus','gaia','routines','settings'].includes(next))return;
+    if(!['home','projects','focus','gaia','fuel','routines','settings'].includes(next))return;
     view=next;
     $$('[data-panel]').forEach(x=>x.hidden=x.dataset.panel!==view);
     $$('.main-nav [data-view]').forEach(x=>{x.classList.toggle('active',x.dataset.view===view);if(x.dataset.view===view)x.setAttribute('aria-current','page');else x.removeAttribute('aria-current')});
-    $('#current-crumb').textContent=({home:'OVERVIEW',projects:'PROJECTS',focus:'TASKS',gaia:'GAIA',routines:'ROUTINES',settings:'SETTINGS'})[view];
+    $('#current-crumb').textContent=({home:'OVERVIEW',projects:'PROJECTS',focus:'TASKS',gaia:'GAIA',fuel:'FUEL',routines:'ROUTINES',settings:'SETTINGS'})[view];
     $('#sidebar').classList.remove('open');window.scrollTo({top:0,behavior:'instant'});
   }
   const field = (name,label,value='',type='text',other='') => `<label class="dialog-field">${label}<input name="${name}" type="${type}" value="${esc(value)}" ${other}></label>`;
