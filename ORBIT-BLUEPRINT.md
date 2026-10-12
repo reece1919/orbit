@@ -45,3 +45,6 @@ No bank API, financial figures, Apple Health data, medication schedules, private
 - GAIA task reads continue through existing owner-only RLS, with a single client instance.
 - ORBIT local state is per-account and browser-only; cross-device ORBIT sync is a separate future milestone.
 - Todoist token is isolated to the signed-in account in tab session storage, with separate Todoist authorization.
+## FUEL (v0.5)
+
+FUEL is the conversational nutrition logging specialist. ORBIT links to the dedicated ChatGPT Project and shows a private Supabase-backed food journal, daily calories and macronutrients. The table `public.fuel_food_entries` is owner-restricted by RLS. Manual logging is available from ORBIT as a fallback. ChatGPT writing requires enabling the user's Supabase app inside the FUEL Project and adding account-specific instructions via the ORBIT `Copy FUEL setup` control. Apple Health sync is not yet implemented; an authorized iPhone Shortcut or HealthKit bridge will be needed.
