@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0c1118" />
+  <meta name="description" content="ORBIT Personal Command Center — Todoist tasks, GAIA plants, routines, projects, and daily focus." />
+  <title>ORBIT — Personal Command Center</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="app.js" defer></script>
+  <script src="integrations.js" defer></script>
+</head>
+<body data-theme="dark">
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true"><span>O</span><i></i></div>
+        <div><div class="brand-name">ORBIT<span class="brand-period">.</span></div><div class="brand-sub">HEADQUARTERS</div></div>
+      </div>
+      <div class="side-status"><span class="pulse-dot"></span> PERSONAL OPERATIONS CENTER <span class="status-bar"></span></div>
+      <nav aria-label="Primary navigation" class="main-nav">
+        <div class="nav-label">WORKSPACE</div>
+        <button type="button" class="nav-item active" data-view="home"><span data-icon="layout-dashboard"></span> Overview <span class="nav-indicator"></span></button>
+        <button type="button" class="nav-item" data-view="projects"><span data-icon="grid"></span> Projects <span class="nav-count" id="nav-project-count">03</span></button>
+        <button type="button" class="nav-item" data-view="focus"><span data-icon="check-circle"></span> Todoist &amp; Tasks <span class="nav-count" id="nav-task-count">0</span></button>
+        <button type="button" class="nav-item" data-view="gaia"><span data-icon="leaf"></span> GAIA <span class="nav-count" id="nav-gaia-count">—</span></button>
+        <button type="button" class="nav-item" data-view="routines"><span data-icon="repeat"></span> Routines </button>
+        <button type="button" class="nav-item" data-view="settings"><span data-icon="settings"></span> Settings </button>
+      </nav>
+      <div class="sidebar-rule"></div>
+      <div class="sidebar-links">
+        <div class="nav-label">QUICK ACCESS</div>
+        <a href="https://reece1919.github.io/gaia/" target="_blank" rel="noopener noreferrer"><span data-icon="leaf"></span> Open GAIA <span data-icon="arrow-up-right" class="right-icon"></span></a>
+        <a href="https://app.todoist.com/app/today" target="_blank" rel="noopener noreferrer"><span data-icon="list-check"></span> Todoist <span data-icon="arrow-up-right" class="right-icon"></span></a>
+        <a href="https://github.com/reece1919" target="_blank" rel="noopener noreferrer"><span data-icon="github"></span> GitHub <span data-icon="arrow-up-right" class="right-icon"></span></a>
+      </div>
+      <div class="sidebar-bottom">
+        <div class="local-badge"><span data-icon="hard-drive"></span><div><strong>CONNECTED WORKSPACE</strong><small>Tasks and plant data from connected sources</small></div></div>
+        <div class="sidebar-footer">ORBIT / SYSTEM 001 <span>v0.3</span></div>
+      </div>
+    </aside>
+    <div class="main-column">
+      <header class="topbar">
+        <div class="breadcrumbs"><button class="menu-button" type="button" id="menu-button" aria-label="Toggle menu"><span data-icon="menu"></span></button><span class="crumb-parent">HEADQUARTERS</span><span class="crumb-slash">/</span><span id="current-crumb">OVERVIEW</span></div>
+        <div class="topbar-right"><span id="topbar-date" class="top-date"></span><span class="top-separator"></span><div class="online-indicator"><span class="pulse-dot"></span> INTEGRATION MODE</div></div>
+      </header>
+      <main class="content" id="main-content">
+        <section data-panel="home" class="view-panel">
+          <div class="eyebrow"><span class="eyebrow-line"></span> OPERATIONS / DAILY OVERVIEW</div>
+          <section class="hero">
+            <div class="hero-copy"><div class="hero-overline">WELCOME TO YOUR HEADQUARTERS <span class="tiny-star">✳</span></div><h1>See the whole picture.<br><em>Make the next move.</em></h1><p>Today’s Todoist tasks, GAIA plant care, weekly routines and your projects — one operating picture.</p><div class="hero-buttons"><button type="button" class="primary-button" data-view="focus"><span data-icon="list-check"></span> Open tasks</button><button type="button" class="outline-button" data-view="projects">Explore projects <span data-icon="arrow-right"></span></button></div></div>
+            <div class="hero-art" aria-hidden="true"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="orbit orbit-three"></div><div class="core"><span>O</span></div><div class="orbit-label label-a">01 / PLAN</div><div class="orbit-label label-b">02 / EXECUTE</div><div class="orbit-label label-c">03 / REFINE</div></div>
+          </section>
+          <div class="stats-row">
+            <article class="stat-card"><div class="stat-top"><span>OPEN TASKS</span><span data-icon="check-circle"></span></div><div class="stat-bottom"><strong id="stat-tasks">—</strong><span>Todoist when connected</span></div></article>
+            <article class="stat-card"><div class="stat-top"><span>PROJECT SPACES</span><span data-icon="layers"></span></div><div class="stat-bottom"><strong id="stat-projects">3</strong><span>ready to launch</span></div></article>
+            <article class="stat-card"><div class="stat-top"><span>GAIA PLANTS</span><span data-icon="link"></span></div><div class="stat-bottom"><strong id="stat-links">—</strong><span>published records</span></div></article>
+          </div>
+
+          <div class="section-head"><div><div class="eyebrow small">LIVE WORKSPACES</div><h2>Your control panels<span class="accent-period">.</span></h2></div><span class="result-label">Two sources • Source timestamps shown</span></div>
+          <div class="watch-grid connected-watch-grid">
+            <article class="watch-card"><div class="watch-head"><span class="watch-icon"><span data-icon="list-check"></span></span><span class="watch-kicker">TODOIST / LIVE TASKS</span></div><h3>What needs doing</h3><div id="todoist-home-value" class="watch-value">Not connected</div><p id="todoist-home-note" class="watch-detail">Connect Todoist to see your current tasks and complete them here.</p><div class="watch-bottom"><button type="button" data-view="focus" class="subtle-link">Open Todoist tasks <span data-icon="arrow-right"></span></button><button type="button" data-refresh="todoist" class="quiet-pill">Refresh</button></div></article>
+            <article class="watch-card"><div class="watch-head"><span class="watch-icon gaia-accent"><span data-icon="leaf"></span></span><span class="watch-kicker">GAIA / PLANT CARE</span></div><h3>Your living collection</h3><div id="gaia-home-value" class="watch-value">Loading collection…</div><p id="gaia-home-note" class="watch-detail">Reading the published GAIA plant records.</p><div class="watch-bottom"><button type="button" data-view="gaia" class="subtle-link">Open plant overview <span data-icon="arrow-right"></span></button><button type="button" data-refresh="gaia" class="quiet-pill">Refresh</button></div></article>
+            <article class="watch-card"><div class="watch-head"><span class="watch-icon routine-accent"><span data-icon="repeat"></span></span><span class="watch-kicker">ROUTINES / THIS WEEK</span></div><h3>Building consistency</h3><div id="home-routines" class="watch-value">0 of 0</div><p id="home-routines-note" class="watch-detail">Exercise, weekly preparation, and anything you want to repeat.</p><div class="watch-bottom"><button type="button" data-view="routines" class="subtle-link">Track routines <span data-icon="arrow-right"></span></button></div></article>
+          </div>
+          <section class="module integration-summary"><div class="module-head"><div><div class="eyebrow small">TODOIST / TODAY &amp; OVERDUE</div><h3>Today's agenda</h3></div><button type="button" class="text-button" data-view="focus">All tasks <span data-icon="arrow-right"></span></button></div><div id="todoist-home-list" class="live-task-list"><p class="watch-detail">Connect Todoist to load your agenda.</p></div></section>
+          <section class="attention-module module" aria-labelledby="attention-title"><div class="module-head"><div><div class="eyebrow small">NEXT ACTIONS</div><h3 id="attention-title">Things to keep an eye on</h3></div><span data-icon="radar" class="muted-icon"></span></div><div id="attention-items" class="attention-items"></div></section>
+          <div class="section-head"><div><div class="eyebrow small">YOUR ECOSYSTEM</div><h2>Project headquarters<span class="accent-period">.</span></h2></div><button class="text-button" type="button" data-view="projects">View all projects <span data-icon="arrow-right"></span></button></div>
+          <div class="featured-projects" id="featured-projects"></div>
+          <div class="dashboard-lower">
+            <section class="module"><div class="module-head"><div><div class="eyebrow small">OFFLINE CAPTURE</div><h3>Local priorities</h3></div><button class="small-icon-btn" aria-label="Add a priority" title="Add priority" type="button" data-action="add-task"><span data-icon="plus"></span></button></div><div id="home-tasks" class="home-tasks"></div><button type="button" class="subtle-link" data-view="focus">Manage local priorities <span data-icon="arrow-right"></span></button></section>
+            <section class="module note-module"><div class="module-head"><div><div class="eyebrow small">CAPTURE THE THOUGHT</div><h3>Scratchpad</h3></div><span data-icon="pen-line" class="muted-icon"></span></div><textarea id="scratchpad" placeholder="An idea, a reminder, the thing you don't want to forget..." aria-label="Scratchpad notes"></textarea><div class="note-bottom"><span data-icon="hard-drive"></span> Automatically saved on this device <span id="note-saved" aria-live="polite"></span></div></section>
+          </div>
+        </section>
+        <section data-panel="projects" class="view-panel" hidden>
+          <div class="eyebrow"><span class="eyebrow-line"></span> ALL ACTIVE & FUTURE SYSTEMS</div><div class="page-head"><div><h1>Your projects<span class="accent-period">.</span></h1><p>Every specialized workspace has a home. Add its actual URL when you're ready.</p></div><button class="primary-button" data-action="add-project" type="button"><span data-icon="plus"></span> New project</button></div>
+          <div class="toolbar"><label class="search-field"><span data-icon="search"></span><input id="project-search" type="search" placeholder="Search your projects" aria-label="Search projects"></label><span id="project-summary" class="result-label"></span></div>
+          <div class="all-projects" id="all-projects"></div>
+        </section>
+        <section data-panel="gaia" class="view-panel" hidden>
+          <div class="eyebrow"><span class="eyebrow-line"></span> GAIA / LIVING COLLECTION</div>
+          <div class="page-head"><div><h1>Your herbarium<span class="accent-period">.</span></h1><p>A live overview of your published GAIA catalog and personal care tasks when signed in.</p></div><a class="primary-button" href="https://reece1919.github.io/gaia/" target="_blank" rel="noopener noreferrer">Open GAIA <span data-icon="arrow-up-right"></span></a></div>
+          <div class="gaia-metrics">
+            <article class="module"><div class="eyebrow small">PLANTS</div><div class="big-figure" id="gaia-count">—</div><p class="watch-detail">Published profiles</p></article>
+            <article class="module"><div class="eyebrow small">WATCH / CONCERN</div><div class="big-figure" id="gaia-watch-count">—</div><p class="watch-detail">Watch or Concern status</p></article>
+            <article class="module"><div class="eyebrow small">NEW ADDITIONS</div><div class="big-figure" id="gaia-new-count">—</div><p class="watch-detail">Marked new in GAIA</p></article>
+          </div>
+          <section class="module"><div class="module-head"><div><div class="eyebrow small">COLLECTION UPDATES</div><h3>Recent care &amp; watch items</h3></div><button type="button" class="text-button" data-refresh="gaia">Refresh <span data-icon="repeat"></span></button></div><p class="watch-detail" id="gaia-last-updated">Loading GAIA…</p><div id="gaia-care-notes" class="gaia-care-notes"></div><div id="gaia-watch-list" class="gaia-watch-list"></div></section>
+          <section class="module integration-summary"><div class="module-head"><div><div class="eyebrow small">PRIVATE GAIA CHECKLIST</div><h3>Care follow-ups</h3></div><button type="button" class="text-button" data-refresh="gaia">Sync tasks <span data-icon="repeat"></span></button></div>
+            <p class="watch-detail" id="gaia-private-status">Checking for an existing GAIA sign-in…</p>
+            <div id="gaia-private-tasks" class="live-task-list"></div>
+            <p class="helper-paragraph">Published follow-ups can be viewed without signing in; completing them or viewing personal tasks requires a GAIA session on the same GitHub Pages domain. Checking off a task does not record watering or pest treatment.</p>
+          </section>
+          <p class="helper-paragraph">ORBIT reads published plant care notes; actual watering history and personal photographs remain in GAIA. Care alerts are not inferred from rigid watering intervals.</p>
+        </section>
+        <section data-panel="focus" class="view-panel" hidden>
+          <div class="eyebrow"><span class="eyebrow-line"></span> WHAT MATTERS NEXT</div><div class="page-head"><div><h1>Tasks<span class="accent-period">.</span></h1><p>Work directly from your Todoist agenda, while keeping optional local notes.</p></div><button class="primary-button" data-action="add-task" type="button"><span data-icon="plus"></span> Add local priority</button></div>
+          <section class="module todoist-panel" aria-labelledby="todoist-live-head">
+            <div class="module-head"><div><div class="eyebrow small">TODOIST / SOURCE OF TRUTH</div><h3 id="todoist-live-head">Live Todoist tasks</h3></div><div class="live-actions"><button type="button" class="outline-button" data-refresh="todoist">Refresh</button><button type="button" class="primary-button" id="todoist-add" disabled>Add Todoist task</button></div></div>
+            <div id="todoist-connect" class="connector-box">
+              <strong>Connect your Todoist account</strong>
+              <p>Use your personal API token from Todoist Settings → Integrations → Developer. Enter it here in your own browser, never in chat or a GitHub file. ORBIT keeps it for this browser tab session only; exports never contain the token.</p>
+              <form id="todoist-connect-form" class="connect-form"><label class="sr-only" for="todoist-token">Todoist personal API token</label><input type="password" id="todoist-token" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste token privately" required><button type="submit" class="primary-button">Connect Todoist</button></form>
+              <p class="watch-detail">Only connect a personal token to your own trusted ORBIT site. A standard OAuth sign-in is a future improvement.</p>
+            </div>
+            <div id="todoist-connected" class="connected-toolbar" hidden><span id="todoist-status" class="watch-detail">Connected</span><button type="button" id="todoist-disconnect" class="quiet-pill">Disconnect</button></div>
+            <div class="focus-filters live-filter-bar" role="group" aria-label="Filter Todoist tasks"><button type="button" class="filter-button selected" data-todoist-filter="today">Today &amp; overdue</button><button type="button" class="filter-button" data-todoist-filter="upcoming">Upcoming</button><button type="button" class="filter-button" data-todoist-filter="all">All open</button></div>
+            <div id="todoist-task-list" class="live-task-list"><p class="watch-detail">Todoist will appear here after connecting.</p></div>
+          </section>
+          <div class="section-head"><div><div class="eyebrow small">OFFLINE TASKS</div><h2>Local priorities<span class="accent-period">.</span></h2></div></div>
+          <p class="helper-paragraph">These existing ORBIT priorities remain separate and saved only in this browser. New Todoist tasks are added to Todoist itself.</p>
+          <div class="focus-toolbar"><div class="focus-filters" role="group" aria-label="Filter priorities"><button class="filter-button selected" data-filter="open" type="button">Open</button><button class="filter-button" data-filter="all" type="button">All</button><button class="filter-button" data-filter="done" type="button">Completed</button></div><span id="focus-count" class="result-label"></span></div>
+          <div class="focus-list module" id="focus-list"></div>
+          <p class="helper-paragraph">Local priorities do not sync to Todoist. Use “Add Todoist task” above for items that should sync across your devices.</p>
+        </section>
+
+        <section data-panel="routines" class="view-panel" hidden>
+          <div class="eyebrow"><span class="eyebrow-line"></span> ROUTINES / WEEKLY PROGRESS</div><div class="page-head"><div><h1>Routines<span class="accent-period">.</span></h1><p>Keep score on the habits that matter. Check off each occurrence as you do it.</p></div><button data-action="add-routine" type="button" class="primary-button"><span data-icon="plus"></span> New routine</button></div>
+          <div class="privacy-ribbon"><span data-icon="repeat"></span><div>Weekly progress resets each Monday. Your older completions remain in the local history, and marking one complete does not create or complete a Todoist task.</div></div>
+          <div id="routine-list" class="routine-list"></div>
+        </section>
+        <section data-panel="settings" class="view-panel" hidden>
+          <div class="eyebrow"><span class="eyebrow-line"></span> CONTROL & PERSONALIZATION</div><div class="page-head"><div><h1>Configuration<span class="accent-period">.</span></h1><p>Make ORBIT yours. Local notes stay on this device; linked data comes from their original services.</p></div></div>
+          <div class="settings-grid"><section class="module setting-card"><div class="settings-icon"><span data-icon="palette"></span></div><h3>Appearance</h3><p>Choose a look for your command center.</p><div class="theme-choices"><button id="theme-dark" type="button" data-theme-choice="dark" class="theme-choice selected"><span data-icon="moon"></span> Midnight</button><button id="theme-light" type="button" data-theme-choice="light" class="theme-choice"><span data-icon="sun"></span> Daylight</button></div></section>
+          <section class="module setting-card"><div class="settings-icon"><span data-icon="link"></span></div><h3>Quick launch links</h3><p>Add shortcuts for apps, ChatGPT Projects, or frequently visited pages.</p><div id="settings-links" class="settings-links"></div><button type="button" class="outline-button setting-action" data-action="add-link"><span data-icon="plus"></span> Add shortcut</button></section>
+          <section class="module setting-card"><div class="settings-icon"><span data-icon="database"></span></div><h3>Your data</h3><p>Save a backup of your local projects, priorities, routines, links, and notes (plus any legacy local records). Todoist and GAIA are not copied into the backup. Import it on another browser to move your setup. Keep this sensitive export secure.</p><div class="data-actions"><button type="button" class="outline-button" id="export-data"><span data-icon="download"></span> Export backup</button><label class="outline-button file-label"><span data-icon="upload"></span> Import backup <input id="import-data" type="file" accept="application/json,.json" hidden></label></div><div class="settings-warning"><span data-icon="info"></span> Backups are not automatic cloud sync.</div></section>
+          <section class="module setting-card"><div class="settings-icon"><span data-icon="shield-check"></span></div><h3>Privacy & integrations</h3><p>Todoist connects through its official API using a token kept in tab-only session storage. GAIA public records load directly, and private GAIA tasks require your existing GAIA sign-in on the same GitHub Pages origin. No finance or health syncing.</p><div class="integrations"><div><span class="status-dot ready"></span> GAIA <span>Public catalog + signed-in tasks</span></div><div><span class="status-dot planned"></span> Todoist <span>Direct API; connect from Tasks</span></div><div><span class="status-dot planned"></span> Money &amp; Health <span>Paused</span></div><div><span class="status-dot planned"></span> Supabase sync <span>Not connected</span></div></div><button type="button" class="danger-link" id="reset-data">Reset ORBIT data on this device</button></section></div>
+        </section>
+        <footer class="main-footer"><span>ORBIT HEADQUARTERS <span class="foot-dot">◆</span> BUILT TO KEEP THINGS MOVING</span><span>VERSION 0.3 · CONNECTED</span></footer>
+      </main>
+    </div>
+  </div>
+  <dialog id="item-dialog" class="item-dialog" aria-labelledby="dialog-title"><form id="item-form" method="dialog" novalidate><div class="dialog-header"><div><div id="dialog-eyebrow" class="eyebrow small">CREATE</div><h2 id="dialog-title">Add something</h2></div><button type="button" class="small-icon-btn" id="dialog-close" aria-label="Close"><span data-icon="x"></span></button></div><div id="dialog-fields" class="dialog-fields"></div><div class="dialog-actions"><button type="button" class="outline-button" id="dialog-cancel">Cancel</button><button type="submit" class="primary-button" id="dialog-submit">Save</button></div></form></dialog>
+  <dialog id="todoist-create-dialog" class="item-dialog"><form id="todoist-create-form"><div class="dialog-header"><div><div class="eyebrow small">TODOIST / NEW TASK</div><h2>Add a task</h2></div><button class="small-icon-btn" type="button" id="todoist-create-close" aria-label="Close"><span data-icon="x"></span></button></div><div class="dialog-fields"><label class="dialog-field">Task name<input name="content" type="text" minlength="1" maxlength="300" required placeholder="What needs doing?"></label><label class="dialog-field">Due date (optional)<input name="due_date" type="date"></label><label class="dialog-field">Priority<select name="priority"><option value="1">Normal</option><option value="3">High (p2)</option><option value="4">Urgent (p1)</option></select></label></div><div class="dialog-actions"><button class="outline-button" type="button" id="todoist-create-cancel">Cancel</button><button class="primary-button" type="submit">Add to Todoist</button></div></form></dialog>
+  <div id="toast" role="status" aria-live="polite" class="toast" hidden></div>
+</body>
+</html>
