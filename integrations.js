@@ -35,6 +35,16 @@
       const status=await oauthRequest('status');
       if(activeAccount!==owner)return;
       serverConnected=!!status.connected;
+      const oauthResult=new URLSearchParams(window.location.search).get('todoist');
+      if(oauthResult){
+        const clean=new URL(window.location.href);clean.searchParams.delete('todoist');
+        window.history.replaceState(null,'',clean.pathname+clean.search+clean.hash);
+        if(oauthResult==='connected' && serverConnected){
+          document.querySelector('.main-nav [data-view="focus"]')?.click();
+          toast('Todoist securely connected! Your tasks are available on all signed-in devices.');
+        }else if(oauthResult==='denied')toast('Todoist authorization was canceled.');
+        else if(oauthResult==='error' || oauthResult==='invalid')toast('Todoist authorization failed. Please try Connect with Todoist again.');
+      }
       if(serverConnected){
         token='';try{sessionStorage.removeItem(sessionKey);}catch(_){}
         void refreshTodoist();
