@@ -48,3 +48,7 @@ No bank API, financial figures, Apple Health data, medication schedules, private
 ## FUEL (v0.5)
 
 FUEL is the conversational nutrition logging specialist. ORBIT links to the dedicated ChatGPT Project and shows a private Supabase-backed food journal, daily calories and macronutrients. The table `public.fuel_food_entries` is owner-restricted by RLS. Manual logging is available from ORBIT as a fallback. ChatGPT writing requires enabling the user's Supabase app inside the FUEL Project and adding account-specific instructions via the ORBIT `Copy FUEL setup` control. Apple Health sync is not yet implemented; an authorized iPhone Shortcut or HealthKit bridge will be needed.
+
+## ORBIT v0.6: Multi-device home
+
+The home page is now action-first and responsive. Desktop uses multi-column overview modules, tablet adapts to two columns with a drawer at portrait widths, and iPhone provides compact daily status cards plus a persistent bottom navigation bar (Home, Tasks, FUEL, GAIA, More). Todoist, GAIA, and FUEL integrations remain unchanged and remain the sources of truth. Account-specific local notes and routines are not yet cloud-synchronized.
