@@ -142,9 +142,34 @@
       lastSync=0;await refresh(true);setStatus('Entry deleted.');
     }catch(e){setStatus('Could not delete entry: '+(e?.message||'Please try again.'));}
   }
+  async function copySetup(){
+    const auth=window.ORBITAuth;
+    if(!auth?.user?.id){setStatus('Sign in to ORBIT to copy your FUEL setup instructions.');return;}
+    const instructions=[
+      'FUEL — Supabase integration instructions (append these to the existing FUEL Project instructions):',
+      'Database: the connected Supabase project named GAIA, project ID zdurujqwhxqrwbhwzzxg.',
+      'Table: public.fuel_food_entries. Owner UUID: '+auth.user.id+'. Treat this UUID as an account identifier, not an authentication credential.',
+      'Use the Supabase app in ChatGPT only when it is available and authorized. Never ask for a database password, service-role key, or API secret.',
+      'For confirmed meal logs only, insert a record with owner_id set to the exact owner UUID above; required food_name, meal_type (breakfast/lunch/dinner/snack/drink/other), consumed_at (ISO timestamp with offset), calories_kcal (nonnegative numeric). Optional protein_g, carbs_g, fat_g (numeric or null), notes, estimated (boolean). Set source=fuel.',
+      'Date/time should be in America/Los_Angeles unless the user specifies otherwise. Ask for confirmation before inserting or changing any entry. Mark estimates clearly and do not pretend estimates are lab-verified nutrition data.',
+      'When reading, correcting, or deleting entries, ALWAYS filter by the exact owner_id above. Never access or modify another user\'s records. Use an entry UUID to select one meal for edits. Do not duplicate an entry if the user asks for clarification or a summary.',
+      'Confirm saved or modified only after the database write returns success. If the Supabase app or a suitable write tool is unavailable, say the meal is NOT saved to ORBIT and provide the proposed entry instead.',
+      'ORBIT reads this table using the user\'s signed-in GAIA account. Apple Health synchronization is not yet configured: do not claim that recording a meal here updates Apple Health.',
+      'Keep the rest of the FUEL Project instructions about useful conversational nutrition logging, moderation, and nonjudgmental feedback.'
+    ].join('\n\n');
+    try {
+      if(!navigator.clipboard?.writeText)throw new Error('Clipboard API unavailable');
+      await navigator.clipboard.writeText(instructions);
+      setStatus('FUEL setup copied. Paste it into the FUEL Project instructions and authorize the Supabase app in that Project.');
+    }catch(_){
+      window.prompt('Copy this setup and add it to the FUEL Project instructions:',instructions);
+      setStatus('Copy and paste the displayed setup into FUEL Project instructions.');
+    }
+  }
   $('#fuel-date').value=localDay();setNow();
   $('#fuel-date').addEventListener('change',()=>{lastSync=0;void refresh(true);});
   $('#fuel-refresh').addEventListener('click',()=>void refresh(true));
+  $('#fuel-copy-setup').addEventListener('click',()=>void copySetup());
   $('#fuel-manual-form').addEventListener('submit',saveManual);
   document.addEventListener('click',event=>{
     const remove=event.target.closest('[data-fuel-delete]');
