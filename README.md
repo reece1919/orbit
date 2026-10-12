@@ -1,6 +1,6 @@
-# ORBIT — Personal Command Center
+# ORBIT — Headquarters for Execution, Logic, and Memory
 
-**v0.3 — Todoist and GAIA integration.** Health and money tracking are paused and have been removed from the visible interface. Previously saved health/money data, if any, remains inside the legacy browser data and backup format so upgrading does not silently erase it.
+**v0.4 — Shared ORBIT / GAIA sign-in, Todoist and GAIA integration.** Health and money tracking are paused and have been removed from the visible interface. Previously saved health/money data, if any, remains inside the legacy browser data and backup format so upgrading does not silently erase it.
 
 ## Connected features
 
@@ -22,7 +22,7 @@ Do not treat the ChatGPT Todoist connector as authentication for ORBIT: connecto
 - Fetches `https://reece1919.github.io/gaia/plants.json` for the published catalog, health flags, new additions, care notes and curated follow-up definitions.
 - Shows *published* care follow-ups even when not signed into GAIA, but completion is disabled until authorized.
 - If ORBIT is published on **`https://reece1919.github.io`** (any repository subpath), the browser can reuse an existing GAIA Supabase session because storage is shared by origin, not by URL path. ORBIT uses GAIA's public publishable key and the same authenticated user to access the existing **owner-restricted** `gaia_task_completions` and `gaia_custom_tasks` tables.
-- Lists personal GAIA tasks and allows marking unfinished tasks complete in GAIA. The GAIA sign-in itself remains on GAIA: sign in on the GAIA website, then refresh ORBIT.
+- Lists personal GAIA tasks and allows marking unfinished tasks complete in GAIA. Sign directly into ORBIT with the same GAIA email and password. Existing GAIA sessions on the shared GitHub Pages origin are recognized automatically.
 - Checking a task does **not** log a watering or other plant care event. Do actual care logging in GAIA.
 - No database schema change, new credentials, or exposure of private photos is required.
 
@@ -32,27 +32,29 @@ Do not treat the ChatGPT Todoist connector as authentication for ORBIT: connecto
 
 - Project hub, quick links, local scratchpad, routines, and *optional local-only priorities* inherited from v0.2.
 - Browser-local theme and data backup/restore. The backup does **not** contain Todoist tokens or synchronized Todoist/GAIA tasks.
-- Previous v0.1/v0.2 local-data format (`helm-headquarters-v1`, version 1/2) is preserved so existing browser data survives the rename.
+- Earlier v0.1–v0.3 data is not imported automatically. After signing into ORBIT, Settings offers **Import older ORBIT browser data** when applicable; this prevents exposing old anonymous-browser data to the wrong account. All new local data is keyed to your signed-in Supabase user ID.
 
 ## Try it
 
-1. Download and open the self-contained `orbit-v0.3-preview.html` to explore the layout. It can display published GAIA information where internet/CORS access is permitted. It **cannot** reuse your GAIA login unless served from the `reece1919.github.io` origin.
+1. Use the published HTTPS website for authentication. A standalone local-file preview does not reuse GAIA browser sessions and may be blocked by browser network/CORS restrictions.
 2. To test it as a development site, serve this folder with `python -m http.server 8000` and open `http://localhost:8000/`. Local test uses a separate browser origin and therefore cannot reuse your GAIA login.
 3. For a real deployment, publish it through GitHub Pages over HTTPS.
 
 ## Deploy as its own GitHub repository
 
 1. Create the repository `reece1919/orbit` in GitHub. Public is required for GitHub Pages on plans without private Pages hosting.
-2. Upload these **four** root files: `index.html`, `styles.css`, `app.js`, `integrations.js` (the Markdown docs are optional).
+2. Upload these **five** root files: `index.html`, `styles.css`, `auth.js`, `app.js`, `integrations.js` (the Markdown docs are optional).
 3. In the repository Settings → Pages choose **Deploy from branch** → `main` / `(root)` and save.
 4. After deployment, ORBIT should be at `https://reece1919.github.io/orbit/`. (This URL is **not live until published**.)
-5. Sign into GAIA at `https://reece1919.github.io/gaia/` and refresh ORBIT. GAIA personal tasks will appear under GAIA; the public collection will appear without signing in.
+5. Open ORBIT, sign in using your existing GAIA email and password. GAIA personal tasks load privately; the published catalog is loaded in the dashboard.
 6. Visit **Todoist & Tasks** and connect your Todoist token directly in your browser. Do not send the token to ChatGPT.
 
 The ORBIT GitHub repository and GAIA repository remain separate. Both Pages sites share the `https://reece1919.github.io` origin for access to GAIA's existing browser session.
 
 ## Security and known limitations
 
+- ORBIT sign-in and GAIA use the same Supabase browser session. Sign-out on one site also signs out of the other on this browser after session state refresh. GitHub Pages HTML/JS remains public; Supabase owner-only RLS protects GAIA tasks. Never put secret keys in the repository.
+- ORBIT local priorities, projects, routines, and notes are saved to account-namespaced **browser localStorage**, not the database. They are not encrypted, are not cross-device sync, and are not protected from another person with access to the same browser profile or its developer tools. The UI sign-in is not server-side access control for these browser-local records.
 - Personal Todoist API tokens in browser sessionStorage are an interim personal-use solution. They are not as robust as a backend-managed OAuth connection and remain exposed to malicious scripts running on the same origin. Do not install third-party scripts into ORBIT without reviewing them.
 - API outages, revoked tokens, missing GAIA sign-in, rate limits or restrictive browser settings will show error/unavailable states rather than fake or cached account data.
 - Data sync is on refresh and tab focus, not realtime push. Todoist fetch is capped at 2,000 tasks and displays a capped list of 100 per view. GAIA private task reads are capped at 1,000 per table.
@@ -64,6 +66,15 @@ The ORBIT GitHub repository and GAIA repository remain separate. Both Pages site
 
 - `index.html`: screen layout.
 - `styles.css`: responsive design.
+- `auth.js`: shared GAIA Supabase sign-in, sign-out, and session checking.
 - `app.js`: original ORBIT local projects, notes, routines and priorities.
 - `integrations.js`: Todoist API and GAIA published/private data integrations.
 - `ORBIT-BLUEPRINT.md`: future architecture and priorities.
+
+## ORBIT sign-in details
+
+No separate Supabase project or database table is needed. The ORBIT login form calls `signInWithPassword` on GAIA's existing Supabase project using only its publishable key. ORBIT checks the session with `getUser` before displaying the workspace. A public GitHub Pages site can never protect the downloaded HTML itself; private GAIA data remains protected by owner-scoped RLS.
+
+Account-specific local data is saved under `orbit-v04-user-<user-id>`. Import older browser data using **Settings → Import older ORBIT browser data** after confirming the correct account. Any legacy money or health entries remain in legacy browser storage and are not visible in ORBIT.
+
+No signup, reset-password email links, or new account management is included in v0.4; use the established GAIA account to manage your password. For new email-link flows returning to ORBIT, add `https://reece1919.github.io/orbit/**` to Supabase Auth redirect allowlist in the dashboard before enabling those flows.
