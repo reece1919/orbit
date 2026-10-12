@@ -51,7 +51,7 @@
     $('#stat-tasks').textContent=active && todoistSyncTime?total:'—';
     $('#nav-task-count').textContent=active && todoistSyncTime?String(due.length):'—';
     note('#todoist-home-value',!active?'Not connected':todoistLoading && !todoistSyncTime?'Loading…':todoistError && !todoistSyncTime?'Sync failed':`${due.length} due / overdue`);
-    note('#todoist-home-note',!active?'Connect Todoist once per browser tab to see tasks.':todoistError?todoistError:todoistSyncTime?`${total}${todoistPartial?'+':''} open tasks · refreshed ${todoistSyncTime}`:'Connecting…');
+    note('#todoist-home-note',!active?'Connect Todoist in this tab to see tasks. Refreshing should retain it; closing this tab may not.':todoistError?todoistError:todoistSyncTime?`${total}${todoistPartial?'+':''} open tasks · refreshed ${todoistSyncTime}`:'Connecting…');
     note('#todoist-status',todoistLoading?'Refreshing Todoist…':todoistError?'Could not refresh: '+todoistError:todoistSyncTime?`${total}${todoistPartial?'+':''} open tasks · last refreshed ${todoistSyncTime}`:'Ready to sync');
     $$('[data-todoist-filter]').forEach(el=>el.classList.toggle('selected',el.dataset.todoistFilter===todoistFilter));
     const selected=ordered(selectTasks(todoistFilter));
@@ -187,7 +187,9 @@
   function handleOrbitAccount(user){
     const next=user?.id||'';
     if(activeAccount===next&&gaiaUser?.id===next)return;
-    if(!next&&sessionKey){try{sessionStorage.removeItem(sessionKey);}catch(_){}}
+    // An interrupted GAIA session must not erase an independent Todoist
+    // connection. Credentials are scoped to the authenticated account ID
+    // and are removed only by explicit Todoist Disconnect (or tab closure).
     activeAccount=next;
     sessionKey=next?'orbit-todoist-v04-'+next:'';
     token='';tasks=[];todoistError='';todoistSyncTime='';todoistPartial=false;todoistLoading=false;
@@ -248,6 +250,9 @@
   window.ORBITConnectedTodoist={active:()=>Boolean(token),render:renderTodoist,refreshGaiaPrivate};
   document.addEventListener('orbit:auth-changed',event=>handleOrbitAccount(event.detail?.user||null));
   renderTodoist();renderGaiaPublic();renderGaiaPrivate();
-  void refreshGaiaPublic().then(()=>initializeGaiaPrivate()).then(()=>handleOrbitAccount(window.ORBITAuth?.user||null));
+  // Restore Todoist as soon as ORBIT knows the signed-in account, without
+  // waiting for the public GAIA catalog network request to complete.
+  void window.ORBITAuth.ready.then(()=>handleOrbitAccount(window.ORBITAuth?.user||null));
+  void refreshGaiaPublic().then(()=>initializeGaiaPrivate());
   window.addEventListener('focus',()=>{if(token&&!todoistLoading)void refreshTodoist();if(gaiaClient&&gaiaUser&&!gaiaPrivateLoading)void refreshGaiaPrivate();});
 })();
