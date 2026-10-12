@@ -23,7 +23,7 @@ Todoist is authoritative for recurring and scheduled tasks. GAIA remains authori
 
 - All remote writes use service APIs authenticated to the user. No tokens or passwords are embedded in the repository, and owner-restricted GAIA tables have RLS enabled.
 - Published GAIA plant records can be viewed by anyone; signed-in task data cannot.
-- Shared GitHub Pages origin permits session reuse between `reece1919.github.io/orbit` and `/gaia`, but also means scripts on either site are inside one browser trust boundary.
+- Shared GitHub Pages origin permits session reuse between `reece1919.github.io/helm` and `/gaia`, but also means scripts on either site are inside one browser trust boundary.
 - Todoist personal token is tab-scoped; production-quality OAuth+backend should replace it if this project expands.
 - Paused personal health/money data is not surfaced. Legacy local records are retained for reversibility but are not cloud synced.
 
@@ -38,3 +38,10 @@ Todoist is authoritative for recurring and scheduled tasks. GAIA remains authori
 ## Non-goals for v0.3
 
 No bank API, financial figures, Apple Health data, medication schedules, private photo repository, background alarms, or automatic tasks on behalf of the user without explicit interaction.
+
+
+## v0.4 shared account
+- ORBIT login uses GAIA Supabase Auth and the same browser origin/session.
+- GAIA task reads continue through existing owner-only RLS, with a single client instance.
+- ORBIT local state is per-account and browser-only; cross-device ORBIT sync is a separate future milestone.
+- Todoist token is isolated to the signed-in account in tab session storage, with separate Todoist authorization.
