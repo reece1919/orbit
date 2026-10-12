@@ -10,6 +10,7 @@
   <script src="auth.js" defer></script>
   <script src="app.js" defer></script>
   <script src="integrations.js" defer></script>
+  <script src="fuel.js" defer></script>
 </head>
 <body data-theme="dark" data-auth-state="checking">
   <section id="orbit-auth" class="auth-screen" aria-labelledby="auth-heading" aria-live="polite">
@@ -43,6 +44,7 @@
         <button type="button" class="nav-item" data-view="projects"><span data-icon="grid"></span> Projects <span class="nav-count" id="nav-project-count">03</span></button>
         <button type="button" class="nav-item" data-view="focus"><span data-icon="check-circle"></span> Todoist &amp; Tasks <span class="nav-count" id="nav-task-count">0</span></button>
         <button type="button" class="nav-item" data-view="gaia"><span data-icon="leaf"></span> GAIA <span class="nav-count" id="nav-gaia-count">—</span></button>
+        <button type="button" class="nav-item" data-view="fuel"><span data-icon="heart-pulse"></span> FUEL <span class="nav-count" id="nav-fuel-count">—</span></button>
         <button type="button" class="nav-item" data-view="routines"><span data-icon="repeat"></span> Routines </button>
         <button type="button" class="nav-item" data-view="settings"><span data-icon="settings"></span> Settings </button>
       </nav>
@@ -50,12 +52,13 @@
       <div class="sidebar-links">
         <div class="nav-label">QUICK ACCESS</div>
         <a href="https://reece1919.github.io/gaia/" target="_blank" rel="noopener noreferrer"><span data-icon="leaf"></span> Open GAIA <span data-icon="arrow-up-right" class="right-icon"></span></a>
+        <a href="https://chatgpt.com/g/g-p-6acd6e86e82081919497cb8e044c60bd/project" target="_blank" rel="noopener noreferrer"><span data-icon="heart-pulse"></span> Ask FUEL <span data-icon="arrow-up-right" class="right-icon"></span></a>
         <a href="https://app.todoist.com/app/today" target="_blank" rel="noopener noreferrer"><span data-icon="list-check"></span> Todoist <span data-icon="arrow-up-right" class="right-icon"></span></a>
         <a href="https://github.com/reece1919" target="_blank" rel="noopener noreferrer"><span data-icon="github"></span> GitHub <span data-icon="arrow-up-right" class="right-icon"></span></a>
       </div>
       <div class="sidebar-bottom">
         <div class="local-badge"><span data-icon="hard-drive"></span><div><strong>CONNECTED WORKSPACE</strong><small>Tasks and plant data from connected sources</small></div></div>
-        <div class="sidebar-footer">ORBIT / SYSTEM 001 <span>v0.4</span></div>
+        <div class="sidebar-footer">ORBIT / SYSTEM 001 <span>v0.5</span></div>
       </div>
     </aside>
     <div class="main-column">
@@ -82,6 +85,7 @@
             <article class="watch-card"><div class="watch-head"><span class="watch-icon gaia-accent"><span data-icon="leaf"></span></span><span class="watch-kicker">GAIA / PLANT CARE</span></div><h3>Your living collection</h3><div id="gaia-home-value" class="watch-value">Loading collection…</div><p id="gaia-home-note" class="watch-detail">Reading the published GAIA plant records.</p><div class="watch-bottom"><button type="button" data-view="gaia" class="subtle-link">Open plant overview <span data-icon="arrow-right"></span></button><button type="button" data-refresh="gaia" class="quiet-pill">Refresh</button></div></article>
             <article class="watch-card"><div class="watch-head"><span class="watch-icon routine-accent"><span data-icon="repeat"></span></span><span class="watch-kicker">ROUTINES / THIS WEEK</span></div><h3>Building consistency</h3><div id="home-routines" class="watch-value">0 of 0</div><p id="home-routines-note" class="watch-detail">Exercise, weekly preparation, and anything you want to repeat.</p><div class="watch-bottom"><button type="button" data-view="routines" class="subtle-link">Track routines <span data-icon="arrow-right"></span></button></div></article>
           </div>
+          <section class="module fuel-home-module"><div class="module-head"><div><div class="eyebrow small">FUEL / PRIVATE FOOD JOURNAL</div><h3>Today's nutrition</h3></div><div class="live-actions"><button type="button" class="text-button" data-view="fuel">Food journal <span data-icon="arrow-right"></span></button><a class="quiet-pill" href="https://chatgpt.com/g/g-p-6acd6e86e82081919497cb8e044c60bd/project" target="_blank" rel="noopener noreferrer">Ask FUEL ↗</a></div></div><div id="fuel-home-value" class="fuel-home-value">Loading…</div><p id="fuel-home-note" class="watch-detail">Reading your private Supabase food journal.</p></section>
           <section class="module integration-summary"><div class="module-head"><div><div class="eyebrow small">TODOIST / TODAY &amp; OVERDUE</div><h3>Today's agenda</h3></div><button type="button" class="text-button" data-view="focus">All tasks <span data-icon="arrow-right"></span></button></div><div id="todoist-home-list" class="live-task-list"><p class="watch-detail">Connect Todoist to load your agenda.</p></div></section>
           <section class="attention-module module" aria-labelledby="attention-title"><div class="module-head"><div><div class="eyebrow small">NEXT ACTIONS</div><h3 id="attention-title">Things to keep an eye on</h3></div><span data-icon="radar" class="muted-icon"></span></div><div id="attention-items" class="attention-items"></div></section>
           <div class="section-head"><div><div class="eyebrow small">YOUR ECOSYSTEM</div><h2>Project headquarters<span class="accent-period">.</span></h2></div><button class="text-button" type="button" data-view="projects">View all projects <span data-icon="arrow-right"></span></button></div>
@@ -111,6 +115,41 @@
             <p class="helper-paragraph">Published follow-ups can be viewed without signing in; completing them or viewing personal tasks requires a GAIA session on the same GitHub Pages domain. Checking off a task does not record watering or pest treatment.</p>
           </section>
           <p class="helper-paragraph">ORBIT reads published plant care notes; actual watering history and personal photographs remain in GAIA. Care alerts are not inferred from rigid watering intervals.</p>
+        </section>
+        <section data-panel="fuel" class="view-panel" hidden>
+          <div class="eyebrow"><span class="eyebrow-line"></span> FUEL / FOOD UNDERSTANDING, ENERGY &amp; LOGGING</div>
+          <div class="page-head"><div><h1>Your food journal<span class="accent-period">.</span></h1><p>Log meals by chatting with FUEL; confirmed entries appear here when FUEL is connected to the private journal.</p></div><a class="primary-button" href="https://chatgpt.com/g/g-p-6acd6e86e82081919497cb8e044c60bd/project" target="_blank" rel="noopener noreferrer">Ask FUEL <span data-icon="arrow-up-right"></span></a></div>
+          <section class="module fuel-overview">
+            <div class="module-head"><div><div class="eyebrow small">PRIVATE / SYNCED FROM SUPABASE</div><h3>Daily nutrition</h3></div><div class="live-actions"><label for="fuel-date" class="sr-only">Food journal date</label><input type="date" id="fuel-date" aria-label="Food journal date"><button type="button" class="quiet-pill" id="fuel-refresh">Refresh</button></div></div>
+            <div class="fuel-metrics">
+              <div class="fuel-metric"><span>CALORIES</span><strong id="fuel-total-calories">—</strong><small>kcal logged</small></div>
+              <div class="fuel-metric"><span>PROTEIN</span><strong id="fuel-total-protein">—</strong><small>grams logged</small></div>
+              <div class="fuel-metric"><span>CARBOHYDRATES</span><strong id="fuel-total-carbs">—</strong><small>grams logged</small></div>
+              <div class="fuel-metric"><span>FAT</span><strong id="fuel-total-fat">—</strong><small>grams logged</small></div>
+            </div>
+            <p id="fuel-status" role="status" class="watch-detail">Connecting to your private food journal…</p>
+          </section>
+          <section class="module fuel-journal">
+            <div class="module-head"><div><div class="eyebrow small">CONFIRMED ENTRIES</div><h3>Meals and snacks <span id="fuel-entry-count" class="result-label"></span></h3></div><a class="quiet-pill" href="https://chatgpt.com/g/g-p-6acd6e86e82081919497cb8e044c60bd/project" target="_blank" rel="noopener noreferrer">Open FUEL Project ↗</a></div>
+            <div id="fuel-entry-list" class="fuel-entry-list"><p class="watch-detail">Your saved food entries will show here.</p></div>
+          </section>
+          <details class="module fuel-manual">
+            <summary>Add a manual entry <span class="result-label">Optional fallback</span></summary>
+            <p class="watch-detail">Use this if ChatGPT logging has not been connected yet. Entries are saved to the same private Supabase table, not this browser.</p>
+            <form id="fuel-manual-form" class="fuel-manual-form">
+              <label>Food / meal name <input name="food_name" type="text" maxlength="300" required placeholder="e.g. Homemade chili"></label>
+              <label>Meal <select name="meal_type"><option value="breakfast">Breakfast</option><option value="lunch">Lunch</option><option value="dinner">Dinner</option><option value="snack">Snack</option><option value="drink">Drink</option><option value="other">Other</option></select></label>
+              <label>Date &amp; time <input name="consumed_at" type="datetime-local" required></label>
+              <label>Calories (kcal) <input name="calories_kcal" type="number" min="0" max="20000" step="0.1" required></label>
+              <label>Protein (g) <input name="protein_g" type="number" min="0" max="2000" step="0.1" placeholder="Optional"></label>
+              <label>Carbohydrates (g) <input name="carbs_g" type="number" min="0" max="2000" step="0.1" placeholder="Optional"></label>
+              <label>Fat (g) <input name="fat_g" type="number" min="0" max="2000" step="0.1" placeholder="Optional"></label>
+              <label class="fuel-wide">Notes <textarea name="notes" maxlength="1000" rows="2" placeholder="Portion details, ingredients, or source…"></textarea></label>
+              <label class="fuel-check"><input name="estimated" type="checkbox" checked> Nutritional values are estimates</label>
+              <div class="fuel-wide"><button class="primary-button" type="submit" id="fuel-save">Save to private journal</button></div>
+            </form>
+          </details>
+          <p class="helper-paragraph">ORBIT only displays entries stored in Supabase. ChatGPT conversations do not automatically write to this journal, and Apple Health synchronization is not active yet.</p>
         </section>
         <section data-panel="focus" class="view-panel" hidden>
           <div class="eyebrow"><span class="eyebrow-line"></span> WHAT MATTERS NEXT</div><div class="page-head"><div><h1>Tasks<span class="accent-period">.</span></h1><p>Work directly from your Todoist agenda, while keeping optional local notes.</p></div><button class="primary-button" data-action="add-task" type="button"><span data-icon="plus"></span> Add local priority</button></div>
@@ -147,7 +186,7 @@
           <section class="module setting-card"><div class="settings-icon"><span data-icon="database"></span></div><h3>Your data</h3><p>Save a backup of your local projects, priorities, routines, links, and notes (plus any legacy local records). Todoist and GAIA are not copied into the backup. Import it on another browser to move your setup. Keep this sensitive export secure.</p><div class="data-actions"><button type="button" class="outline-button" id="export-data"><span data-icon="download"></span> Export backup</button><label class="outline-button file-label"><span data-icon="upload"></span> Import backup <input id="import-data" type="file" accept="application/json,.json" hidden></label></div><div class="settings-warning"><span data-icon="info"></span> Backups are not automatic cloud sync.</div><button type="button" id="orbit-import-legacy" class="outline-button legacy-import" hidden>Import older ORBIT browser data</button></section>
           <section class="module setting-card"><div class="settings-icon"><span data-icon="shield-check"></span></div><h3>Privacy & integrations</h3><p>Todoist connects through its official API using a token kept in tab-only session storage. Your ORBIT sign-in uses GAIA’s existing Supabase account and owner-restricted tables. Todoist still requires a separate API token. No finance or health syncing.</p><div class="integrations"><div><span class="status-dot ready"></span> GAIA <span>Public catalog + signed-in tasks</span></div><div><span class="status-dot planned"></span> Todoist <span>Direct API; connect from Tasks</span></div><div><span class="status-dot planned"></span> Money &amp; Health <span>Paused</span></div><div><span class="status-dot ready"></span> Supabase authentication <span>Shared with GAIA</span></div><div><span class="status-dot planned"></span> ORBIT notes sync <span>Browser-only for now</span></div></div><button type="button" class="danger-link" id="reset-data">Reset ORBIT data on this device</button></section></div>
         </section>
-        <footer class="main-footer"><span>ORBIT HEADQUARTERS <span class="foot-dot">◆</span> BUILT TO KEEP THINGS MOVING</span><span>VERSION 0.4 · SHARED SIGN-IN</span></footer>
+        <footer class="main-footer"><span>ORBIT HEADQUARTERS <span class="foot-dot">◆</span> BUILT TO KEEP THINGS MOVING</span><span>VERSION 0.5 · FUEL JOURNAL</span></footer>
       </main>
     </div>
   </div>
