@@ -1,6 +1,16 @@
 # ORBIT — Headquarters for Execution, Logic, and Memory
 
-**v0.5 — ORBIT / GAIA shared sign-in, Todoist, GAIA, and FUEL food journaling.** Other health metrics and money tracking remain paused. Previously saved health/money data, if any, remains inside the legacy browser data and backup format so upgrading does not silently erase it.
+**v0.6 — Adaptive home dashboard for PC, tablet, and iPhone, with ORBIT/GAIA shared sign-in, Todoist, GAIA, and FUEL food journaling.** Other health metrics and money tracking remain paused. Previously saved health/money data, if any, remains inside the legacy browser data and backup format so upgrading does not silently erase it.
+
+## Adaptive home dashboard (v0.6)
+
+- Desktop: compact greeting, primary quick actions, three connected-source summary cards, a two-column agenda and source overview, with projects and device-local notes below.
+- Tablet: two-column layouts where space allows, touch-sized controls, and a collapsible navigation drawer in portrait widths.
+- iPhone: fast tasks/FUEL/GAIA actions at the top, a compact daily snapshot, stacked panels, and persistent bottom navigation (Home, Tasks, FUEL, GAIA, More) with iPhone safe-area padding.
+- No new data duplication: existing Todoist/GAIA/FUEL integration fields and their source-of-truth behavior are retained. A failed or missing integration displays its existing fallback state; it does not invent results.
+- Account-specific local notes, routines, and priorities **remain device-local**. The responsive redesign does not add cross-device synchronization.
+- GitHub Pages remains public; signed-in dashboard data is protected by existing GAIA Supabase RLS where applicable. The frontend login is not an encryption boundary for legacy browser-local notes.
+- The responsive code was checked for JS syntax and required DOM IDs; real-device visual tests on published GitHub Pages are still recommended.
 
 ## Connected features
 
