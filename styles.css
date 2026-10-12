@@ -266,3 +266,13 @@ body[data-theme="light"] #fuel-date{color-scheme:light}
   .home-work-grid{grid-template-columns:minmax(0,1.55fr) minmax(320px,.85fr)}
 }
 @media(prefers-reduced-motion:reduce){.home-fast-action,.sidebar,.home-snapshot-tile{transition:none!important}}
+
+/* Narrow iPhones: keep the account chip, menu, and current page on one line. */
+@media(max-width:520px){
+  .topbar .crumb-parent,.topbar .crumb-slash{display:none}
+  .topbar .breadcrumbs{min-width:0}
+  .topbar #current-crumb{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .topbar .topbar-right{min-width:0}
+  .topbar .top-account{min-width:0;max-width:125px}
+  .topbar .top-account span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block}
+}
