@@ -52,3 +52,7 @@ FUEL is the conversational nutrition logging specialist. ORBIT links to the dedi
 ## ORBIT v0.6: Multi-device home
 
 The home page is now action-first and responsive. Desktop uses multi-column overview modules, tablet adapts to two columns with a drawer at portrait widths, and iPhone provides compact daily status cards plus a persistent bottom navigation bar (Home, Tasks, FUEL, GAIA, More). Todoist, GAIA, and FUEL integrations remain unchanged and remain the sources of truth. Account-specific local notes and routines are not yet cloud-synchronized.
+
+## v0.7 — Secure Todoist OAuth
+
+A publicly hosted Todoist OAuth client metadata document authorizes ORBIT using PKCE without a client secret. A Supabase Edge Function verifies users' GAIA JWTs on every task request, stores single-use OAuth state, encrypts tokens server-side and proxies only supported tasks API operations. The credential connection belongs to the Supabase user identity so any device with that sign-in can use it. Token encryption uses a purpose-separated HKDF derivation from the Supabase server secret, so the ciphertext requires migration before a server secret rotation. The live Todoist approval and cross-device flow must still be tested by the account owner. Legacy tab-token fallback is temporary.
