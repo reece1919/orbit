@@ -14,7 +14,44 @@
   const gaiaCatalog=gaiaRoot+'plants.json';
   // GAIA now shares ORBITAuth's single authenticated Supabase client.
   const TODOIST_API='https://api.todoist.com/api/v1';
-  let sessionKey='';let token='';let activeAccount='';
+  let sessionKey='';let token='';let activeAccount='';let serverConnected=false;let oauthChecking=false;
+  const BRIDGE='https://zdurujqwhxqrwbhwzzxg.supabase.co/functions/v1/orbit-todoist';
+  async function oauthRequest(action,extra={}){
+    const auth=window.ORBITAuth;
+    if(!auth?.client||!auth.user)throw new Error('Sign in to ORBIT first.');
+    const {data,error}=await auth.client.auth.getSession();
+    if(error||!data?.session?.access_token)throw new Error('Your ORBIT session expired. Sign in again.');
+    const response=await fetch(BRIDGE,{method:'POST',cache:'no-store',headers:{
+      'Content-Type':'application/json','Authorization':'Bearer '+data.session.access_token
+    },body:JSON.stringify({action,...extra})});
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(result?.error||'Could not reach Todoist connection service ('+response.status+').');
+    return result;
+  }
+  async function checkOAuth(owner){
+    if(!owner)return;
+    oauthChecking=true;renderTodoist();
+    try{
+      const status=await oauthRequest('status');
+      if(activeAccount!==owner)return;
+      serverConnected=!!status.connected;
+      if(serverConnected){
+        token='';try{sessionStorage.removeItem(sessionKey);}catch(_){}
+        void refreshTodoist();
+      }
+    }catch(err){
+      if(activeAccount===owner)todoistError='Connection status unavailable: '+(err.message||'Try again.');
+    }finally{if(activeAccount===owner){oauthChecking=false;renderTodoist();}}
+  }
+  async function startOAuth(){
+    const button=$('#todoist-oauth-connect');button.disabled=true;button.textContent='Opening Todoist…';
+    try{
+      const result=await oauthRequest('start');
+      const url=new URL(result.authorization_url);
+      if(url.origin!=='https://app.todoist.com'||url.pathname!=='/oauth/authorize')throw new Error('Unexpected Todoist approval URL.');
+      window.location.assign(url.href);
+    }catch(err){toast('Could not start secure Todoist connection: '+err.message);button.disabled=false;button.textContent='Connect with Todoist';}
+  }
   // Retire the older unscoped browser-tab token so it cannot cross ORBIT accounts.
   try{sessionStorage.removeItem('helm-todoist-token-v03');}catch(_){}
   let tasks=[]; let todoistSyncTime=''; let todoistError=''; let todoistLoading=false; let todoistPartial=false; let todoistFilter='today';
@@ -45,13 +82,17 @@
     return `<article class="live-task${overdue?' is-overdue':''}"><input type="checkbox" data-todoist-done="${esc(t.id)}" aria-label="Complete ${esc(t.content)}"><div class="live-task-body"><strong>${esc(t.content)}</strong><small>${esc(detail)}</small><a href="${esc(safeTaskLink(t.id))}" target="_blank" rel="noopener noreferrer">Open in Todoist ↗</a></div></article>`;
   }
   function renderTodoist(){
-    const active=Boolean(token); const total=tasks.length; const due=selectTasks('today');
+    const active=Boolean(token||serverConnected); const total=tasks.length; const due=selectTasks('today');
+    const mode=$('#todoist-connection-mode');
+    if(mode)mode.textContent=serverConnected?'Secure connection · available across devices':token?'Temporary browser-tab connection':'';
+    const check=$('#todoist-oauth-checking');
+    if(check)check.hidden=!oauthChecking;
     $('#todoist-connect').hidden=active;$('#todoist-connected').hidden=!active;
     $('#todoist-add').disabled=!active || todoistLoading;
     $('#stat-tasks').textContent=active && todoistSyncTime?total:'—';
     $('#nav-task-count').textContent=active && todoistSyncTime?String(due.length):'—';
     note('#todoist-home-value',!active?'Not connected':todoistLoading && !todoistSyncTime?'Loading…':todoistError && !todoistSyncTime?'Sync failed':`${due.length} due / overdue`);
-    note('#todoist-home-note',!active?'Connect Todoist in this tab to see tasks. Refreshing should retain it; closing this tab may not.':todoistError?todoistError:todoistSyncTime?`${total}${todoistPartial?'+':''} open tasks · refreshed ${todoistSyncTime}`:'Connecting…');
+    note('#todoist-home-note',!active?(oauthChecking?'Checking secure Todoist connection…':'Connect once through Todoist to sync across all devices.'):todoistError?todoistError:todoistSyncTime?`${total}${todoistPartial?'+':''} open tasks · refreshed ${todoistSyncTime}`:'Connecting…');
     note('#todoist-status',todoistLoading?'Refreshing Todoist…':todoistError?'Could not refresh: '+todoistError:todoistSyncTime?`${total}${todoistPartial?'+':''} open tasks · last refreshed ${todoistSyncTime}`:'Ready to sync');
     $$('[data-todoist-filter]').forEach(el=>el.classList.toggle('selected',el.dataset.todoistFilter===todoistFilter));
     const selected=ordered(selectTasks(todoistFilter));
@@ -63,6 +104,9 @@
       due.length?ordered(due).slice(0,5).map(taskMarkup).join(''):`<p class="watch-detail">${esc(todoistError||'No tasks due today or overdue.')}</p>`;
   }
   async function todoistRequest(path, opts={}, apiToken=token){
+    if(serverConnected && (!apiToken || apiToken===token)){
+      return oauthRequest('api',{path,method:opts.method||'GET',...(opts.body?{body:JSON.stringify(opts.body)}:{})});
+    }
     if(!apiToken)throw new Error('Connect Todoist first.');
     const response=await fetch(TODOIST_API+path,{
       method:opts.method||'GET',
@@ -93,7 +137,7 @@
     return {tasks:result,partial};
   }
   async function refreshTodoist(){
-    if(!token){renderTodoist();return;}
+    if(!token&&!serverConnected){renderTodoist();return;}
     if(todoistLoading)return;
     todoistLoading=true;todoistError='';renderTodoist();
     const owner=activeAccount;
@@ -112,9 +156,14 @@
     }catch(e){input.value='';toast('Could not connect Todoist: '+(e.message||'Check the token.'));}
     finally{submit.disabled=false;submit.textContent='Connect Todoist';}
   }
-  function disconnectTodoist(){
-    token='';tasks=[];todoistSyncTime='';todoistError='';try{sessionStorage.removeItem(sessionKey);}catch(_){}
-    renderTodoist();toast('Todoist disconnected from this browser tab.');
+  async function disconnectTodoist(){
+    if(serverConnected){
+      try{await oauthRequest('disconnect');serverConnected=false;}
+      catch(err){toast('Could not disconnect Todoist: '+err.message);return;}
+    }
+    token='';tasks=[];todoistSyncTime='';todoistError='';
+    try{sessionStorage.removeItem(sessionKey);}catch(_){}
+    renderTodoist();toast('Todoist disconnected from ORBIT.');
   }
   async function completeTodoist(id,checkbox){
     const task=tasks.find(t=>String(t.id)===String(id));if(!task)return;
@@ -126,7 +175,7 @@
     }catch(e){checkbox.checked=false;checkbox.disabled=false;toast('Could not complete task: '+e.message);}
   }
   async function createTodoist(e){
-    e.preventDefault();if(!token)return;
+    e.preventDefault();if(!token&&!serverConnected)return;
     const f=e.target, fd=new FormData(f),content=String(fd.get('content')||'').trim();if(!content)return;
     const due=String(fd.get('due_date')||'');const priority=Number(fd.get('priority')||1);
     const payload={content,priority};if(due)payload.due_date=due;
@@ -192,12 +241,13 @@
     // and are removed only by explicit Todoist Disconnect (or tab closure).
     activeAccount=next;
     sessionKey=next?'orbit-todoist-v04-'+next:'';
-    token='';tasks=[];todoistError='';todoistSyncTime='';todoistPartial=false;todoistLoading=false;
+    token='';serverConnected=false;oauthChecking=false;tasks=[];todoistError='';todoistSyncTime='';todoistPartial=false;todoistLoading=false;
     if(next){try{token=sessionStorage.getItem(sessionKey)||'';}catch(_){}}
     gaiaClient=window.ORBITAuth?.client||gaiaClient;gaiaUser=user||null;gaiaPrivateTasks=[];gaiaPrivateError='';
     renderTodoist();renderGaiaPrivate();
     if(gaiaUser&&gaiaClient)void refreshGaiaPrivate();
     if(token)void refreshTodoist();
+    if(next)void checkOAuth(next);
     if(!gaiaUser)renderGaiaPublic();
   }
   async function refreshGaiaPrivate(){
@@ -237,7 +287,8 @@
     const refresh=event.target.closest('[data-refresh]');
     if(refresh){if(refresh.dataset.refresh==='todoist')void refreshTodoist();else if(refresh.dataset.refresh==='gaia'){void refreshGaiaPublic().then(()=>refreshGaiaPrivate());}return;}
     const filter=event.target.closest('[data-todoist-filter]');if(filter){todoistFilter=filter.dataset.todoistFilter;renderTodoist();return;}
-    if(event.target.closest('#todoist-disconnect')){disconnectTodoist();return;}
+    if(event.target.closest('#todoist-oauth-connect')){void startOAuth();return;}
+    if(event.target.closest('#todoist-disconnect')){void disconnectTodoist();return;}
     if(event.target.closest('#todoist-add')){if(token)$('#todoist-create-dialog').showModal();return;}
     if(event.target.closest('#todoist-create-close, #todoist-create-cancel')){$('#todoist-create-dialog').close();return;}
   });
@@ -247,7 +298,7 @@
   });
   $('#todoist-connect-form').addEventListener('submit',connectTodoist);
   $('#todoist-create-form').addEventListener('submit',createTodoist);
-  window.ORBITConnectedTodoist={active:()=>Boolean(token),render:renderTodoist,refreshGaiaPrivate};
+  window.ORBITConnectedTodoist={active:()=>Boolean(token||serverConnected),render:renderTodoist,refreshGaiaPrivate};
   document.addEventListener('orbit:auth-changed',event=>handleOrbitAccount(event.detail?.user||null));
   renderTodoist();renderGaiaPublic();renderGaiaPrivate();
   // Restore Todoist as soon as ORBIT knows the signed-in account, without
