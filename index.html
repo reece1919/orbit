@@ -7,10 +7,29 @@
   <meta name="description" content="ORBIT Personal Command Center — Todoist tasks, GAIA plants, routines, projects, and daily focus." />
   <title>ORBIT — Personal Command Center</title>
   <link rel="stylesheet" href="styles.css" />
+  <script src="auth.js" defer></script>
   <script src="app.js" defer></script>
   <script src="integrations.js" defer></script>
 </head>
-<body data-theme="dark">
+<body data-theme="dark" data-auth-state="checking">
+  <section id="orbit-auth" class="auth-screen" aria-labelledby="auth-heading" aria-live="polite">
+    <div class="auth-visual" aria-hidden="true"><div class="auth-ring auth-ring-one"></div><div class="auth-ring auth-ring-two"></div><div class="auth-center">O</div></div>
+    <div class="auth-card">
+      <div class="auth-brand"><div class="brand-mark" aria-hidden="true"><span>O</span><i></i></div><div><div class="brand-name">ORBIT<span class="brand-period">.</span></div><div class="brand-sub">PERSONAL COMMAND CENTER</div></div></div>
+      <div class="eyebrow small">ONE ACCOUNT / TWO WORKSPACES</div>
+      <h1 id="auth-heading">Welcome back<span class="accent-period">.</span></h1>
+      <p class="auth-intro">Sign in with your existing GAIA account to access ORBIT. No second account required.</p>
+      <p id="auth-loading" class="auth-loading" role="status">Checking your session…</p>
+      <form id="orbit-login" class="auth-form" hidden>
+        <label>Email address<input name="email" type="email" autocomplete="username" required maxlength="254" placeholder="you@example.com"></label>
+        <label>Password<input name="password" type="password" autocomplete="current-password" required placeholder="Your GAIA password"></label>
+        <button class="primary-button" id="orbit-signin" type="submit">Sign in to ORBIT</button>
+      </form>
+      <p id="auth-message" class="auth-message" role="alert" hidden></p>
+      <button id="auth-retry" class="outline-button auth-retry" type="button" hidden>Retry connection</button>
+      <div class="auth-help">Same credentials as <a href="https://reece1919.github.io/gaia/" target="_blank" rel="noopener noreferrer">GAIA ↗</a> · Your personal data stays in its original services or this browser.</div>
+    </div>
+  </section>
   <div class="app-shell">
     <aside class="sidebar" id="sidebar">
       <div class="brand">
@@ -36,13 +55,13 @@
       </div>
       <div class="sidebar-bottom">
         <div class="local-badge"><span data-icon="hard-drive"></span><div><strong>CONNECTED WORKSPACE</strong><small>Tasks and plant data from connected sources</small></div></div>
-        <div class="sidebar-footer">ORBIT / SYSTEM 001 <span>v0.3</span></div>
+        <div class="sidebar-footer">ORBIT / SYSTEM 001 <span>v0.4</span></div>
       </div>
     </aside>
     <div class="main-column">
       <header class="topbar">
         <div class="breadcrumbs"><button class="menu-button" type="button" id="menu-button" aria-label="Toggle menu"><span data-icon="menu"></span></button><span class="crumb-parent">HEADQUARTERS</span><span class="crumb-slash">/</span><span id="current-crumb">OVERVIEW</span></div>
-        <div class="topbar-right"><span id="topbar-date" class="top-date"></span><span class="top-separator"></span><div class="online-indicator"><span class="pulse-dot"></span> INTEGRATION MODE</div></div>
+        <div class="topbar-right"><span id="topbar-date" class="top-date"></span><span class="top-separator"></span><button type="button" id="orbit-account-button" class="top-account" title="Sign out of ORBIT and GAIA on this browser"><span data-icon="shield-check"></span><span id="orbit-account-label">Account</span></button></div>
       </header>
       <main class="content" id="main-content">
         <section data-panel="home" class="view-panel">
@@ -121,12 +140,14 @@
         </section>
         <section data-panel="settings" class="view-panel" hidden>
           <div class="eyebrow"><span class="eyebrow-line"></span> CONTROL & PERSONALIZATION</div><div class="page-head"><div><h1>Configuration<span class="accent-period">.</span></h1><p>Make ORBIT yours. Local notes stay on this device; linked data comes from their original services.</p></div></div>
-          <div class="settings-grid"><section class="module setting-card"><div class="settings-icon"><span data-icon="palette"></span></div><h3>Appearance</h3><p>Choose a look for your command center.</p><div class="theme-choices"><button id="theme-dark" type="button" data-theme-choice="dark" class="theme-choice selected"><span data-icon="moon"></span> Midnight</button><button id="theme-light" type="button" data-theme-choice="light" class="theme-choice"><span data-icon="sun"></span> Daylight</button></div></section>
+          <div class="settings-grid">
+          <section class="module setting-card account-settings"><div class="settings-icon"><span data-icon="shield-check"></span></div><h3>Your ORBIT account</h3><p>Signed in with your GAIA account. Signing out of ORBIT also signs out of GAIA in this browser.</p><div id="orbit-settings-email" class="account-email">Loading account…</div><button id="orbit-signout" class="outline-button" type="button">Sign out</button><p class="settings-warning">Local projects, routines and notes are saved to this browser under this account; they do not yet sync to another device.</p></section>
+          <section class="module setting-card"><div class="settings-icon"><span data-icon="palette"></span></div><h3>Appearance</h3><p>Choose a look for your command center.</p><div class="theme-choices"><button id="theme-dark" type="button" data-theme-choice="dark" class="theme-choice selected"><span data-icon="moon"></span> Midnight</button><button id="theme-light" type="button" data-theme-choice="light" class="theme-choice"><span data-icon="sun"></span> Daylight</button></div></section>
           <section class="module setting-card"><div class="settings-icon"><span data-icon="link"></span></div><h3>Quick launch links</h3><p>Add shortcuts for apps, ChatGPT Projects, or frequently visited pages.</p><div id="settings-links" class="settings-links"></div><button type="button" class="outline-button setting-action" data-action="add-link"><span data-icon="plus"></span> Add shortcut</button></section>
-          <section class="module setting-card"><div class="settings-icon"><span data-icon="database"></span></div><h3>Your data</h3><p>Save a backup of your local projects, priorities, routines, links, and notes (plus any legacy local records). Todoist and GAIA are not copied into the backup. Import it on another browser to move your setup. Keep this sensitive export secure.</p><div class="data-actions"><button type="button" class="outline-button" id="export-data"><span data-icon="download"></span> Export backup</button><label class="outline-button file-label"><span data-icon="upload"></span> Import backup <input id="import-data" type="file" accept="application/json,.json" hidden></label></div><div class="settings-warning"><span data-icon="info"></span> Backups are not automatic cloud sync.</div></section>
-          <section class="module setting-card"><div class="settings-icon"><span data-icon="shield-check"></span></div><h3>Privacy & integrations</h3><p>Todoist connects through its official API using a token kept in tab-only session storage. GAIA public records load directly, and private GAIA tasks require your existing GAIA sign-in on the same GitHub Pages origin. No finance or health syncing.</p><div class="integrations"><div><span class="status-dot ready"></span> GAIA <span>Public catalog + signed-in tasks</span></div><div><span class="status-dot planned"></span> Todoist <span>Direct API; connect from Tasks</span></div><div><span class="status-dot planned"></span> Money &amp; Health <span>Paused</span></div><div><span class="status-dot planned"></span> Supabase sync <span>Not connected</span></div></div><button type="button" class="danger-link" id="reset-data">Reset ORBIT data on this device</button></section></div>
+          <section class="module setting-card"><div class="settings-icon"><span data-icon="database"></span></div><h3>Your data</h3><p>Save a backup of your local projects, priorities, routines, links, and notes (plus any legacy local records). Todoist and GAIA are not copied into the backup. Import it on another browser to move your setup. Keep this sensitive export secure.</p><div class="data-actions"><button type="button" class="outline-button" id="export-data"><span data-icon="download"></span> Export backup</button><label class="outline-button file-label"><span data-icon="upload"></span> Import backup <input id="import-data" type="file" accept="application/json,.json" hidden></label></div><div class="settings-warning"><span data-icon="info"></span> Backups are not automatic cloud sync.</div><button type="button" id="orbit-import-legacy" class="outline-button legacy-import" hidden>Import older ORBIT browser data</button></section>
+          <section class="module setting-card"><div class="settings-icon"><span data-icon="shield-check"></span></div><h3>Privacy & integrations</h3><p>Todoist connects through its official API using a token kept in tab-only session storage. Your ORBIT sign-in uses GAIA’s existing Supabase account and owner-restricted tables. Todoist still requires a separate API token. No finance or health syncing.</p><div class="integrations"><div><span class="status-dot ready"></span> GAIA <span>Public catalog + signed-in tasks</span></div><div><span class="status-dot planned"></span> Todoist <span>Direct API; connect from Tasks</span></div><div><span class="status-dot planned"></span> Money &amp; Health <span>Paused</span></div><div><span class="status-dot ready"></span> Supabase authentication <span>Shared with GAIA</span></div><div><span class="status-dot planned"></span> ORBIT notes sync <span>Browser-only for now</span></div></div><button type="button" class="danger-link" id="reset-data">Reset ORBIT data on this device</button></section></div>
         </section>
-        <footer class="main-footer"><span>ORBIT HEADQUARTERS <span class="foot-dot">◆</span> BUILT TO KEEP THINGS MOVING</span><span>VERSION 0.3 · CONNECTED</span></footer>
+        <footer class="main-footer"><span>ORBIT HEADQUARTERS <span class="foot-dot">◆</span> BUILT TO KEEP THINGS MOVING</span><span>VERSION 0.4 · SHARED SIGN-IN</span></footer>
       </main>
     </div>
   </div>
