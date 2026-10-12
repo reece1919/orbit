@@ -1,6 +1,6 @@
 # ORBIT — Headquarters for Execution, Logic, and Memory
 
-**v0.4 — Shared ORBIT / GAIA sign-in, Todoist and GAIA integration.** Health and money tracking are paused and have been removed from the visible interface. Previously saved health/money data, if any, remains inside the legacy browser data and backup format so upgrading does not silently erase it.
+**v0.5 — ORBIT / GAIA shared sign-in, Todoist, GAIA, and FUEL food journaling.** Other health metrics and money tracking remain paused. Previously saved health/money data, if any, remains inside the legacy browser data and backup format so upgrading does not silently erase it.
 
 ## Connected features
 
@@ -16,6 +16,18 @@ ORBIT uses the current official **Todoist API v1** (`https://api.todoist.com/api
 **Connect:** Visit Todoist → Settings → Integrations → Developer to copy **your personal API token**. Paste it only in ORBIT running on a trusted HTTPS site, not in GitHub, the README, a ChatGPT conversation, or screenshots. Access tokens are kept only in the browser tab's `sessionStorage` (not ORBIT's local backup or the repository); click Disconnect to clear them. `sessionStorage` is accessible to scripts on that origin and browser restore behavior varies. For a future multi-user release, use a proper OAuth authorization-code flow with protected token storage, not personal tokens in a public client.
 
 Do not treat the ChatGPT Todoist connector as authentication for ORBIT: connectors within ChatGPT cannot automatically authorize standalone GitHub Pages websites.
+
+### FUEL — Conversational food logging and private journal
+
+- **Ask FUEL** opens the dedicated ChatGPT Project: https://chatgpt.com/g/g-p-6acd6e86e82081919497cb8e044c60bd/project .
+- **FUEL** navigation opens a private daily food journal: calories, meal history, macronutrients, date filtering, and manually confirmed fallback entries.
+- Source of truth: `public.fuel_food_entries` in the existing GAIA Supabase project, governed by account-owner row-level security. Anonymous users cannot read or write food entries.
+- Manual food entries are saved directly through the user's signed-in Supabase session (not browser localStorage).
+- ChatGPT Projects **do not inherit write access to Supabase just because a link exists**. To enable saving from FUEL, authorize the connected Supabase app inside the Project. Then open ORBIT → FUEL → **Copy FUEL setup** and append the copied, account-specific instructions to the FUEL Project instructions.
+- The setup contains the authenticated user's UUID, a non-secret account identifier. It never includes passwords, service-role credentials or browser access tokens. When the connected Supabase app is unavailable, FUEL must say it has **not** saved the meal.
+- Never rely solely on natural-language instructions as a security boundary for an administrator-level Supabase connector. Restrict app access appropriately; ORBIT's own database operations use authenticated owner RLS.
+- Apple Health writeback is **not implemented**. A separate authorized iPhone Shortcut or native HealthKit bridge is needed. Do not claim food entries have synced to Apple Health until that exists.
+- Food calorie and macro figures are estimates unless verified against labels and portion sizes. The dashboard includes zero data until actual meals have been saved.
 
 ### GAIA
 
@@ -69,6 +81,7 @@ The ORBIT GitHub repository and GAIA repository remain separate. Both Pages site
 - `auth.js`: shared GAIA Supabase sign-in, sign-out, and session checking.
 - `app.js`: original ORBIT local projects, notes, routines and priorities.
 - `integrations.js`: Todoist API and GAIA published/private data integrations.
+- `fuel.js`: private Supabase food journal and one-click FUEL Project setup.
 - `ORBIT-BLUEPRINT.md`: future architecture and priorities.
 
 ## ORBIT sign-in details
