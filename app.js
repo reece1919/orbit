@@ -181,13 +181,28 @@
   }
   function renderTheme(){document.body.dataset.theme=state.theme;$$('[data-theme-choice]').forEach(b=>{b.classList.toggle('selected',b.dataset.themeChoice===state.theme);b.setAttribute('aria-pressed',String(b.dataset.themeChoice===state.theme));});}
   function render(){renderProjects();renderTasks();renderLinks();renderCount();renderRoutines();renderAttention();renderTheme();$('#scratchpad').value=state.scratchpad;window.ORBITConnectedTodoist?.render();}
+  function closeNavigation(){
+    $('#sidebar').classList.remove('open');
+    $('#nav-backdrop').hidden=true;
+    $('#menu-button').setAttribute('aria-expanded','false');
+    $('#mobile-more').setAttribute('aria-expanded','false');
+  }
+  function toggleNavigation(){
+    const show=!$('#sidebar').classList.contains('open');
+    $('#sidebar').classList.toggle('open',show);
+    $('#nav-backdrop').hidden=!show;
+    $('#menu-button').setAttribute('aria-expanded',String(show));
+    $('#mobile-more').setAttribute('aria-expanded',String(show));
+  }
   function setView(next){
     if(!['home','projects','focus','gaia','fuel','routines','settings'].includes(next))return;
     view=next;
     $$('[data-panel]').forEach(x=>x.hidden=x.dataset.panel!==view);
-    $$('.main-nav [data-view]').forEach(x=>{x.classList.toggle('active',x.dataset.view===view);if(x.dataset.view===view)x.setAttribute('aria-current','page');else x.removeAttribute('aria-current')});
+    $('.main-nav [data-view], .mobile-nav [data-view]').forEach(x=>{x.classList.toggle('active',x.dataset.view===view);if(x.dataset.view===view)x.setAttribute('aria-current','page');else x.removeAttribute('aria-current')});
+    const more=$('#mobile-more');
+    more.classList.toggle('active',!['home','focus','fuel','gaia'].includes(view));
     $('#current-crumb').textContent=({home:'OVERVIEW',projects:'PROJECTS',focus:'TASKS',gaia:'GAIA',fuel:'FUEL',routines:'ROUTINES',settings:'SETTINGS'})[view];
-    $('#sidebar').classList.remove('open');window.scrollTo({top:0,behavior:'instant'});
+    closeNavigation();window.scrollTo({top:0,behavior:'instant'});
   }
   const field = (name,label,value='',type='text',other='') => `<label class="dialog-field">${label}<input name="${name}" type="${type}" value="${esc(value)}" ${other}></label>`;
   const select = (name,label,value,options) => `<label class="dialog-field">${label}<select name="${name}">${options.map(v=>`<option value="${esc(v.value)}" ${v.value===value?'selected':''}>${esc(v.label)}</option>`).join('')}</select></label>`;
@@ -294,8 +309,11 @@
     $('#export-data').addEventListener('click',exportBackup);
     $('#import-data').addEventListener('change',e=>importBackup(e.target.files[0]));
     $('#reset-data').addEventListener('click',()=>{if(confirm('Reset all ORBIT data in this browser? This permanently clears your local edits, tasks, and notes. Export a backup first if needed.')){state=defaultState();persist();render();setView('home');toast('ORBIT reset to defaults.');}});
-    $('#menu-button').addEventListener('click',()=>$('#sidebar').classList.toggle('open'));
-    document.addEventListener('keydown',e=>{if(e.key==='Escape')$('#sidebar').classList.remove('open');});
+    $('#menu-button').addEventListener('click',toggleNavigation);
+    $('#mobile-more').addEventListener('click',toggleNavigation);
+    $('#nav-backdrop').addEventListener('click',closeNavigation);
+    window.addEventListener('resize',()=>{if(window.innerWidth>980)closeNavigation();});
+    document.addEventListener('keydown',e=>{if(e.key==='Escape')closeNavigation();});
     window.addEventListener('storage',e=>{if(e.key===currentKey()&&currentKey()){state=load();render();toast('Updated from another tab.');}});
     $('#orbit-import-legacy').addEventListener('click',()=>{
       if(!accountId)return;
@@ -312,7 +330,13 @@
     const el=$('#orbit-import-legacy');
     el.hidden=!(accountId&&!localStorage.getItem(currentKey())&&localStorage.getItem(LEGACY_KEY));
   }
-  function initDate(){const d=new Date();$('#topbar-date').textContent=d.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric',year:'numeric'}).toUpperCase();}
+  function initDate(){
+    const d=new Date();
+    $('#topbar-date').textContent=d.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric',year:'numeric'}).toUpperCase();
+    $('#home-date').textContent=d.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});
+    const greeting=d.getHours()<11?'Good morning.':d.getHours()<17?'Good afternoon.':'Good evening.';
+    $('#home-greeting').innerHTML=greeting.replace('.','<span class="accent-period">.</span>');
+  }
   wire();render();initDate();setView('home');
   if(window.ORBITAuth?.user){accountId=window.ORBITAuth.user.id;state=load();render();updateLegacyButton();}
 })();
