@@ -10,10 +10,10 @@
   <title>ORBIT — Celestial Command Center</title>
   <link rel="stylesheet" href="styles.css?v=0.6.2" />
   <link rel="stylesheet" href="security-mfa.css?v=1.2.1" />
-  <link rel="stylesheet" href="celestial.css?v=1.3.0" />
+  <link rel="stylesheet" href="celestial.css?v=1.4.0" />
   <link rel="stylesheet" href="assets/todoist-system.css?v=1.1.0" />
   <link rel="stylesheet" href="pulse.css?v=1.0.0" />
-  <link rel="stylesheet" href="signals.css?v=1.1.4" />
+  <link rel="stylesheet" href="signals.css?v=1.1.4" /><link rel="stylesheet" href="compact-systems.css?v=1.4.0" />
   <link rel="manifest" href="pulse.webmanifest" />
   <link rel="icon" type="image/svg+xml" href="orbit-icon.svg?v=1.3.0" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -60,7 +60,7 @@
         <button type="button" class="nav-item active" data-view="home"><span data-icon="layout-dashboard"></span> Overview <span class="nav-indicator"></span></button>
         <button type="button" class="nav-item" data-view="projects"><span data-icon="grid"></span> Projects <span class="nav-count" id="nav-project-count">03</span></button>
         <button type="button" class="nav-item" data-view="focus"><span data-icon="check-circle"></span> Todoist &amp; Tasks <span class="nav-count" id="nav-task-count">0</span></button>
-        <button type="button" class="nav-item" data-view="gaia"><img class="nav-system-emblem" src="assets/systems/gaia.svg" width="21" height="21" alt=""> GAIA <span class="nav-count" id="nav-gaia-count">—</span></button>
+        <a class="nav-item" href="https://reece1919.github.io/gaia/" target="_blank" rel="noopener noreferrer"><img class="nav-system-emblem" src="assets/systems/gaia.svg?v=1.4.0" width="21" height="21" alt=""> GAIA <span class="nav-count" id="nav-gaia-count">—</span></a>
         <button type="button" class="nav-item" data-view="fuel"><img class="nav-system-emblem" src="assets/systems/fuel.svg" width="21" height="21" alt=""> FUEL <span class="nav-count" id="nav-fuel-count">—</span></button>
         <button type="button" class="nav-item" data-view="pulse"><img class="nav-system-emblem" src="assets/systems/pulse.svg" width="21" height="21" alt=""> PULSE <span class="nav-indicator"></span></button>
         <button type="button" class="nav-item" data-view="inbox"><span data-icon="mail"></span> Inbox <span class="nav-count" id="nav-inbox-count">—</span></button>
@@ -69,18 +69,9 @@
         <button type="button" class="nav-item" data-view="settings"><span data-icon="settings"></span> Settings </button>
       </nav>
       <div class="sidebar-rule"></div>
-      <div class="sidebar-links">
-        <div class="nav-label">QUICK ACCESS</div>
-        <a href="https://reece1919.github.io/gaia/" target="_blank" rel="noopener noreferrer"><img class="nav-system-emblem" src="assets/systems/gaia.svg" width="21" height="21" alt=""> Open GAIA <span data-icon="arrow-up-right" class="right-icon"></span></a>
-        <a href="https://chatgpt.com/g/g-p-6acd6e86e82081919497cb8e044c60bd/project" target="_blank" rel="noopener noreferrer"><span data-icon="heart-pulse"></span> Ask FUEL <span data-icon="arrow-up-right" class="right-icon"></span></a>
-        <a href="https://reece1919.github.io/echo/" target="_blank" rel="noopener noreferrer"><img class="nav-system-emblem" src="assets/systems/echo.svg" width="21" height="21" alt=""> Open ECHO <span data-icon="arrow-up-right" class="right-icon"></span></a>
-        <a href="https://reece1919.github.io/rune-web/" target="_blank" rel="noopener noreferrer"><img class="nav-system-emblem" src="assets/systems/rune.svg" width="21" height="21" alt=""> Open RUNE <span data-icon="arrow-up-right" class="right-icon"></span></a>
-        <a href="https://app.todoist.com/app/today" target="_blank" rel="noopener noreferrer"><span data-icon="list-check"></span> Todoist <span data-icon="arrow-up-right" class="right-icon"></span></a>
-        <a href="https://github.com/reece1919" target="_blank" rel="noopener noreferrer"><span data-icon="github"></span> GitHub <span data-icon="arrow-up-right" class="right-icon"></span></a>
-      </div>
       <div class="sidebar-bottom">
         
-        <div class="sidebar-footer">ORBIT / SYSTEM 001 <span>v1.3.0</span></div>
+        <div class="sidebar-footer">ORBIT / SYSTEM 001 <span>v1.4.0</span></div>
       </div>
     </aside>
     <button type="button" id="nav-backdrop" class="nav-backdrop" aria-label="Close navigation" hidden></button>
@@ -91,28 +82,12 @@
       </header>
       <main class="content" id="main-content">
         <section data-panel="home" class="view-panel home-view" aria-label="Today at a glance">
-          <section class="celestial-hero system-chart" aria-label="System navigation">
-            <div class="celestial-hero-copy">
-              <div class="celestial-eyebrow">ORBIT <span class="celestial-small-divide">/</span> SYSTEMS</div>
-              <h1 class="celestial-greeting" id="home-greeting">Welcome.</h1>
-              <span id="home-date" class="celestial-datestamp"></span>
-            </div>
-            <div class="orbit-system" aria-label="Connected systems">
-              <div class="orbit-system-stars" aria-hidden="true"></div>
-              <div class="orbit-plane" aria-hidden="true">
-                <div class="orbit-ring orbit-ring-outer"></div>
-                <div class="orbit-ring orbit-ring-inner"></div>
-                <div class="orbit-ring orbit-ring-dashed"></div>
-              </div>
-              <div class="orbit-core" aria-label="ORBIT hub"><img src="assets/systems/orbit.svg" width="78" height="78" alt=""><span class="orbit-core-name">ORBIT</span></div>
-              <button type="button" class="orbit-world orbit-world-gaia" data-view="gaia" aria-label="GAIA plant care"><span class="orbit-world-sphere"><img src="assets/systems/gaia.svg" width="68" height="68" alt=""></span><span class="orbit-world-name">GAIA</span></button>
-              <a class="orbit-world orbit-world-echo" href="https://reece1919.github.io/echo/" target="_blank" rel="noopener noreferrer" aria-label="Open ECHO studio"><span class="orbit-world-sphere"><img src="assets/systems/echo.svg" width="68" height="68" alt=""></span><span class="orbit-world-name">ECHO</span></a>
-              <a class="orbit-world orbit-world-rune" href="https://reece1919.github.io/rune-web/" target="_blank" rel="noopener noreferrer" aria-label="Open RUNE character journal"><span class="orbit-world-sphere"><img src="assets/systems/rune.svg" width="68" height="68" alt=""></span><span class="orbit-world-name">RUNE</span></a>
-              <button type="button" class="orbit-world orbit-world-fuel" data-view="fuel" aria-label="FUEL nutrition"><span class="orbit-world-sphere"><img src="assets/systems/fuel.svg" width="68" height="68" alt=""></span><span class="orbit-world-name">FUEL</span></button>
-              <button type="button" class="orbit-world orbit-world-pulse" data-view="pulse" aria-label="PULSE reflection"><span class="orbit-world-sphere"><img src="assets/systems/pulse.svg" width="68" height="68" alt=""></span><span class="orbit-world-name">PULSE</span></button>
-              <button type="button" class="orbit-world orbit-world-gmail" data-view="inbox" aria-label="Unread inbox"><span class="orbit-world-sphere"><img src="assets/systems/inbox.svg" width="68" height="68" alt=""></span><span class="orbit-world-name">INBOX</span></button>
-            </div>
-          </section>
+          <section class="system-launch-bar" aria-label="System navigation"><div class="system-launch-heading"><span class="eyebrow small">SYSTEMS</span><span id="home-date"></span><span id="home-greeting" class="visually-hidden">Welcome.</span></div><div class="system-launch-items"><a class="system-launch" href="https://reece1919.github.io/gaia/" target="_blank" rel="noopener noreferrer" aria-label="Open GAIA"><img src="assets/systems/gaia.svg?v=1.4.0" alt="" width="34" height="34"><span>GAIA</span></a>
+<a class="system-launch" href="https://reece1919.github.io/echo/" target="_blank" rel="noopener noreferrer" aria-label="Open ECHO"><img src="assets/systems/echo.svg?v=1.4.0" alt="" width="34" height="34"><span>ECHO</span></a>
+<a class="system-launch" href="https://reece1919.github.io/rune-web/" target="_blank" rel="noopener noreferrer" aria-label="Open RUNE"><img src="assets/systems/rune.svg?v=1.4.0" alt="" width="34" height="34"><span>RUNE</span></a>
+<button class="system-launch" type="button" data-view="fuel" aria-label="Open FUEL"><img src="assets/systems/fuel.svg?v=1.4.0" alt="" width="34" height="34"><span>FUEL</span></button>
+<button class="system-launch" type="button" data-view="pulse" aria-label="Open PULSE"><img src="assets/systems/pulse.svg?v=1.4.0" alt="" width="34" height="34"><span>PULSE</span></button>
+<button class="system-launch" type="button" data-view="inbox" aria-label="Open INBOX"><img src="assets/systems/inbox.svg?v=1.4.0" alt="" width="34" height="34"><span>INBOX</span></button></div></section>
 
           <div class="home-signals-grid home-signals-grid-single" aria-label="Latest unread Gmail activity">
             <section class="module home-signal home-signal-mail">
@@ -165,12 +140,7 @@
                 <p id="fuel-home-note" class="watch-detail">Loading your private food journal…</p>
                 <div class="home-mini-actions"><a href="https://chatgpt.com/g/g-p-6acd6e86e82081919497cb8e044c60bd/project" class="primary-button" target="_blank" rel="noopener noreferrer">Ask FUEL <span data-icon="arrow-up-right"></span></a><button type="button" class="quiet-pill" data-view="fuel">View log</button></div>
               </section>
-              <section class="module home-mini-card home-mini-gaia">
-                <div class="home-mini-top"><span class="home-mini-icon"><img src="assets/systems/gaia.svg" alt="" width="37" height="37"></span><span class="eyebrow small">GAIA</span></div>
-                <h3>Plant care</h3>
-                <p id="gaia-home-note" class="watch-detail">Reading your plant collection.</p>
-                <div class="home-mini-actions"><button type="button" class="subtle-link" data-view="gaia">Plant overview <span data-icon="arrow-right"></span></button><button type="button" class="quiet-pill" data-refresh="gaia">Refresh</button></div>
-              </section>
+              
               <section class="module home-mini-card home-mini-routines">
                 <div class="home-mini-top"><span class="home-mini-icon"><span data-icon="repeat"></span></span><span class="eyebrow small">ROUTINES / WEEK</span></div>
                 <h3>Routines</h3>
@@ -365,13 +335,13 @@
           <section class="module setting-card"><div class="settings-icon"><span data-icon="database"></span></div><h3>Your data</h3><p>Save a backup of your local projects, priorities, routines, links, and notes (plus any legacy local records). Todoist and GAIA are not copied into the backup. Alternatively enable protected cloud sync in Settings to share the setup. Keep this sensitive export secure.</p><div class="data-actions"><button type="button" class="outline-button" id="export-data"><span data-icon="download"></span> Export backup</button><label class="outline-button file-label"><span data-icon="upload"></span> Import backup <input id="import-data" type="file" accept="application/json,.json" hidden></label></div><div class="settings-warning"><span data-icon="info"></span> Backups remain useful even when cloud sync is active.</div><button type="button" id="orbit-import-legacy" class="outline-button legacy-import" hidden>Import older ORBIT browser data</button></section>
           <section class="module setting-card"><div class="settings-icon"><span data-icon="shield-check"></span></div><h3>Privacy & integrations</h3><p>Todoist supports an encrypted server-side OAuth connection across devices, with a temporary browser-tab token fallback. Your ORBIT sign-in uses GAIA’s existing Supabase account and owner-restricted tables. Todoist normally connects through its approval screen without a personal API token. No finance or health syncing.</p><div class="integrations"><div><span class="status-dot ready"></span> GAIA <span>Public catalog + signed-in tasks</span></div><div><span class="status-dot planned"></span> Todoist <span>Cloud OAuth; connect from Tasks</span></div><div><span class="status-dot planned"></span> Money &amp; Health <span>Paused</span></div><div><span class="status-dot ready"></span> Supabase authentication <span>Shared with GAIA</span></div><div><span class="status-dot ready"></span> ORBIT workspace sync <span>Opt-in from Settings</span></div></div><button type="button" class="danger-link" id="reset-data">Reset ORBIT data on this device</button></section></div>
         </section>
-        <footer class="main-footer"><span>ORBIT / SYSTEM MAP</span><span>v1.3.0</span></footer>
+        <footer class="main-footer"><span>ORBIT / SYSTEM MAP</span><span>v1.4.0</span></footer>
       </main>
       <nav class="mobile-nav" aria-label="Quick navigation">
         <button class="mobile-nav-item active" type="button" data-view="home"><span data-icon="layout-dashboard"></span><span>Home</span></button>
         <button class="mobile-nav-item" type="button" data-view="focus"><span data-icon="check-circle"></span><span>Tasks</span></button>
         <button class="mobile-nav-item" type="button" data-view="fuel"><span data-icon="heart-pulse"></span><span>FUEL</span></button>
-        <button class="mobile-nav-item" type="button" data-view="gaia"><span data-icon="leaf"></span><span>GAIA</span></button>
+        <a class="mobile-nav-item" href="https://reece1919.github.io/gaia/" target="_blank" rel="noopener noreferrer"><img src="assets/systems/gaia.svg?v=1.4.0" width="21" height="21" alt=""><span>GAIA</span></a>
         <button class="mobile-nav-item" type="button" id="mobile-more" aria-controls="sidebar" aria-expanded="false"><span data-icon="menu"></span><span>More</span></button>
       </nav>
     </div>
