@@ -124,7 +124,7 @@
     </article>`;
   }
   function renderProjects(){
-    $('#featured-projects').innerHTML=effectiveProjects().slice(0,3).map(cardHtml).join('') || `<div class="empty-state">${icon('folder')}<div><strong>No projects yet</strong><p>Create a project to put it on the dashboard.</p></div></div>`;
+    // Projects now have a dedicated page; no duplicate homepage project cards.
     const q=$('#project-search').value.trim().toLowerCase();const filtered=effectiveProjects().filter(p=>(p.name+' '+p.description).toLowerCase().includes(q));
     $('#all-projects').innerHTML=filtered.length?filtered.map(cardHtml).join(''):`<div class="empty-state">${icon('search')}<div><strong>Nothing found</strong><p>Try another search, or add a new project.</p></div></div>`;
     $('#project-summary').textContent=`${filtered.length} of ${effectiveProjects().length} projects`;
