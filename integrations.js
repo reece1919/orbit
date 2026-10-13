@@ -225,6 +225,7 @@
     const name=String(input?.value||'').trim();
     if(!name||name.length>500)return;
     const add=$('#sidequest-add-btn');
+    const originalButtonMarkup=add.innerHTML;
     add.disabled=true;add.textContent='Adding…';input.disabled=true;
     try{
       await ensureSideQuestLabel();
@@ -233,7 +234,7 @@
       toast('Side quest added in Todoist.');
       await refreshTodoist();
     }catch(err){toast('Could not add side quest: '+(err.message||'Try again.'));}
-    finally{add.innerHTML='<span data-icon="plus"></span><span>Add quest</span>';if(window.ORBITApp?.replaceIcons)window.ORBITApp.replaceIcons();add.disabled=!(token||serverConnected);input.disabled=!(token||serverConnected);}
+    finally{add.innerHTML=originalButtonMarkup;add.disabled=!(token||serverConnected);input.disabled=!(token||serverConnected);}
   }
 
   function gaiaHtmlSafe(source){return String(source||'').replace(/<[^>]*>/g,' ').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>');}
