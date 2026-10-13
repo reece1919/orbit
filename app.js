@@ -98,10 +98,11 @@
     world:{icon:'book-open',color:'#d1b3ea',bg:'rgba(181,140,215,.12)'},
     stream:{icon:'radio',color:'#91cdea',bg:'rgba(125,188,222,.12)'},
     work:{icon:'briefcase',color:'#e5bb91',bg:'rgba(220,164,117,.12)'},
-    general:{icon:'folder',color:'#b3d3cd',bg:'rgba(160,200,190,.12)'}
+    fuel:{icon:'heart-pulse',color:'#ff9860',bg:'rgba(255,152,96,.14)'},
+    general:{icon:'folder',color:'#8fcfff',bg:'rgba(75,165,221,.11)'}
   };
   function cardHtml(p){
-    const style=projectType[p.type]||projectType.general;
+    const style=p.id==='fuel'||String(p.name).toLowerCase()==='fuel'?projectType.fuel:projectType[p.type]||projectType.general;
     const openLabel=p.url?'Launch project':'Add project link';
     return `<article class="project-card" style="--project-accent:${style.color};--project-bg:${style.bg}">
       <div class="project-top"><div class="project-emblem">${icon(style.icon)}</div><span class="project-badge">${esc(p.status.toUpperCase())}</span></div>
