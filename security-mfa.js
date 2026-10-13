@@ -1,4 +1,4 @@
-/* Shared ORBIT + GAIA MFA v1. MFA enforcement at database/API layer is NOT active until backup-factor review. */
+/* Shared ORBIT + GAIA MFA v1.3.1 — AAL2 enforced on private data and user-facing APIs; backup-factor sign-in supported. */
 (() => {
   "use strict";
   const $ = s => document.querySelector(s);
@@ -16,7 +16,7 @@
     '<div id="mfa-enroll" hidden><p>Scan this QR code with your authenticator app, or enter the setup key manually.</p><img id="mfa-qr" width="174" height="174" alt="Scan this QR code with your authenticator app"><label>Setup key <input id="mfa-secret" type="text" readonly autocomplete="off"></label></div>',
     '<form id="mfa-code-form" hidden><label id="mfa-factor-choice" hidden>Use authenticator <select id="mfa-factor-select"></select></label><label>6-digit authenticator code <input id="mfa-code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required></label><button type="submit" id="mfa-verify">Verify code</button></form>',
     '<p class="mfa-status" id="mfa-result" role="status" aria-live="polite"></p>',
-    '<p class="mfa-recovery">Recovery codes are not provided by Supabase. Before requiring MFA, add a second authenticator on a separate device and confirm both work.</p>',
+    '<p class="mfa-recovery">Supabase does not provide recovery codes. Keep an independent backup authenticator in a safe place so you can regain access if your main device is lost.</p>',
     '<div class="mfa-actions"><button type="button" id="mfa-add">Add authenticator</button><button type="button" id="mfa-cancel" hidden>Cancel setup</button><button type="button" id="mfa-signout" hidden>Sign out</button><button type="button" id="mfa-done">Close</button></div>',
     "</div>"
   ].join("");
@@ -78,13 +78,13 @@
         show();
       } else if(!activeDialog) hide();
       const status = $("#mfa-settings-status");
-      if(status) status.textContent = verified.length ? verified.length + " verified authenticator" + (verified.length === 1 ? "" : "s") + " · " + (verified.length < 2 ? "Add a separate backup before mandatory enforcement" : "Backup factors available") + " · " + (current==="aal2" ? "Verified session" : "Verification available") : "No authenticator added · MFA enrollment is optional during setup.";
+      if(status) status.textContent = verified.length ? verified.length + " verified authenticator" + (verified.length === 1 ? "" : "s") + " · " + (verified.length < 2 ? "Add a separate backup before mandatory enforcement" : "Backup factors available") + " · " + (current==="aal2" ? "Verified session" : "Verification available") : "No verified authenticator. MFA enrollment is required for private data access.";
       if(!pending && activeDialog && !enrollment) {
         $("#mfa-add").hidden = false;
         $("#mfa-done").hidden = false;
         $("#mfa-code-form").hidden = true;
         $("#mfa-heading").textContent = "Account security";
-        $("#mfa-explain").textContent = "Add a backup authenticator on a second device before enforcement is enabled.";
+        $("#mfa-explain").textContent = "Keep a backup authenticator on a separate device and verify it before removing your primary authenticator.";
         fillFactors();
       }
     }catch(error){message("Security status unavailable: " + (error?.message || "Retry later"));}
@@ -160,7 +160,7 @@
     $("#mfa-add").hidden=false;
     $("#mfa-done").hidden=false;
     $("#mfa-heading").textContent="Account security";
-    $("#mfa-explain").textContent="Enroll your authenticator app, then add a backup on a different device. No mandatory requirement is active yet.";
+    $("#mfa-explain").textContent="MFA is required for private records. Maintain at least two independently accessible authenticators for recovery.";
     fillFactors();show();void refresh();
   }
   function accountChanged(nextClient,nextUser){
