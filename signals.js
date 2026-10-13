@@ -62,7 +62,7 @@ function render(){
  const gmailN=gmail?gmail.total_count:null,taskN=auto?auto.total_count:null;
  const counts=[
   ["#home-inbox-count",gmailN],["#inbox-panel-count",gmailN],["#nav-inbox-count",gmailN],
-  ["#home-automations-count",taskN],["#automations-panel-count",taskN],["#nav-automations-count",taskN]
+  ["#automations-panel-count",taskN],["#nav-automations-count",taskN]
  ];
  counts.forEach(([selector,value])=>{const el=$(selector);if(el)el.textContent=value==null?"—":String(value)});
  const gmailEmpty="No unread inbox messages in the saved snapshot.";
@@ -70,7 +70,6 @@ function render(){
  const boxes=[
   ["#home-inbox-list",gmail,messages.slice(0,3),emailRow,gmailEmpty],
   ["#inbox-panel-list",gmail,messages,emailRow,gmailEmpty],
-  ["#home-automations-list",auto,tasks.slice(0,3),automationRow,autoEmpty],
   ["#automations-panel-list",auto,tasks,automationRow,autoEmpty]
  ];
  boxes.forEach(([selector,obj,rows,fn,message])=>{
@@ -81,7 +80,7 @@ function render(){
  });
  [
   ["#home-inbox-synced","gmail_unread"],["#inbox-panel-synced","gmail_unread"],
-  ["#home-automations-synced","chatgpt_recurring"],["#automations-panel-synced","chatgpt_recurring"]
+  ["#automations-panel-synced","chatgpt_recurring"]
  ].forEach(([selector,module])=>{const el=$(selector);if(el)el.textContent=stamp(module)});
 }
 async function refresh(){
@@ -100,7 +99,7 @@ async function refresh(){
   console.warn("ORBIT private Signals snapshot unavailable",error?.message||error);
   MODULES.forEach(m=>snap[m]=null);
   render();
-  ["#home-inbox-synced","#home-automations-synced"].forEach(selector=>{const el=$(selector);if(el)el.textContent="Cannot retrieve private snapshot. Try again."});
+  ["#home-inbox-synced","#automations-panel-synced"].forEach(selector=>{const el=$(selector);if(el)el.textContent="Cannot retrieve private snapshot. Try again."});
  }finally{loading=false}
 }
 function accountChanged(user){
