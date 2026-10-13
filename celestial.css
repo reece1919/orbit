@@ -734,3 +734,188 @@ body[data-theme="light"] .home-view .home-snapshot-caption{color:#b9c6d6}
   .orbit-sync-actions{display:grid;grid-template-columns:minmax(0,1fr)}
   .orbit-sync-actions button{width:100%;justify-content:center}
 }
+
+
+/* v1.3 — GALACTIC ATLAS: restrained observatory materials, system emblems, no neon. */
+:root{
+  --bg:#090d17;--sidebar:#0d1320;--panel:#121b29;--panel-alt:#101824;
+  --panel-light:#1b2634;--text:#e3e4df;--muted:#a2aab5;--muted-dim:#788492;
+  --line:rgba(151,163,180,.18);--accent:#b8ac90;--accent-text:#131a21;
+  --accent-dim:rgba(175,166,144,.12);--cyan:#9baabc;
+  --orbit-blue:#9eabc4;--orbit-gold:#d0b58a;--orbit-green:#93ab86;
+  --orbit-orange:#d2a075;--orbit-purple:#aca1b8;
+}
+body[data-theme="dark"]{
+  background:
+    radial-gradient(ellipse 60% 46% at 82% -14%,rgba(72,72,104,.19),transparent 74%),
+    radial-gradient(ellipse 54% 61% at 9% 82%,rgba(48,60,81,.19),transparent 80%),
+    #090e17;
+}
+body[data-theme="dark"]::before{opacity:.25}
+.sidebar{
+  background:linear-gradient(175deg,#0d1420,#0a101b);
+  border-right:1px solid rgba(159,164,171,.17);
+}
+.brand-mark{color:#bcaa84;border-color:rgba(191,177,146,.42);box-shadow:none}
+.brand-mark::before{border-color:rgba(195,177,138,.17)}
+.brand-mark i{background:#c6b48a;box-shadow:none}
+.brand-sub,.sidebar .side-status{color:#929baa}
+.topbar{background:rgba(11,16,27,.95);border-bottom-color:rgba(150,160,181,.16)}
+.topbar #current-crumb,.eyebrow{color:#bbb1a1}
+.sidebar .nav-item.active{background:rgba(180,163,128,.09);box-shadow:inset 2px 0 0 #b2a487;color:#e9e1d0}
+.sidebar .nav-item:hover,.sidebar-links a:hover{background:rgba(161,166,186,.07)}
+.module,.project-card,.stat-card,.watch-card,.setting-card,.routine-card,.connector-box{
+  background:linear-gradient(150deg,rgba(21,30,43,.95),rgba(15,23,34,.97));
+  border-color:rgba(155,164,182,.18);box-shadow:0 7px 25px rgba(0,0,0,.09)
+}
+.module:focus-within,.project-card:hover{border-color:rgba(187,178,155,.39)}
+.project-card::before{height:1px;opacity:.34}
+.primary-button{background:#b7ac91;color:#1b222c;border-color:#beb396;box-shadow:none}
+.primary-button:hover{background:#d1c4a6;box-shadow:none;filter:none}
+.quiet-pill,.outline-button,.filter-button{border-color:rgba(158,169,188,.22)}
+.quiet-pill:hover,.outline-button:hover{border-color:#b1a587;background:rgba(173,162,137,.09)}
+.mobile-nav{background:rgba(12,18,29,.98);border-top-color:rgba(161,168,185,.18)}
+.mobile-nav-item.active{background:rgba(192,181,160,.10);color:#d6c7a9}
+.home-view .home-mini-card,.home-view .home-agenda,.home-view .home-sidequests,.home-view .home-followups{
+  box-shadow:0 8px 22px rgba(0,0,0,.08);
+}
+.home-view .celestial-hero{
+  isolation:isolate;display:grid;grid-template-columns:minmax(170px,225px) minmax(0,1fr);
+  min-height:430px;gap:12px;padding:21px 24px 14px;
+  border:1px solid rgba(172,162,145,.3);border-radius:18px;
+  background:
+    radial-gradient(ellipse 28% 59% at 57% 46%,rgba(103,94,117,.17),transparent 87%),
+    radial-gradient(ellipse 27% 49% at 86% 65%,rgba(71,87,106,.11),transparent 83%),
+    linear-gradient(122deg,#101826,#090f1b 57%,#111725);
+  box-shadow:0 12px 38px rgba(0,0,0,.15),inset 0 1px rgba(234,221,189,.04)
+}
+.home-view .celestial-hero::before{opacity:.32}
+.home-view .celestial-hero::after{background:linear-gradient(90deg,rgba(6,10,17,.25),transparent 50%,rgba(8,11,21,.16))}
+.home-view .celestial-hero-copy{
+  display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:11px;
+  min-width:0;padding:8px 0 8px 7px
+}
+.home-view .celestial-eyebrow{font-size:10px;letter-spacing:.20em;color:#bea98b;font-weight:700}
+.home-view .celestial-beacon{box-shadow:none;background:#b7a788}
+.home-view .celestial-greeting{
+  color:#e6e1d6!important;font-size:clamp(20px,2vw,29px)!important;line-height:1.3!important;
+  font-weight:500!important;margin:0!important;letter-spacing:-.025em!important
+}
+.home-view .celestial-greeting .accent-period{color:#b7a585}
+.home-view .celestial-datestamp{
+  margin:0;color:#97a0ae;font-size:12px;line-height:1.5;letter-spacing:.015em;text-align:left
+}
+.home-view .orbit-system{
+  width:100%;height:392px;min-width:0;position:relative;overflow:visible;isolation:isolate;
+  background:radial-gradient(ellipse 42% 46% at 50% 49%,rgba(109,109,139,.08),transparent 83%)
+}
+.home-view .orbit-system-stars{opacity:.27}
+.home-view .orbit-plane{
+  transform:perspective(750px) rotateX(42deg) rotateZ(-20deg) scale(.9);
+  opacity:.6;filter:none
+}
+.home-view .orbit-plane .orbit-ring-outer{
+  width:min(92%,560px);border-color:rgba(169,160,141,.23);
+  box-shadow:none
+}
+.home-view .orbit-plane .orbit-ring-inner{width:min(65%,405px);border-color:rgba(165,157,169,.18)}
+.home-view .orbit-plane .orbit-ring-dashed{width:min(80%,490px);border-color:rgba(157,145,153,.15)}
+.home-view .orbit-radar-line,.home-view .orbit-satellite{display:none}
+.home-view .orbit-core{
+  left:50%;top:50%;width:114px;height:114px;display:flex;flex-direction:column;gap:0;
+  background:radial-gradient(circle at 32% 20%,#333d55,#101827 84%);
+  border:1px solid rgba(192,182,160,.33);
+  box-shadow:0 0 0 9px rgba(147,137,124,.035),0 17px 34px rgba(0,0,0,.23);
+  transform:translate(-50%,-50%)
+}
+.home-view .orbit-core::before,.home-view .orbit-core::after,.home-view .orbit-core-glow{display:none}
+.home-view .orbit-core img{width:67px;height:67px;object-fit:contain}
+.home-view .orbit-core-name{font-size:10px;letter-spacing:.22em;color:#dbd1bf;text-shadow:none}
+.home-view .orbit-world{
+  text-decoration:none;display:flex;flex-direction:column;gap:2px;align-items:center;
+  justify-content:center;min-width:90px;max-width:108px;z-index:5;
+  --world:#b7ac92;color:#dedfe4;transition:transform .17s ease,filter .17s ease
+}
+.home-view .orbit-world:hover,.home-view .orbit-world:focus-visible{filter:brightness(1.12)}
+.home-view .orbit-world-sphere{
+  display:grid;place-items:center;width:77px;height:77px;flex:0 0 77px;
+  border:none;background:transparent;box-shadow:none;
+  transition:transform .20s ease;overflow:visible
+}
+.home-view .orbit-world-sphere::before,.home-view .orbit-world-sphere::after{display:none}
+.home-view .orbit-world-sphere img{
+  display:block;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 9px 11px rgba(0,0,0,.25))
+}
+.home-view .orbit-world:hover .orbit-world-sphere,
+.home-view .orbit-world:focus-visible .orbit-world-sphere{
+  transform:scale(1.07);box-shadow:none
+}
+.home-view .orbit-world-name{
+  color:#e0ddda;font-size:10px;letter-spacing:.19em;font-weight:750;text-shadow:none
+}
+.home-view .orbit-world-gaia{left:16%;top:41%;--world:#a0b391}
+.home-view .orbit-world-echo{left:82%;top:28%;--world:#86aa91}
+.home-view .orbit-world-rune{left:17%;top:83%;--world:#c7aa82}
+.home-view .orbit-world-fuel{left:82%;top:79%;--world:#c49a73}
+.home-view .orbit-world-pulse{left:50%;top:88%;--world:#ada9c2}
+.home-view .orbit-world-gmail{left:50%;top:12%;--world:#9faabd}
+.home-view .orbit-world-gmail .orbit-world-sphere,
+.home-view .orbit-world-rune .orbit-world-sphere,
+.home-view .orbit-world-echo .orbit-world-sphere,
+.home-view .orbit-world-fuel .orbit-world-sphere{width:77px;height:77px;flex-basis:77px}
+.home-view .orbit-world-gmail .orbit-world-sphere img{width:100%;height:100%}
+.home-view .orbit-world-sub{display:none}
+.home-view .home-projects-head p,.sidequest-description:empty,.home-source-note:empty,
+.home-mini-routines .watch-detail:empty{display:none}
+.home-view .home-mini-icon img{height:25px;width:25px;object-fit:contain}
+.home-view .home-mini-icon{border-color:rgba(155,165,177,.17);background:rgba(164,174,182,.04)}
+.project-emblem img{width:39px;height:39px;display:block;object-fit:contain}
+.home-view .home-signal,.home-view .home-mini-card{border-color:rgba(155,164,182,.16)}
+.home-view .home-projects-head{margin-top:22px}
+@media(min-width:981px){
+  .home-view .orbit-system{height:405px;max-width:760px}
+  .home-view .orbit-world-gaia{left:17%;top:40%}
+  .home-view .orbit-world-gmail{left:50%;top:12%}
+  .home-view .orbit-world-rune{left:18%;top:81%}
+  .home-view .orbit-world-echo{left:81%;top:28%}
+  .home-view .orbit-world-fuel{left:81%;top:78%}
+  .home-view .orbit-world-pulse{left:50%;top:88%}
+}
+@media(min-width:611px) and (max-width:980px){
+  .home-view .celestial-hero{grid-template-columns:minmax(140px,190px) minmax(0,1fr);min-height:350px;padding:14px}
+  .home-view .orbit-system{height:350px}
+  .home-view .orbit-world{min-width:80px;max-width:94px}
+  .home-view .orbit-world-sphere,.home-view .orbit-world-gmail .orbit-world-sphere,
+  .home-view .orbit-world-rune .orbit-world-sphere,.home-view .orbit-world-echo .orbit-world-sphere,
+  .home-view .orbit-world-fuel .orbit-world-sphere{width:59px;height:59px;flex-basis:59px}
+  .home-view .orbit-world-name{font-size:9px}
+  .home-view .orbit-core{width:95px;height:95px}
+  .home-view .orbit-core img{width:58px;height:58px}
+}
+@media(max-width:610px){
+  .home-view .celestial-hero{display:block!important;min-height:0;padding:18px 15px 20px}
+  .home-view .celestial-hero-copy{
+    display:flex!important;flex-direction:column;align-items:flex-start;gap:5px;
+    padding:0 0 14px;max-width:none
+  }
+  .home-view .celestial-eyebrow{display:block;letter-spacing:.16em}
+  .home-view .celestial-greeting{font-size:18px!important;margin:0!important}
+  .home-view .celestial-datestamp{display:block;font-size:11px}
+  .home-view .orbit-system{
+    display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px 3px;
+    height:auto;width:100%;max-width:none;justify-items:center;align-items:start;
+    margin:0;padding:13px 0 2px;border-top:1px solid rgba(162,155,141,.14)
+  }
+  .home-view .orbit-plane,.home-view .orbit-core,.home-view .orbit-system-stars{display:none!important}
+  .home-view .orbit-world{
+    position:relative;left:auto!important;top:auto!important;transform:none!important;
+    width:100%;min-width:0;max-width:120px;padding:5px 1px;gap:3px;min-height:84px
+  }
+  .home-view .orbit-world-sphere,.home-view .orbit-world-gmail .orbit-world-sphere,
+  .home-view .orbit-world-rune .orbit-world-sphere,.home-view .orbit-world-echo .orbit-world-sphere,
+  .home-view .orbit-world-fuel .orbit-world-sphere{width:55px;height:55px;flex:0 0 55px}
+  .home-view .orbit-world-name{font-size:9px}
+}
+@media(prefers-reduced-motion:reduce){
+  .home-view .orbit-world,.home-view .orbit-world-sphere{transition:none}
+}
