@@ -59,3 +59,27 @@ a.signal-item:hover,a.signal-item:focus-visible{border-color:rgba(108,203,246,.5
   .signal-list-expanded .signal-item-copy strong{font-size:12px}
 }
 @media(prefers-reduced-motion:reduce){.signal-item{transition:none}}
+
+
+/* v1.1.4 — Cleaner Overview: inbox is the only external-activity preview. */
+.home-signals-grid-single{grid-template-columns:minmax(0,1fr)}
+.home-signals-grid-single .home-signal{width:100%;min-width:0}
+@media(min-width:1050px){
+  .home-signals-grid-single .home-signal-mail .signal-list{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    align-items:stretch;
+  }
+  .home-signals-grid-single .home-signal-mail .signal-item{min-height:53px}
+}
+@media(max-width:1049px) and (min-width:651px){
+  .home-signals-grid-single .home-signal-mail .signal-list{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:610px){
+  .home-signals-grid-single{
+    display:block;overflow:visible;scroll-snap-type:none;overscroll-behavior:auto;padding-bottom:0;
+  }
+  .home-signals-grid-single .home-signal{
+    flex:none;width:100%;min-height:0;
+  }
+  .home-signals-grid-single .home-signal-mail .signal-list{display:grid;grid-template-columns:minmax(0,1fr)}
+}
