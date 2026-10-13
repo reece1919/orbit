@@ -106,14 +106,11 @@
     if(check)check.hidden=!oauthChecking;
     $('#todoist-connect').hidden=active;$('#todoist-connected').hidden=!active;
     $('#todoist-add').disabled=!active || todoistLoading;
-    $('#stat-tasks').textContent=active && todoistSyncTime?String(due.length):'—';
-    note('#sidequest-count',active&&todoistSyncTime?String(sidequests.length):'');
     const addQuest=$('#sidequest-add-btn'),questInput=$('#sidequest-add-input');
     if(addQuest)addQuest.disabled=!active||todoistLoading;
     if(questInput)questInput.disabled=!active||todoistLoading;
     $('#nav-task-count').textContent=active && todoistSyncTime?String(due.length):'—';
-    note('#todoist-home-value',!active?'Not connected':todoistLoading && !todoistSyncTime?'Loading…':todoistError && !todoistSyncTime?'Sync failed':`${due.length} due / overdue`);
-    note('#todoist-home-note',!active?(oauthChecking?'Checking secure Todoist connection…':'Connect once through Todoist to sync across all devices.'):todoistError?todoistError:todoistSyncTime?`${due.length} due today or overdue · refreshed ${todoistSyncTime}`:'Connecting…');
+    note('#todoist-home-note',!active?(oauthChecking?'Checking secure Todoist connection…':'Connect Todoist to see what needs attention.'):todoistError?todoistError:todoistSyncTime?(due.length?'Due today and overdue · refreshed ':'All clear for today · refreshed ')+todoistSyncTime:'Connecting…');
     note('#todoist-status',todoistLoading?'Refreshing Todoist…':todoistError?'Could not refresh: '+todoistError:todoistSyncTime?`${total}${todoistPartial?'+':''} open tasks · last refreshed ${todoistSyncTime}`:'Ready to sync');
     $$('[data-todoist-filter]').forEach(el=>el.classList.toggle('selected',el.dataset.todoistFilter===todoistFilter));
     const selected=ordered(selectTasks(todoistFilter));
@@ -239,15 +236,14 @@
 
   function gaiaHtmlSafe(source){return String(source||'').replace(/<[^>]*>/g,' ').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>');}
   function renderGaiaPublic(){
-    if(!catalog){note('#gaia-home-value',gaiaPublicError?'Unavailable':'Loading collection…');note('#gaia-home-note',gaiaPublicError||'Reading GAIA published records.');note('#gaia-last-updated',gaiaPublicError||'Loading GAIA…');return;}
+    if(!catalog){note('#gaia-home-note',gaiaPublicError||'Reading GAIA published records.');note('#gaia-last-updated',gaiaPublicError||'Loading GAIA…');return;}
     const plants=Array.isArray(catalog.plants)?catalog.plants:[];
     const watch=plants.filter(p=>['Watch','Concern'].includes(p.status));
     const needsReview=plants.filter(p=>['Fair','Watch','Concern'].includes(p.status));
     const newborn=plants.filter(p=>p.newAddition);
-    note('#stat-links',plants.length);note('#nav-gaia-count',plants.length);
+    note('#nav-gaia-count',plants.length);
     note('#gaia-count',plants.length);note('#gaia-watch-count',watch.length);note('#gaia-new-count',newborn.length);
-    note('#gaia-home-value',`${plants.length} plants`);
-    note('#gaia-home-note',`${needsReview.length} Fair / Watch / Concern · updated ${catalog.updatedAt||'date unavailable'} · retrieved ${gaiaLastSync}`);
+    note('#gaia-home-note',needsReview.length?`Some plants could use a closer look · refreshed ${gaiaLastSync}`:`No current care flags · refreshed ${gaiaLastSync}`);
     note('#gaia-last-updated',`Published catalog last updated ${catalog.updatedAt||'date unknown'} · refreshed ${gaiaLastSync}. Plant conditions are recorded observations, not live sensor readings.`);
     if(!gaiaUser){gaiaPrivateTasks=(catalog.dashboardTasks||[]).filter(t=>typeof t.id==='string'&&typeof t.title==='string').map(t=>({id:t.id,kind:'curated',title:t.title,plantName:'Collection follow-up',due:'',done:false})); renderGaiaPrivate();}
     const tiles=Array.isArray(catalog.recentCare?.tiles)?catalog.recentCare.tiles.slice(0,5):[];
