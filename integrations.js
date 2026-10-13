@@ -73,12 +73,14 @@
   function toast(message){ const element=$('#toast'); if (!element) return; element.textContent=message; element.hidden=false; clearTimeout(toast.timer);toast.timer=setTimeout(()=>{element.hidden=true;},3800); }
   function prettyDate(date){ if(!date) return ''; const d=/^\d{4}-\d{2}-\d{2}$/.test(date) ? new Date(date+'T12:00:00') : new Date(date); return Number.isNaN(d.valueOf())?date:d.toLocaleDateString(undefined,{month:'short',day:'numeric'}); }
   function safeTaskLink(id){ return 'https://app.todoist.com/app/task/'+encodeURIComponent(String(id)); }
-  function isToday(t){ const due=dayOf(t); return !!due && due<=TODAY(); }
+  const SIDEQUEST_LABEL='sidequest';
+  function isSideQuest(t){return Array.isArray(t?.labels)&&t.labels.some(l=>String(l).replace(/^@/,'').trim().toLowerCase()===SIDEQUEST_LABEL);}
+  function isToday(t){ const due=dayOf(t); return !!due && due<=TODAY() && !isSideQuest(t); }
   function selectTasks(kind){
     const today=TODAY();
     const upper=new Date(today+'T12:00:00');upper.setDate(upper.getDate()+14);
     const upperDay=`${upper.getFullYear()}-${String(upper.getMonth()+1).padStart(2,'0')}-${String(upper.getDate()).padStart(2,'0')}`;
-    return tasks.filter(t=>kind==='all'||(kind==='today'&&isToday(t))||(kind==='upcoming'&&dayOf(t)>today&&dayOf(t)<=upperDay));
+    return tasks.filter(t=>kind==='all'||(kind==='today'&&isToday(t))||(kind==='upcoming'&&!isSideQuest(t)&&dayOf(t)>today&&dayOf(t)<=upperDay));
   }
   function ordered(records){return [...records].sort((a,b)=>{
     const da=dayOf(a)||'9999-12-31', db=dayOf(b)||'9999-12-31';
@@ -91,18 +93,27 @@
     const detail=[due?(overdue?'Overdue · ':'Due ')+prettyDate(due):'No due date', Number(t.priority||1)>=3?'High priority':''].filter(Boolean).join(' · ');
     return `<article class="live-task${overdue?' is-overdue':''}"><input type="checkbox" data-todoist-done="${esc(t.id)}" aria-label="Complete ${esc(t.content)}"><div class="live-task-body"><strong>${esc(t.content)}</strong><small>${esc(detail)}</small><a href="${esc(safeTaskLink(t.id))}" target="_blank" rel="noopener noreferrer">Open in Todoist ↗</a></div></article>`;
   }
+  function sideQuestMarkup(t){
+    const due=dayOf(t);
+    return `<article class="sidequest-row"><input type="checkbox" data-todoist-done="${esc(t.id)}" aria-label="Complete side quest: ${esc(t.content)}"><div class="sidequest-row-body"><strong class="sidequest-row-title">${esc(t.content)}</strong><small class="sidequest-row-sub">${esc(due?'Optional · '+prettyDate(due):'No deadline · just for fun')}</small></div><a href="${esc(safeTaskLink(t.id))}" target="_blank" rel="noopener noreferrer" aria-label="Open ${esc(t.content)} in Todoist">↗</a></article>`;
+  }
   function renderTodoist(){
     const active=Boolean(token||serverConnected); const total=tasks.length; const due=selectTasks('today');
+    const sidequests=ordered(tasks.filter(isSideQuest));
     const mode=$('#todoist-connection-mode');
     if(mode)mode.textContent=serverConnected?'Secure connection · available across devices':token?'Temporary browser-tab connection':'';
     const check=$('#todoist-oauth-checking');
     if(check)check.hidden=!oauthChecking;
     $('#todoist-connect').hidden=active;$('#todoist-connected').hidden=!active;
     $('#todoist-add').disabled=!active || todoistLoading;
-    $('#stat-tasks').textContent=active && todoistSyncTime?total:'—';
+    $('#stat-tasks').textContent=active && todoistSyncTime?String(due.length):'—';
+    note('#sidequest-count',active&&todoistSyncTime?String(sidequests.length):'');
+    const addQuest=$('#sidequest-add-btn'),questInput=$('#sidequest-add-input');
+    if(addQuest)addQuest.disabled=!active||todoistLoading;
+    if(questInput)questInput.disabled=!active||todoistLoading;
     $('#nav-task-count').textContent=active && todoistSyncTime?String(due.length):'—';
     note('#todoist-home-value',!active?'Not connected':todoistLoading && !todoistSyncTime?'Loading…':todoistError && !todoistSyncTime?'Sync failed':`${due.length} due / overdue`);
-    note('#todoist-home-note',!active?(oauthChecking?'Checking secure Todoist connection…':'Connect once through Todoist to sync across all devices.'):todoistError?todoistError:todoistSyncTime?`${total}${todoistPartial?'+':''} open tasks · refreshed ${todoistSyncTime}`:'Connecting…');
+    note('#todoist-home-note',!active?(oauthChecking?'Checking secure Todoist connection…':'Connect once through Todoist to sync across all devices.'):todoistError?todoistError:todoistSyncTime?`${due.length} due today or overdue · refreshed ${todoistSyncTime}`:'Connecting…');
     note('#todoist-status',todoistLoading?'Refreshing Todoist…':todoistError?'Could not refresh: '+todoistError:todoistSyncTime?`${total}${todoistPartial?'+':''} open tasks · last refreshed ${todoistSyncTime}`:'Ready to sync');
     $$('[data-todoist-filter]').forEach(el=>el.classList.toggle('selected',el.dataset.todoistFilter===todoistFilter));
     const selected=ordered(selectTasks(todoistFilter));
@@ -112,6 +123,11 @@
       `<p class="watch-detail">${esc(todoistError||'No tasks in this view.')}</p>`;
     $('#todoist-home-list').innerHTML=!active?'<p class="watch-detail">Connect Todoist under Todoist & Tasks to see your agenda.</p>':
       due.length?ordered(due).slice(0,5).map(taskMarkup).join(''):`<p class="watch-detail">${esc(todoistError||'No tasks due today or overdue.')}</p>`;
+    const sideQuestList=$('#sidequest-list');
+    if(sideQuestList)sideQuestList.innerHTML=!active?'<p class="watch-detail">Connect Todoist to view and add side quests.</p>':
+      todoistLoading&&!todoistSyncTime?'<p class="watch-detail">Looking for your side quests…</p>':
+      sidequests.length?sidequests.slice(0,8).map(sideQuestMarkup).join('')+(sidequests.length>8?`<p class="watch-detail">Showing 8 of ${sidequests.length} optional quests. See the full list in Todoist.</p>`:''):
+      `<p class="watch-detail">${esc(todoistError||'No side quests yet. Add something enjoyable — like making hot honey.')}</p>`;
   }
   async function todoistRequest(path, opts={}, apiToken=token){
     if(serverConnected && (!apiToken || apiToken===token)){
@@ -192,6 +208,32 @@
     const btn=f.querySelector('button[type=submit]');btn.disabled=true;
     try{await todoistRequest('/tasks',{method:'POST',body:payload});$('#todoist-create-dialog').close();f.reset();toast('Task added to Todoist.');await refreshTodoist();}
     catch(e){toast('Could not add task: '+e.message);}finally{btn.disabled=false;}
+  }
+
+  async function ensureSideQuestLabel(){
+    // Create this one personal label only when the user adds a side quest.
+    const existing=await todoistRequest('/labels/search?query=sidequest&limit=50');
+    if(!Array.isArray(existing?.results))throw new Error('Could not verify the sidequest label.');
+    const present=existing.results.some(l=>String(l?.name||'').toLowerCase()===SIDEQUEST_LABEL);
+    if(!present)await todoistRequest('/labels',{method:'POST',body:{name:SIDEQUEST_LABEL}});
+  }
+  async function createSideQuest(e){
+    e.preventDefault();
+    if(!token&&!serverConnected){toast('Connect Todoist before adding a side quest.');return;}
+    const form=e.currentTarget||e.target;
+    const input=$('#sidequest-add-input');
+    const name=String(input?.value||'').trim();
+    if(!name||name.length>500)return;
+    const add=$('#sidequest-add-btn');
+    add.disabled=true;add.textContent='Adding…';input.disabled=true;
+    try{
+      await ensureSideQuestLabel();
+      await todoistRequest('/tasks',{method:'POST',body:{content:name,labels:[SIDEQUEST_LABEL]}});
+      form.reset();
+      toast('Side quest added in Todoist.');
+      await refreshTodoist();
+    }catch(err){toast('Could not add side quest: '+(err.message||'Try again.'));}
+    finally{add.innerHTML='<span data-icon="plus"></span><span>Add quest</span>';if(window.ORBITApp?.replaceIcons)window.ORBITApp.replaceIcons();add.disabled=!(token||serverConnected);input.disabled=!(token||serverConnected);}
   }
 
   function gaiaHtmlSafe(source){return String(source||'').replace(/<[^>]*>/g,' ').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>');}
@@ -299,7 +341,7 @@
     const filter=event.target.closest('[data-todoist-filter]');if(filter){todoistFilter=filter.dataset.todoistFilter;renderTodoist();return;}
     if(event.target.closest('#todoist-oauth-connect')){void startOAuth();return;}
     if(event.target.closest('#todoist-disconnect')){void disconnectTodoist();return;}
-    if(event.target.closest('#todoist-add')){if(token)$('#todoist-create-dialog').showModal();return;}
+    if(event.target.closest('#todoist-add')){if(token||serverConnected)$('#todoist-create-dialog').showModal();return;}
     if(event.target.closest('#todoist-create-close, #todoist-create-cancel')){$('#todoist-create-dialog').close();return;}
   });
   document.addEventListener('change',event=>{
@@ -308,6 +350,7 @@
   });
   $('#todoist-connect-form').addEventListener('submit',connectTodoist);
   $('#todoist-create-form').addEventListener('submit',createTodoist);
+  $('#sidequest-create-form').addEventListener('submit',createSideQuest);
   window.ORBITConnectedTodoist={active:()=>Boolean(token||serverConnected),render:renderTodoist,refreshGaiaPrivate};
   document.addEventListener('orbit:auth-changed',event=>handleOrbitAccount(event.detail?.user||null));
   renderTodoist();renderGaiaPublic();renderGaiaPrivate();
@@ -315,5 +358,5 @@
   // waiting for the public GAIA catalog network request to complete.
   void window.ORBITAuth.ready.then(()=>handleOrbitAccount(window.ORBITAuth?.user||null));
   void refreshGaiaPublic().then(()=>initializeGaiaPrivate());
-  window.addEventListener('focus',()=>{if(token&&!todoistLoading)void refreshTodoist();if(gaiaClient&&gaiaUser&&!gaiaPrivateLoading)void refreshGaiaPrivate();});
+  window.addEventListener('focus',()=>{if((token||serverConnected)&&!todoistLoading)void refreshTodoist();if(gaiaClient&&gaiaUser&&!gaiaPrivateLoading)void refreshGaiaPrivate();});
 })();
