@@ -1,5 +1,16 @@
 # ORBIT — Headquarters for Execution, Logic, and Memory
 
+## v1.3.0 — Galactic atlas and labeled Todoist
+
+- Replaced the neon homepage hero with a subdued astronomical chart and **six actual destinations**: GAIA, ECHO, RUNE, FUEL, PULSE, and Inbox. Removed the duplicate Tasks and Projects planets; both remain in regular navigation.
+- Added dedicated original SVG emblems in `assets/systems/` and reused them in cards, navigation, and the app icon. GAIA's standalone layout is unchanged.
+- Removed most nonfunctional homepage slogans, redundant navigation copy and passive project counts. Kept functional instructions, statuses and accessibility labels.
+- ORBIT's main Todoist agenda shows **today and tomorrow only**, skipping undated and overdue tasks on that *home preview*. The full Tasks page still handles overdue and upcoming work. Each preview task shows its first matching system label or GENERAL.
+- `@gaia`, `@echo`, `@rune`, `@fuel`, and `@pulse` are Todoist personal labels. The shared read-only `assets/todoist-system.js` widget displays the labeled tasks (overdue, today, tomorrow, upcoming week and unscheduled) in the matching app. It relies on the server-side ORBIT Todoist OAuth bridge and requires the shared Supabase MFA session. It does not embed Todoist tokens or write tasks.
+- ORBIT's GAIA, FUEL and PULSE views now include labeled Todoist lists. ECHO, GAIA and published standalone RUNE each have their own copy of this widget; RUNE uses a collapsible parchment-styled drawer so character controls stay unobstructed.
+- Task assignment to systems is **by labels only**. Unlabeled tasks remain in ORBIT's combined due-today/tomorrow agenda. GAIA's existing "Midweek plant moisture check" task was labeled gaia; no other pre-existing tasks were automatically relabeled.
+- The widget will show connection guidance when ORBIT's Todoist OAuth authorization is missing, or verification guidance when the Supabase session is not AAL2. No new paid integrations or databases were added.
+
 ## v1.2.0 — ECHO, standalone RUNE, and private cross-device sync
 
 ### Navigation
