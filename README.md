@@ -1,6 +1,19 @@
 # ORBIT — Headquarters for Execution, Logic, and Memory
 
-**v0.7 — Secure cross-device Todoist OAuth connection, responsive PC/tablet/iPhone dashboard, shared ORBIT/GAIA sign-in, and GAIA/FUEL integrations.** Other health metrics and money tracking remain paused. Previously saved health/money data, if any, remains inside the legacy browser data and backup format so upgrading does not silently erase it.
+**v0.9 — Wider desktop command center, perspective-tilted celestial orbits, today's tasks, and Todoist-synced Side Quests.** Other health metrics and money tracking remain paused. Previously saved health/money data, if any, remains inside the legacy browser data and backup format so upgrading does not silently erase it.
+
+## Desktop and Side Quests update (v0.9)
+
+- Desktop content maximum width increases from 1,450px to **1,880px** (at desktop breakpoints).
+- The solar-system navigation uses a perspective-transformed orbital plane, off-center core, staggered planet sizes and depth shadows. The planets remain ordinary accessible section-navigation buttons.
+- The Home **Today's Tasks** number and agenda use Todoist tasks due **today or overdue**, excluding sidequests so fun tasks don't artificially increase the must-do count. The all-tasks Todoist view still includes everything.
+- The **Side Quests** widget sits below Today's Agenda. Todoist tasks carrying the personal **@sidequest** label appear there, may be completed directly, and remain available across signed-in devices.
+- Entering a quest in the widget ensures the Todoist label exists, then creates a task with **labels: ["sidequest"]**. The secure Todoist Edge Function only allows the necessary label search and single-label creation operations; the existing limited task operations are unchanged.
+- The previously saved **Make hot honey** Todoist task was updated to use the sidequest label (not duplicated).
+- Fixed the Todoist **Add Task** button, which previously required a legacy browser token even when an OAuth connection was active. Focus refresh now also supports server-connected sessions.
+- iPhone keeps the compact header and bottom navigation from v0.8.1, not a tall orbit diagram.
+
+**Verification:** JS syntax, required DOM IDs, orbital stylesheet rules, task-selection fixture tests, deployed Edge Function v3, and the actual Todoist **Make hot honey** label were checked. Live pixel-level rendering and in-site OAuth-connected task creation still require a browser sign-in test.
 
 ## Compact iPhone home (v0.8.1)
 
