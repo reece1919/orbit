@@ -41,6 +41,7 @@
     'info':'<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7h.01"/>',
     'shield-check':'<path d="m12 2 9 4v6c0 6-4 9-9 11-5-2-9-5-9-11V6l9-4Zm-4 10 3 3 5-5"/>',
     'wallet':'<rect x="2" y="5" width="20" height="16" rx="3"/><path d="M2 9h20m-5 7h2"/>',
+    'activity':'<path d="M3 12h4l3-8 4 16 3-8h4"/>',
     'heart-pulse':'<path d="M20.8 4.6a5.4 5.4 0 0 0-7.7 0L12 5.7l-1.1-1.1a5.4 5.4 0 0 0-7.7 7.7L12 21l8.8-8.7a5.4 5.4 0 0 0 0-7.7Z"/><path d="M3 12h5l2-3 3 6 2-3h6"/>',
     'repeat':'<path d="M17 3l4 4-4 4M3 11V9a2 2 0 0 1 2-2h16M7 21l-4-4 4-4m14 0v2a2 2 0 0 1-2 2H3"/>',
     'radar':'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M12 12 19 5"/>'
@@ -196,13 +197,13 @@
     $('#mobile-more').setAttribute('aria-expanded',String(show));
   }
   function setView(next){
-    if(!['home','projects','focus','gaia','fuel','routines','settings'].includes(next))return;
+    if(!['home','projects','focus','gaia','fuel','pulse','routines','settings'].includes(next))return;
     view=next;
     $$('[data-panel]').forEach(x=>x.hidden=x.dataset.panel!==view);
     $('.main-nav [data-view], .mobile-nav [data-view]').forEach(x=>{x.classList.toggle('active',x.dataset.view===view);if(x.dataset.view===view)x.setAttribute('aria-current','page');else x.removeAttribute('aria-current')});
     const more=$('#mobile-more');
     more.classList.toggle('active',!['home','focus','fuel','gaia'].includes(view));
-    $('#current-crumb').textContent=({home:'OVERVIEW',projects:'PROJECTS',focus:'TASKS',gaia:'GAIA',fuel:'FUEL',routines:'ROUTINES',settings:'SETTINGS'})[view];
+    $('#current-crumb').textContent=({home:'OVERVIEW',projects:'PROJECTS',focus:'TASKS',gaia:'GAIA',fuel:'FUEL',pulse:'PULSE',routines:'ROUTINES',settings:'SETTINGS'})[view];
     closeNavigation();window.scrollTo({top:0,behavior:'instant'});
   }
   const field = (name,label,value='',type='text',other='') => `<label class="dialog-field">${label}<input name="${name}" type="${type}" value="${esc(value)}" ${other}></label>`;
