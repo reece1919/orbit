@@ -7,10 +7,10 @@
   <meta name="description" content="ORBIT Personal Command Center — Todoist tasks, GAIA plants, routines, projects, and daily focus." />
   <title>ORBIT — Celestial Command Center</title>
   <link rel="stylesheet" href="styles.css?v=0.6.2" />
-  <link rel="stylesheet" href="celestial.css?v=0.8.1" />
+  <link rel="stylesheet" href="celestial.css?v=0.9.0" />
   <script src="auth.js?v=0.6.2" defer></script>
   <script src="app.js?v=0.8.0" defer></script>
-  <script src="integrations.js?v=0.7.1" defer></script>
+  <script src="integrations.js?v=0.9.0" defer></script>
   <script src="fuel.js?v=0.6.2" defer></script>
 </head>
 <body data-theme="dark" data-auth-state="checking">
@@ -59,7 +59,7 @@
       </div>
       <div class="sidebar-bottom">
         <div class="local-badge"><span data-icon="hard-drive"></span><div><strong>CONNECTED WORKSPACE</strong><small>Tasks and plant data from connected sources</small></div></div>
-        <div class="sidebar-footer">ORBIT / SYSTEM 001 <span>v0.8.1</span></div>
+        <div class="sidebar-footer">ORBIT / SYSTEM 001 <span>v0.9</span></div>
       </div>
     </aside>
     <button type="button" id="nav-backdrop" class="nav-backdrop" aria-label="Close navigation" hidden></button>
@@ -81,11 +81,13 @@
             </div>
             <div class="orbit-system" aria-label="Navigate ORBIT's connected modules">
               <div class="orbit-system-stars" aria-hidden="true"></div>
-              <div class="orbit-ring orbit-ring-outer" aria-hidden="true"></div>
-              <div class="orbit-ring orbit-ring-inner" aria-hidden="true"></div>
-              <div class="orbit-ring orbit-ring-dashed" aria-hidden="true"></div>
-              <div class="orbit-radar-line orbit-radar-a" aria-hidden="true"></div>
-              <div class="orbit-radar-line orbit-radar-b" aria-hidden="true"></div>
+              <div class="orbit-plane" aria-hidden="true">
+                <div class="orbit-ring orbit-ring-outer"></div>
+                <div class="orbit-ring orbit-ring-inner"></div>
+                <div class="orbit-ring orbit-ring-dashed"></div>
+                <div class="orbit-radar-line orbit-radar-a"></div>
+                <div class="orbit-radar-line orbit-radar-b"></div>
+              </div>
               <div class="orbit-satellite orbit-satellite-a" aria-hidden="true"></div>
               <div class="orbit-satellite orbit-satellite-b" aria-hidden="true"></div>
               <div class="orbit-satellite orbit-satellite-c" aria-hidden="true"></div>
@@ -132,7 +134,7 @@
 
           <div class="home-snapshot-head"><div><span class="eyebrow small">THE SNAPSHOT</span><h2>At a glance</h2></div><span class="home-live-label"><span class="pulse-dot"></span> CONNECTED SOURCES</span></div>
           <div class="home-snapshot" aria-label="Today's summary">
-            <button type="button" class="home-snapshot-tile home-snapshot-tasks" data-view="focus"><span class="home-snapshot-label">OPEN TASKS <span data-icon="check-circle"></span></span><strong id="stat-tasks">—</strong><span class="home-snapshot-caption">From Todoist</span></button>
+            <button type="button" class="home-snapshot-tile home-snapshot-tasks" data-view="focus"><span class="home-snapshot-label">TODAY’S TASKS <span data-icon="check-circle"></span></span><strong id="stat-tasks">—</strong><span class="home-snapshot-caption">Due today + overdue</span></button>
             <button type="button" class="home-snapshot-tile home-snapshot-fuel" data-view="fuel"><span class="home-snapshot-label">CALORIES LOGGED <span data-icon="heart-pulse"></span></span><strong id="fuel-home-value">—</strong><span class="home-snapshot-caption">Today in FUEL</span></button>
             <button type="button" class="home-snapshot-tile home-snapshot-gaia" data-view="gaia"><span class="home-snapshot-label">GAIA PLANTS <span data-icon="leaf"></span></span><strong id="stat-links">—</strong><span class="home-snapshot-caption">Collection profiles</span></button>
           </div>
@@ -140,10 +142,23 @@
           <div class="home-work-grid">
             <div class="home-main-stack">
               <section class="module home-agenda">
-                <div class="module-head home-module-head"><div><div class="eyebrow small">TODOIST / LIVE</div><h3>On your agenda</h3></div><div class="home-module-actions"><button type="button" class="quiet-pill" data-refresh="todoist">Refresh</button><button type="button" class="subtle-link" data-view="focus">All tasks <span data-icon="arrow-right"></span></button></div></div>
+                <div class="module-head home-module-head"><div><div class="eyebrow small">TODOIST / LIVE</div><h3>Today’s agenda</h3></div><div class="home-module-actions"><button type="button" class="quiet-pill" data-refresh="todoist">Refresh</button><button type="button" class="subtle-link" data-view="focus">All tasks <span data-icon="arrow-right"></span></button></div></div>
                 <p id="todoist-home-value" class="home-inline-value">Loading your day…</p>
                 <p id="todoist-home-note" class="watch-detail home-source-note">Your upcoming and overdue items from Todoist.</p>
                 <div id="todoist-home-list" class="live-task-list"><p class="watch-detail">Connect Todoist to load your agenda.</p></div>
+              </section>
+              <section class="module home-sidequests">
+                <div class="module-head home-module-head">
+                  <div><div class="eyebrow small"><span data-icon="sparkles"></span> OPTIONAL / JUST FOR FUN</div><h3>Side Quests <span id="sidequest-count" class="sidequest-count" aria-label="Side quests remaining"></span></h3></div>
+                  <a class="subtle-link" href="https://app.todoist.com/app/labels" target="_blank" rel="noopener noreferrer">Todoist labels <span data-icon="arrow-up-right"></span></a>
+                </div>
+                <p class="watch-detail sidequest-description">Fun ideas without deadlines or pressure. Saved in Todoist with <strong>@sidequest</strong>.</p>
+                <div id="sidequest-list" class="sidequest-list" aria-live="polite"><p class="watch-detail">Connect Todoist to see your side quests.</p></div>
+                <form id="sidequest-create-form" class="sidequest-create">
+                  <label for="sidequest-add-input" class="sr-only">New optional side quest</label>
+                  <input type="text" id="sidequest-add-input" name="title" placeholder="e.g. Make hot honey" maxlength="500" autocomplete="off" required disabled>
+                  <button type="submit" id="sidequest-add-btn" class="sidequest-submit" disabled><span data-icon="plus"></span><span>Add quest</span></button>
+                </form>
               </section>
               <section class="module home-followups">
                 <div class="module-head home-module-head"><div><div class="eyebrow small">KEEP IN VIEW</div><h3>Things to keep an eye on</h3></div><span data-icon="radar" class="muted-icon"></span></div>
@@ -281,7 +296,7 @@
           <section class="module setting-card"><div class="settings-icon"><span data-icon="database"></span></div><h3>Your data</h3><p>Save a backup of your local projects, priorities, routines, links, and notes (plus any legacy local records). Todoist and GAIA are not copied into the backup. Import it on another browser to move your setup. Keep this sensitive export secure.</p><div class="data-actions"><button type="button" class="outline-button" id="export-data"><span data-icon="download"></span> Export backup</button><label class="outline-button file-label"><span data-icon="upload"></span> Import backup <input id="import-data" type="file" accept="application/json,.json" hidden></label></div><div class="settings-warning"><span data-icon="info"></span> Backups are not automatic cloud sync.</div><button type="button" id="orbit-import-legacy" class="outline-button legacy-import" hidden>Import older ORBIT browser data</button></section>
           <section class="module setting-card"><div class="settings-icon"><span data-icon="shield-check"></span></div><h3>Privacy & integrations</h3><p>Todoist supports an encrypted server-side OAuth connection across devices, with a temporary browser-tab token fallback. Your ORBIT sign-in uses GAIA’s existing Supabase account and owner-restricted tables. Todoist normally connects through its approval screen without a personal API token. No finance or health syncing.</p><div class="integrations"><div><span class="status-dot ready"></span> GAIA <span>Public catalog + signed-in tasks</span></div><div><span class="status-dot planned"></span> Todoist <span>Cloud OAuth; connect from Tasks</span></div><div><span class="status-dot planned"></span> Money &amp; Health <span>Paused</span></div><div><span class="status-dot ready"></span> Supabase authentication <span>Shared with GAIA</span></div><div><span class="status-dot planned"></span> ORBIT notes sync <span>Browser-only for now</span></div></div><button type="button" class="danger-link" id="reset-data">Reset ORBIT data on this device</button></section></div>
         </section>
-        <footer class="main-footer"><span>ORBIT HEADQUARTERS <span class="foot-dot">◆</span> BUILT TO KEEP THINGS MOVING</span><span>VERSION 0.8.1 · COMPACT PHONE HOME</span></footer>
+        <footer class="main-footer"><span>ORBIT HEADQUARTERS <span class="foot-dot">◆</span> BUILT TO KEEP THINGS MOVING</span><span>VERSION 0.9 · CELESTIAL SIDE QUESTS</span></footer>
       </main>
       <nav class="mobile-nav" aria-label="Quick navigation">
         <button class="mobile-nav-item active" type="button" data-view="home"><span data-icon="layout-dashboard"></span><span>Home</span></button>
