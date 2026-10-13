@@ -1,5 +1,28 @@
 # ORBIT — Headquarters for Execution, Logic, and Memory
 
+## v1.2.0 — ECHO, standalone RUNE, and private cross-device sync
+
+### Navigation
+- ECHO production dashboard is live at https://reece1919.github.io/echo/ using its own saved `echo_workspaces` data under the shared Supabase account.
+- RUNE standalone app is now published from the public **sanitized** repo `reece1919/rune-web` at https://reece1919.github.io/rune-web/. The private source repository and ChatGPT Sites journal are not changed. RUNE's independent `rune_workspaces` table currently has saved workspace data and is NOT merged into ORBIT.
+- Both appear as planetary destinations on wider screens, in ORBIT's sidebar Quick Access, and in Projects. They open their respective apps in new tabs; ORBIT does not copy their sensitive application records.
+
+### ORBIT's cloud workspace
+- ORBIT Settings → **Cross-device workspace sync** uses `public.orbit_local_workspaces`, isolated per account by owner-RLS and mandatory verified MFA (`aal2`). This is included in the existing Supabase project; no new account or paid service.
+- Opt-in separately on each browser: the first device chooses **Start cloud sync from this device**. Later browsers compare cloud and local copies; if different, they require an explicit **Restore cloud copy** or **Replace cloud with this device** choice.
+- Synced fields come from ORBIT's existing version-2 local workspace: projects, routines, scratchpad, local tasks, links, account/bill notes, local check-ins and presentation settings. Individual ECHO, GAIA, FUEL, and RUNE datasets are excluded.
+- Automatic saving starts only after the user enables sync. Each edit uses a server-side **compare-and-swap revision** so a stale browser cannot silently overwrite a newer copy. Conflicts pause syncing and retain local changes.
+- A safety copy of the current device workspace is kept in browser storage before restoring cloud data. **Restore device safety copy** pauses sync so recovering the local version does not overwrite the cloud.
+- A paused device remains local. Importing a JSON backup or resetting ORBIT while sync is enabled will become synced edits—pause cloud sync first if you want changes to remain local.
+- The cloud database is MFA-gated and owner-restricted, but it is **not end-to-end encrypted**. Don't store passwords, authentication secrets, or high-risk identity documents in scratchpad or project descriptions.
+- Existing local data is NOT copied automatically by deployment, and existing browsers continue using local storage until the first sync choice is made.
+
+### Security and tests
+- `supabase/migrations/20261013_orbit_workspace_sync_echo_mfa.sql` provisions ORBIT's cloud sync and adds MFA enforcement to ECHO's existing shared-owner table.
+- `supabase/migrations/20261013_fix_orbit_sync_revision_guard.sql` fixes initial creation and revision-checked updates; both migrations are applied to the existing shared Supabase project.
+- SQL role-impersonation tests confirm AAL1 cannot access ORBIT or ECHO private workspaces, while AAL2 can. Transaction-rolled-back creation/update/stale-write tests confirm revision 1 → 2 and reject outdated revision 1. No live user data was modified by tests.
+- Browser-by-browser acceptance still requires the account holder to choose a primary local copy, then test restoring it on another signed-in device.
+
 ## v1.1.4 — Focused Overview
 
 - Removed the **Today's Tasks** total tile, overall **GAIA Plants** inventory tile, and entire homepage **Recurring Tasks** preview. Both detailed Tasks and ChatGPT Automations modules remain available via navigation.
