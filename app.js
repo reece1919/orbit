@@ -114,8 +114,10 @@
   function cardHtml(p){
     const style=p.id==='fuel'||String(p.name).toLowerCase()==='fuel'?projectType.fuel:projectType[p.type]||projectType.general;
     const openLabel=p.url?'Launch project':'Add project link';
+    const systemId=['gaia','echo','rune','fuel','pulse'].find(x=>p.id===x||String(p.name).toLowerCase()===x);
+    const emblem=systemId?`<img src="assets/systems/${systemId}.svg" width="39" height="39" alt="">`:icon(style.icon);
     return `<article class="project-card" style="--project-accent:${style.color};--project-bg:${style.bg}">
-      <div class="project-top"><div class="project-emblem">${icon(style.icon)}</div><span class="project-badge">${esc(p.status.toUpperCase())}</span></div>
+      <div class="project-top"><div class="project-emblem">${emblem}</div><span class="project-badge">${esc(p.status.toUpperCase())}</span></div>
       <h3>${esc(p.name)}</h3><p>${esc(p.description||'Your project workspace.')}</p>
       <div class="project-footer">${p.url?`<a class="project-open" href="${esc(p.url)}" target="_blank" rel="noopener noreferrer">${openLabel} ${icon('arrow-up-right')}</a>`:`<button type="button" class="project-open" data-edit-project="${esc(p.id)}">${openLabel} ${icon('arrow-right')}</button>`}
       ${state.projects.some(item=>item.id===p.id)?`<button class="project-edit" type="button" data-edit-project="${esc(p.id)}" aria-label="Edit ${esc(p.name)}" title="Edit project">${icon('edit')}</button>`:''}</div>
