@@ -129,10 +129,14 @@ async function todoistApi(user,body){
   const list=m==="GET"&&url.pathname==="/api/v1/tasks"&&[...url.searchParams.keys()].every(k=>["cursor","limit"].includes(k));
   const create=m==="POST"&&url.pathname==="/api/v1/tasks"&&!url.search;
   const complete=m==="POST"&&/^\/api\/v1\/tasks\/[A-Za-z0-9_-]{1,128}\/close$/.test(url.pathname)&&!url.search;
-  if(!(list||create||complete))return errors(403,"This Todoist operation is not available in ORBIT.");
+  const labelSearch=m==="GET"&&url.pathname==="/api/v1/labels/search"&&url.searchParams.get("query")==="sidequest"&&[...url.searchParams.keys()].every(k=>["query","limit"].includes(k));
+  const labelCreate=m==="POST"&&url.pathname==="/api/v1/labels"&&!url.search;
+  if(!(list||create||complete||labelSearch||labelCreate))return errors(403,"This Todoist operation is not available in ORBIT.");
   if(create && (typeof body.body!=="string"||body.body.length>8000))return errors(400,"Invalid task payload.");
+  if(labelCreate && body.body!=='{"name":"sidequest"}')return errors(400,"Only the sidequest label may be created.");
+  if(labelSearch&&url.searchParams.has("limit")&&url.searchParams.get("limit")!=="50")return errors(400,"Invalid label search limit.");
   const token=await liveToken(row,user);
-  const response=await fetch(url.href,{method:m,headers:{Authorization:"Bearer "+token,...(create?{"Content-Type":"application/json"}:{})},body:create?body.body:undefined});
+  const response=await fetch(url.href,{method:m,headers:{Authorization:"Bearer "+token,...((create||labelCreate)?{"Content-Type":"application/json"}:{})},body:(create||labelCreate)?body.body:undefined});
   let responseBody;
   const raw=await response.text();
   try{responseBody=raw?JSON.parse(raw):{ok:true};}catch(_){responseBody={error:"Todoist returned an unexpected response"};}
