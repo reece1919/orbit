@@ -1,0 +1,22 @@
+{
+  "id": "/orbit/",
+  "name": "ORBIT — Personal Command Center",
+  "short_name": "ORBIT",
+  "description": "ORBIT PULSE mood tracking and daily reflection",
+  "start_url": "/orbit/?view=home",
+  "scope": "/orbit/",
+  "display": "standalone",
+  "display_override": [
+    "standalone"
+  ],
+  "theme_color": "#070d19",
+  "background_color": "#070d19",
+  "icons": [
+    {
+      "src": "/orbit/orbit-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
