@@ -67,7 +67,13 @@
     ]
   });
   const fuelProject = {id:'fuel',name:'FUEL',description:'Conversational meal logging and your private nutrition journal.',type:'general',status:'Live',url:'https://chatgpt.com/g/g-p-6acd6e86e82081919497cb8e044c60bd/project'};
-  const effectiveProjects = () => state.projects.some(p => p.id === 'fuel' || p.name.toLowerCase() === 'fuel') ? state.projects : [...state.projects.slice(0,1), fuelProject, ...state.projects.slice(1)];
+  const echoProject = {id:'echo',name:'ECHO',description:'Streaming, content production, broadcasts, and promotions. Uses shared ORBIT sign-in.',type:'stream',status:'Live',url:'https://reece1919.github.io/echo/'};
+  const runeProject = {id:'rune',name:'RUNE',description:'Tablet-friendly character journals, spells, encounters, and campaign notes.',type:'world',status:'Live',url:'https://reece1919.github.io/rune-web/'};
+  const effectiveProjects = () => {
+    const source = state.projects;
+    const has = p => source.some(x => x.id === p.id || x.name.toLowerCase() === p.name.toLowerCase());
+    return [...source,...[fuelProject,echoProject,runeProject].filter(p=>!has(p))];
+  };
   const safeText = (s,limit=200) => typeof s === 'string' ? s.slice(0,limit) : '';
   function safeUrl(url){
     if(!url) return '';
@@ -95,7 +101,7 @@
   let state=load();let view='home';let focusFilter='open';let modalKind=null;let editingId=null;let toastTimer;
   const $ = (s) => document.querySelector(s);
   const $$ = (s) => Array.from(document.querySelectorAll(s));
-  function persist(){if(!currentKey())return false;try{localStorage.setItem(currentKey(),JSON.stringify(state));return true;}catch(e){toast('Browser storage is unavailable. Export a backup to save your work.');return false;}}
+  function persist(){if(!currentKey())return false;try{localStorage.setItem(currentKey(),JSON.stringify(state));document.dispatchEvent(new CustomEvent('orbit:local-saved',{detail:{ownerId:accountId}}));return true;}catch(e){toast('Browser storage is unavailable. Export a backup to save your work.');return false;}}
   function toast(message){const el=$('#toast');el.textContent=message;el.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>{el.hidden=true},3500);}
   const projectType = {
     plants:{icon:'leaf',color:'#a9ddba',bg:'rgba(143,205,162,.11)'},
@@ -312,7 +318,7 @@
     $('#dialog-close').addEventListener('click',closeDialog);$('#dialog-cancel').addEventListener('click',closeDialog);
     $('#export-data').addEventListener('click',exportBackup);
     $('#import-data').addEventListener('change',e=>importBackup(e.target.files[0]));
-    $('#reset-data').addEventListener('click',()=>{if(confirm('Reset all ORBIT data in this browser? This permanently clears your local edits, tasks, and notes. Export a backup first if needed.')){state=defaultState();persist();render();setView('home');toast('ORBIT reset to defaults.');}});
+    $('#reset-data').addEventListener('click',()=>{if(confirm('Reset this ORBIT workspace? If cloud sync is enabled, the reset will also sync to other devices. Export a backup and pause cloud sync first if you want to retain your cloud data.')){state=defaultState();persist();render();setView('home');toast('Workspace reset.');}});
     $('#menu-button').addEventListener('click',toggleNavigation);
     $('#mobile-more').addEventListener('click',toggleNavigation);
     $('#nav-backdrop').addEventListener('click',closeNavigation);
@@ -341,6 +347,21 @@
     const greeting=d.getHours()<11?'Good morning.':d.getHours()<17?'Good afternoon.':'Good evening.';
     $('#home-greeting').innerHTML=greeting.replace('.','<span class="accent-period">.</span>');
   }
-  wire();render();initDate();setView('home');
+  window.ORBITLocal = Object.freeze({
+    getOwner:()=>accountId,
+    snapshot:()=>JSON.parse(JSON.stringify(state)),
+    setFromCloud:(incoming,expectedOwner)=>{
+      if(!expectedOwner || expectedOwner!==accountId)throw new Error('Account changed; cloud state was not loaded.');
+      const clean=normalized(incoming);
+      const key=currentKey();
+      if(!key)throw new Error('Sign in before restoring cloud data.');
+      state=clean;
+      localStorage.setItem(key,JSON.stringify(state));
+      render();
+      updateLegacyButton();
+      return true;
+    }
+  });
+    wire();render();initDate();setView('home');
   if(window.ORBITAuth?.user){accountId=window.ORBITAuth.user.id;state=load();render();updateLegacyButton();}
 })();
