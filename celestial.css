@@ -416,3 +416,148 @@ body[data-theme="light"] .home-view .home-snapshot-caption{color:#b9c6d6}
   .home-view .celestial-headline{font-size:26px}
   .home-view .home-snapshot{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
+
+
+/* ORBIT v0.9 — Wider deep-space desktop and tilted planetary navigation */
+.orbit-plane{position:absolute;inset:0;pointer-events:none;z-index:0;transform-style:preserve-3d}
+.orbit-system{isolation:isolate}
+.orbit-system .orbit-ring{backface-visibility:visible}
+@media (min-width:981px){
+  .orbit-system{height:425px;max-width:710px;justify-self:center}
+  .orbit-plane{
+    transform:perspective(790px) rotateX(53deg) rotateZ(-26deg) scale(1.05);
+    transform-origin:50% 52%;
+    filter:drop-shadow(0 10px 14px rgba(32,135,219,.1));
+  }
+  .orbit-plane .orbit-ring-outer{
+    width:min(95%,660px);height:auto;aspect-ratio:1/1;
+    border-color:rgba(93,165,236,.29);
+    border-bottom-color:rgba(130,219,255,.55);
+    border-left-color:rgba(110,191,244,.43);
+    box-shadow:0 0 25px rgba(69,162,232,.07),inset 0 0 20px rgba(64,161,237,.07);
+  }
+  .orbit-plane .orbit-ring-inner{
+    width:min(70%,476px);height:auto;aspect-ratio:1/1;
+    border-color:rgba(63,185,247,.24);
+    border-bottom-color:rgba(122,208,248,.5);
+  }
+  .orbit-plane .orbit-ring-dashed{
+    width:min(83%,555px);height:auto;aspect-ratio:1/1;
+    border-style:dashed;border-color:rgba(157,139,229,.23);
+    border-bottom-color:rgba(156,180,245,.5);
+  }
+  .orbit-plane .orbit-radar-line{
+    width:min(95%,655px);background:linear-gradient(90deg,transparent,rgba(88,185,245,.28),transparent);
+  }
+  .orbit-plane .orbit-radar-b{transform:translate(-50%,-50%) rotate(72deg)}
+  .orbit-core{
+    left:47%;top:50%;width:128px;height:128px;
+    transform:translate(-50%,-50%);
+    box-shadow:0 0 0 9px rgba(59,168,237,.06),0 15px 28px rgba(0,0,0,.36),0 0 35px rgba(34,161,255,.38),0 0 85px rgba(34,146,247,.19),inset -11px -18px 27px rgba(0,4,35,.46),inset 8px 11px 24px rgba(44,155,255,.51);
+  }
+  .orbit-core::after{
+    content:"";position:absolute;width:145%;height:37%;left:-22.5%;top:31.5%;
+    border:1px solid rgba(100,195,255,.38);border-radius:50%;
+    transform:rotate(-28deg);pointer-events:none;
+    box-shadow:0 0 13px rgba(70,157,235,.11);
+  }
+  .orbit-world-tasks{left:60%;top:11%;z-index:3}
+  .orbit-world-gaia{left:16%;top:51%;z-index:4}
+  .orbit-world-fuel{left:85%;top:59%;z-index:7}
+  .orbit-world-projects{left:46%;top:90%;z-index:9}
+  .orbit-world-tasks .orbit-world-sphere{width:48px;height:48px;flex-basis:48px}
+  .orbit-world-gaia .orbit-world-sphere{width:55px;height:55px;flex-basis:55px}
+  .orbit-world-fuel .orbit-world-sphere{width:67px;height:67px;flex-basis:67px}
+  .orbit-world-projects .orbit-world-sphere{width:63px;height:63px;flex-basis:63px}
+  .orbit-world-sphere{
+    background:radial-gradient(circle at 29% 22%,color-mix(in srgb,var(--world) 52%,#253858),color-mix(in srgb,var(--world) 19%,#0e1a31) 45%,#070e1e 88%);
+    box-shadow:inset -9px -11px 16px rgba(0,0,0,.6),inset 6px 7px 13px color-mix(in srgb,var(--world) 26%,transparent),0 8px 17px rgba(0,0,0,.33),0 0 23px color-mix(in srgb,var(--world) 35%,transparent);
+  }
+  .orbit-system .orbit-satellite-a{top:22%;left:23%}
+  .orbit-system .orbit-satellite-b{top:76%;left:23%}
+  .orbit-system .orbit-satellite-c{top:27%;right:15%}
+}
+@media(min-width:1200px){
+  .content{max-width:1880px;padding:34px clamp(27px,2.7vw,52px) 28px}
+}
+@media(min-width:1480px){
+  .celestial-hero{
+    grid-template-columns:minmax(240px,315px) minmax(0,1fr) minmax(148px,200px);
+    padding:22px 28px 21px 34px;min-height:475px;
+  }
+  .celestial-hero-copy{padding-left:3px}
+  .orbit-system{max-width:750px;height:440px}
+  .celestial-headline{font-size:clamp(34px,2.8vw,49px)}
+  .home-view .home-work-grid{grid-template-columns:minmax(0,1.63fr) minmax(290px,.82fr);gap:17px}
+  .home-view .home-main-stack,.home-view .home-side-stack{gap:17px}
+}
+@media(min-width:1880px){
+  .orbit-system{max-width:790px;height:458px}
+  .celestial-hero{min-height:491px}
+}
+
+/* Side quests: a distinct, synced home for optional Todoist work */
+.home-view .home-sidequests{
+  position:relative;overflow:hidden;
+  border-top:2px solid rgba(182,132,255,.65);
+  background:linear-gradient(136deg,rgba(26,20,51,.91),rgba(11,19,34,.97) 52%);
+}
+.home-view .home-sidequests::before{
+  content:"";position:absolute;width:215px;height:215px;right:-99px;top:-134px;
+  border:1px solid rgba(170,117,250,.19);border-radius:50%;pointer-events:none;
+  box-shadow:0 0 0 24px rgba(150,97,243,.035),0 0 0 49px rgba(170,117,250,.026);
+}
+.home-sidequests .eyebrow{color:#c9a0ff;letter-spacing:.15em}
+.home-sidequests .eyebrow svg{width:14px;height:14px}
+.home-sidequests h3{color:#f5ecff}
+.home-sidequests .module-head{position:relative;z-index:1;align-items:flex-start}
+.sidequest-count{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:22px;height:22px;padding:0 7px;margin-left:5px;
+  vertical-align:middle;border-radius:20px;background:rgba(165,105,255,.17);
+  color:#d5baff;font-size:11px;letter-spacing:0;
+}
+.sidequest-count:empty{display:none}
+.home-sidequests .module-head > a{font-size:11px;color:#cbb1e9}
+.sidequest-description{margin:4px 0 15px;line-height:1.5;color:#9c9bb9}
+.sidequest-description strong{color:#d9c3ff;font-weight:700}
+.sidequest-list{display:grid;gap:7px;margin-bottom:13px}
+.sidequest-list .watch-detail{margin:0;padding:10px 0}
+.sidequest-row{
+  display:flex;align-items:center;gap:11px;
+  padding:10px 12px;border:1px solid rgba(159,126,222,.2);border-radius:10px;
+  background:rgba(14,17,37,.6);min-width:0;
+}
+.sidequest-row input[type="checkbox"]{accent-color:#b17aff;width:18px;height:18px;flex:0 0 18px;cursor:pointer}
+.sidequest-row-body{display:flex;flex-direction:column;min-width:0;flex:1;gap:3px}
+.sidequest-row-title{font-size:12px;line-height:1.4;color:#edeafa;font-weight:720;overflow-wrap:anywhere}
+.sidequest-row-sub{font-size:10px;color:#a09bb9}
+.sidequest-row a{display:grid;place-items:center;color:#b7a5df;padding:6px;border-radius:7px;flex:0 0 auto}
+.sidequest-row a:hover,.sidequest-row a:focus-visible{background:rgba(158,103,230,.14);color:#e0caff}
+.sidequest-row a svg{width:14px;height:14px}
+.sidequest-create{display:flex;gap:8px;position:relative;z-index:1}
+.sidequest-create input{
+  min-width:0;flex:1;min-height:42px;border-radius:9px;
+  border:1px solid rgba(153,118,204,.3);
+  background:rgba(6,12,27,.75);color:#eff0ff;padding:0 13px;font-size:12px;
+}
+.sidequest-create input::placeholder{color:#8783a7}
+.sidequest-create input:focus-visible{outline-color:#be96ff}
+.sidequest-submit{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  border-radius:9px;border:1px solid rgba(195,146,255,.58);
+  background:rgba(128,76,209,.23);color:#dec8ff;font-size:11px;font-weight:750;
+  white-space:nowrap;padding:0 12px;min-height:42px;
+}
+.sidequest-submit svg{width:14px;height:14px}
+.sidequest-submit:disabled,.sidequest-create input:disabled{opacity:.48;cursor:not-allowed}
+.sidequest-submit:not(:disabled):hover{background:rgba(145,86,230,.34)}
+@media(max-width:610px){
+  .home-sidequests .module-head{gap:8px}
+  .home-sidequests .module-head > a{font-size:10px}
+  .sidequest-create input{font-size:12px}
+  .sidequest-submit{padding:0 10px}
+}
+@media(max-width:370px){
+  .sidequest-submit span{display:none}
+}
