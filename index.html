@@ -7,7 +7,7 @@
   <meta name="description" content="ORBIT Personal Command Center — Todoist tasks, GAIA plants, routines, projects, and daily focus." />
   <title>ORBIT — Celestial Command Center</title>
   <link rel="stylesheet" href="styles.css?v=0.6.2" />
-  <link rel="stylesheet" href="celestial.css?v=1.1.4" />
+  <link rel="stylesheet" href="celestial.css?v=1.1.5" />
   <link rel="stylesheet" href="pulse.css?v=1.0.0" />
   <link rel="stylesheet" href="signals.css?v=1.1.4" />
   <link rel="manifest" href="pulse.webmanifest" />
@@ -15,7 +15,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="ORBIT" />
   <script src="auth.js?v=0.6.2" defer></script>
-  <script src="app.js?v=1.1.4" defer></script>
+  <script src="app.js?v=1.1.5" defer></script>
   <script src="integrations.js?v=1.1.4" defer></script>
   <script src="fuel.js?v=0.6.2" defer></script>
   <script src="pulse.js?v=1.0.0" defer></script>
@@ -219,7 +219,6 @@
           <div class="home-projects-head"><div><div class="eyebrow small">YOUR ECOSYSTEM</div><h2>Connected workspaces</h2><p>Launch the projects that keep your world moving.</p></div><div class="home-projects-cta"><span><strong id="stat-projects">3</strong> spaces</span><button type="button" class="subtle-link" data-view="projects">All projects <span data-icon="arrow-right"></span></button></div></div>
           <div class="featured-projects" id="featured-projects"></div>
           <div class="dashboard-lower home-capture">
-            <section class="module"><div class="module-head"><div><div class="eyebrow small">ON THIS DEVICE</div><h3>Local priorities</h3></div><button class="small-icon-btn" aria-label="Add a priority" title="Add priority" type="button" data-action="add-task"><span data-icon="plus"></span></button></div><div id="home-tasks" class="home-tasks"></div><button type="button" class="subtle-link" data-view="focus">Manage priorities <span data-icon="arrow-right"></span></button></section>
             <section class="module note-module"><div class="module-head"><div><div class="eyebrow small">CAPTURE A THOUGHT</div><h3>Scratchpad</h3></div><span data-icon="pen-line" class="muted-icon"></span></div><textarea id="scratchpad" placeholder="An idea, a reminder, something to remember…" aria-label="Scratchpad notes"></textarea><div class="note-bottom"><span data-icon="hard-drive"></span> Saved on this device <span id="note-saved" aria-live="polite"></span></div></section>
           </div>
         </section>
@@ -384,7 +383,7 @@
           <section class="module setting-card"><div class="settings-icon"><span data-icon="database"></span></div><h3>Your data</h3><p>Save a backup of your local projects, priorities, routines, links, and notes (plus any legacy local records). Todoist and GAIA are not copied into the backup. Import it on another browser to move your setup. Keep this sensitive export secure.</p><div class="data-actions"><button type="button" class="outline-button" id="export-data"><span data-icon="download"></span> Export backup</button><label class="outline-button file-label"><span data-icon="upload"></span> Import backup <input id="import-data" type="file" accept="application/json,.json" hidden></label></div><div class="settings-warning"><span data-icon="info"></span> Backups are not automatic cloud sync.</div><button type="button" id="orbit-import-legacy" class="outline-button legacy-import" hidden>Import older ORBIT browser data</button></section>
           <section class="module setting-card"><div class="settings-icon"><span data-icon="shield-check"></span></div><h3>Privacy & integrations</h3><p>Todoist supports an encrypted server-side OAuth connection across devices, with a temporary browser-tab token fallback. Your ORBIT sign-in uses GAIA’s existing Supabase account and owner-restricted tables. Todoist normally connects through its approval screen without a personal API token. No finance or health syncing.</p><div class="integrations"><div><span class="status-dot ready"></span> GAIA <span>Public catalog + signed-in tasks</span></div><div><span class="status-dot planned"></span> Todoist <span>Cloud OAuth; connect from Tasks</span></div><div><span class="status-dot planned"></span> Money &amp; Health <span>Paused</span></div><div><span class="status-dot ready"></span> Supabase authentication <span>Shared with GAIA</span></div><div><span class="status-dot planned"></span> ORBIT notes sync <span>Browser-only for now</span></div></div><button type="button" class="danger-link" id="reset-data">Reset ORBIT data on this device</button></section></div>
         </section>
-        <footer class="main-footer"><span>ORBIT HEADQUARTERS <span class="foot-dot">◆</span> BUILT TO KEEP THINGS MOVING</span><span>VERSION 1.1.4 · FOCUSED OVERVIEW</span></footer>
+        <footer class="main-footer"><span>ORBIT HEADQUARTERS <span class="foot-dot">◆</span> BUILT TO KEEP THINGS MOVING</span><span>VERSION 1.1.5 · CLEAN HOME</span></footer>
       </main>
       <nav class="mobile-nav" aria-label="Quick navigation">
         <button class="mobile-nav-item active" type="button" data-view="home"><span data-icon="layout-dashboard"></span><span>Home</span></button>
