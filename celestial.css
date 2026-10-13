@@ -329,3 +329,90 @@ body[data-theme="light"] .home-view .home-snapshot-caption{color:#b9c6d6}
 @media(prefers-reduced-motion:reduce){
   .orbit-world,.orbit-world-sphere,.home-view .home-fast-action{transition:none!important}
 }
+
+
+/* v0.8.1 — PHONE-FIRST COMPACT HOME
+   Primary navigation is the persistent bottom dock on phones.
+   The large decorative system map and duplicate action row are removed
+   from phone-sized home screens, putting live information first. */
+.celestial-mobile-log{display:none}
+@media (max-width:610px), (max-width:980px) and (max-height:520px) {
+  .home-view .celestial-hero{
+    display:block;min-height:0;
+    padding:15px 16px 14px;margin:0;
+    border-radius:13px;
+    background:
+      radial-gradient(circle at 92% 20%,rgba(42,151,226,.17),transparent 40%),
+      linear-gradient(118deg,#0b1b30,#091325 80%,#0b1b30);
+  }
+  .home-view .celestial-hero::after{
+    content:"";position:absolute;inset:0;z-index:-1;opacity:.9;
+    background:
+      radial-gradient(circle at 94% 34%,transparent 0 28px,rgba(75,182,241,.18) 29px,transparent 30px),
+      radial-gradient(circle at 94% 34%,transparent 0 47px,rgba(75,182,241,.14) 48px,transparent 49px),
+      radial-gradient(circle at 94% 34%,transparent 0 70px,rgba(75,182,241,.08) 71px,transparent 72px);
+    pointer-events:none;
+  }
+  .home-view .celestial-hero-copy{
+    position:relative;z-index:2;display:grid;
+    grid-template-columns:minmax(0,1fr) auto;align-items:center;
+    column-gap:10px;row-gap:0;padding:0;
+  }
+  .home-view .celestial-eyebrow{
+    grid-column:1/-1;grid-row:1;
+    font-size:8px;line-height:1.3;letter-spacing:.11em;
+  }
+  .home-view .celestial-greeting{
+    grid-column:1/-1;grid-row:2;
+    font-size:14px!important;line-height:1.25!important;
+    margin:9px 0 4px!important;color:#a7c3db!important;
+  }
+  .home-view .celestial-headline{
+    grid-column:1;grid-row:3;
+    font-size:clamp(23px,6.1vw,29px);
+    letter-spacing:-.05em;line-height:1.2;
+    margin:0;max-width:none;
+  }
+  .home-view .celestial-headline br{display:none}
+  .home-view .celestial-headline em::before{content:" "}
+  .home-view .celestial-description,
+  .home-view .celestial-hero-status,
+  .home-view .orbit-system,
+  .home-view .celestial-hero-aside,
+  .home-view .home-fast-actions{display:none!important}
+  .home-view .celestial-mobile-log{
+    grid-column:2;grid-row:3;
+    display:inline-flex;align-items:center;justify-content:center;gap:7px;
+    min-height:44px;padding:0 12px;white-space:nowrap;
+    border:1px solid rgba(255,158,105,.39);
+    border-radius:24px;background:rgba(255,132,77,.11);
+    color:#ffba92;font-size:11px;font-weight:800;text-decoration:none;
+    transition:border-color .17s,background .17s;
+  }
+  .home-view .celestial-mobile-log:hover,.home-view .celestial-mobile-log:focus-visible{
+    background:rgba(255,135,80,.22);border-color:#ffaa80;
+  }
+  .celestial-mobile-log svg{width:15px;height:15px;flex:0 0 15px}
+  .celestial-mobile-log svg:last-child{width:12px;height:12px;flex-basis:12px}
+  .home-view .home-snapshot-head{margin:13px 0 8px}
+  .home-view .home-snapshot-head h2{font-size:19px}
+  .home-view .home-live-label{display:none}
+  .home-view .home-snapshot{margin-bottom:13px}
+  .home-view .home-snapshot-tile{min-height:99px;padding:12px 10px}
+  .home-view .home-snapshot-tile strong{margin-top:11px}
+  .home-view .home-work-grid{gap:12px}
+}
+@media (max-width:370px){
+  .home-view .celestial-hero{padding:13px 11px}
+  .home-view .celestial-headline{font-size:22px;line-height:1.22}
+  .home-view .celestial-mobile-log{gap:5px;padding:0 9px;font-size:10px}
+  .celestial-mobile-log svg:last-child{display:none}
+  .home-view .home-snapshot-tile{padding:10px 8px}
+}
+/* Short landscape phone: especially limited vertical height. */
+@media (max-width:980px) and (max-height:520px) and (min-width:611px) {
+  .home-view .celestial-hero{max-width:100%;padding:12px 20px}
+  .home-view .celestial-greeting{margin-top:4px!important}
+  .home-view .celestial-headline{font-size:26px}
+  .home-view .home-snapshot{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
