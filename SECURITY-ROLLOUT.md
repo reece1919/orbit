@@ -1,31 +1,47 @@
-# ORBIT / GAIA free security rollout
+# ORBIT + GAIA — enforced MFA security baseline
 
-Status: **Enrollment and TOTP challenge UI deployed; mandatory enforcement NOT activated.** No verified second factors or live sign-in tests were performed by the coding assistant.
+**Status: AAL2 enforced.** The Supabase account has two distinct verified TOTP factors. ORBIT and GAIA were configured to request an authenticator code at login; successful challenge verification refreshes the application. The previously dismissible second-factor prompt now offers **Verify** or **Sign out**.
 
-## Recovery decision — required before enforcement
-Supabase Auth **does not provide TOTP recovery codes**. Enroll an authenticator on your primary device, verify it, then enroll a second independent authenticator (ideally a separate phone/tablet or password-manager vault with separate recovery). Sign out on a spare browser and confirm sign-in with each authenticator. Protect your Supabase admin account separately. A lost-factor account may require authorized manual recovery in the Supabase Dashboard; do not assume email/password alone can bypass an enforced MFA policy.
+## Recovery
 
-**Do not enable RLS AAL2 constraints or Edge Function AAL2 rejection until the user confirms both backup factors and recovery planning, and provides explicit permission.** Do not silently switch mandatory MFA on via a repo deploy. Enrollment normally ends other sessions; re-authenticate on other devices.
+- Supabase Auth does **not** provide TOTP recovery codes. Keep two independently accessible authenticator factors enrolled, preferably on separate devices.
+- Test a clean-browser login using each factor independently. The backend has been validated using simulated AAL1/AAL2 sessions, but only the account holder can complete a real-device MFA test.
+- Do not unenroll your last available factor. If both factors become unavailable, recovery may require intervention by an authorized Supabase project administrator.
+- A user with an existing AAL1 session will need to complete MFA to read or modify private data. This is intentional.
 
-## Stage A — Current
-- ORBIT Settings → Your account → Manage authenticators.
-- GAIA → Care journal/account → Manage authenticators.
-- Supabase TOTP `enroll`, `challengeAndVerify`, `listFactors`, `getAuthenticatorAssuranceLevel`. Secret/QR displayed only while enrolling. No secret is saved to source or local project storage.
-- Existing sign-in remains enabled. If a verified factor exists, the UI prompts for its six-digit code, but the button can still close during this recovery-first rollout. **UI prompts are not security enforcement.**
-- Browser meta CSP deployed, external Supabase JS package pinned, both projects have CodeQL/security workflows and Dependabot config.
-- Server-side private data RLS already restricts by account ID. Server-only OAuth and push secret tables cannot be read by anon/authenticated.
+## Database enforcement
 
-## Stage B — After recovery approval
-1. Enroll at least two independently recoverable authenticators and test each on a fresh login.
-2. Introduce **opted-in** AAL2 RLS restrictive policies for sensitive application tables: ORBIT PULSE, FUEL, saved snapshots, ChatGPT shortcut; GAIA private care records, notes, photos, and custom tasks. Test with aal1 and aal2 sessions. Ensure storage policies also check the JWT assurance level.
-3. Make both Edge Functions require AAL2 for user actions when factor enrollment is complete, with step-up guidance instead of generic failures. Scheduled PULSE backend dispatch stays service-only.
-4. Disable MFA bypass in frontend only after backend policies and recovery verification are confirmed.
-5. Re-test Todoist, PULSE, FUEL, and GAIA on desktop and iPhone. Define an administrator-assisted recovery procedure and backup of nonsecret user content.
+The migration in `supabase/migrations/20261013_enforce_orbit_gaia_mfa_aal2.sql` adds **RESTRICTIVE**, `authenticated` AAL2 rules to the following 11 public tables:
+`fuel_food_entries`, `gaia_ai_reviews`, `gaia_custom_tasks`, `gaia_task_completions`, `orbit_chat_shortcuts`, `orbit_external_snapshots`, `plant_care_events`, `plant_photos`, `pulse_journals`, `pulse_moods`, `pulse_settings`.
 
-## Additional checks
-- Never commit service-role keys, private VAPID signing keys, cron authorization tokens, or TOTP secrets.
-- Frontend publishable Supabase API keys are not secrets. RLS/role grants enforce privacy.
-- GitHub Pages **cannot set all security headers via an HTML meta tag** (e.g. HSTS and frame-ancestors). CSP in meta form is still useful, with that limitation.
-- Basic API probes (Oct 13, 2026): Todoist and PULSE correctly rejected unauthenticated POST with 401, untrusted Origin with 403. More negative tests are needed with separate authorized accounts, expired tokens, invalid inputs and failure/retry simulation.
-- GitHub CodeQL and security actions run for the two **public** repositories without a paid subscription; check Actions output for pass/fail.
-- Supabase Security Advisor reports leaked-password checks disabled (may require paid tier) and intentional RLS-without-policy on backend-only tables. No paid features were enabled.
+The same AAL2 rule covers `storage.objects` for the private `gaia-plant-photos` bucket. The unrelated `rune_workspaces` table is expressly **not** covered.
+
+Verification with simulated Supabase JWT claims after migration:
+- **AAL1**: zero user-visible snapshot, mood, food, plant photo, and private bucket records.
+- **AAL2**: existing user-owned snapshot, mood, food, plant photo, and private bucket records visible.
+- Ownership RLS remains in place for both assurance levels; AAL2 never bypasses ownership rules.
+
+## Edge Function enforcement
+
+- `orbit-todoist`: verifies a user JWT and requires `aal2` for all authenticated POST actions. Preserves single-use PKCE public OAuth callback.
+- `orbit-pulse`: verifies a user JWT and requires `aal2` for authenticated POST actions. Preserves the separate, secret-authenticated scheduler dispatch.
+- Both Edge Functions use custom verified JWT checking and therefore preserve `verify_jwt=false` as it was before this migration.
+
+## Frontend and automated checks
+
+- GitHub Pages meta Content Security Policies for ORBIT and GAIA, plus strict-origin referrer policy; third-party Supabase SDK version pinned.
+- Shared MFA UI in `security-mfa.js`, with account-based factor choice when more than one factor is enrolled.
+- GitHub Actions: CodeQL, syntax validation, obvious secret checks, CSP check; Dependabot for GitHub Actions.
+- GitHub Pages meta-CSP cannot implement server-only HTTP security headers.
+- Security Advisor may still flag disabled leaked-password protection, which may require a paid tier; no paid features were enabled.
+
+## Emergency rollback (administrator-controlled)
+
+Only after confirming the account holder needs access restored, remove the 11 `require_verified_totp_aal2` policies from the named public tables and `gaia_photo_storage_require_aal2` from `storage.objects`. Revert the server-side AAL2 checks in both Edge Functions if necessary. Do **not** drop ownership policies or disable RLS itself. This is an emergency recovery procedure, not a normal login bypass.
+
+## Follow-up acceptance tests
+
+- Log in to ORBIT and GAIA in a fresh/private browser session; verify the six-digit challenge and then observe previously saved private records reappear.
+- Sign out and repeat the challenge with the independent backup factor.
+- Confirm Todoist and PULSE user API access after authentication.
+- Check the latest GitHub Pages deployment and CodeQL Actions for a green result before treating the release as fully browser-verified.
