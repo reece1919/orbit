@@ -1,0 +1,37 @@
+/* Shared MFA UI, intentionally opt-in pending recovery review. */
+#shared-mfa[hidden],#mfa-enroll[hidden],#mfa-code-form[hidden],.mfa-shell [hidden]{display:none!important}
+#shared-mfa{
+ position:fixed;inset:0;z-index:10000;background:rgba(4,11,19,.92);
+ color:#e7f4ff;display:flex;align-items:center;justify-content:center;
+ overflow-y:auto;padding:28px 12px;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+#shared-mfa .mfa-window{
+ box-sizing:border-box;width:min(100%,475px);background:#0d1e30;border:1px solid #507695;
+ border-radius:16px;padding:25px;box-shadow:0 20px 100px #0009;
+}
+#shared-mfa *{box-sizing:border-box}
+#shared-mfa .mfa-headingline{display:flex;align-items:center;gap:12px}
+#shared-mfa .mfa-symbol{color:#8fd9ff;font-size:28px}
+#shared-mfa .mfa-eyebrow{font-size:10px;letter-spacing:.14em;color:#84b8ce;margin:0 0 5px}
+#shared-mfa h2{margin:0;color:#ecfaff;font-size:21px;line-height:1.3}
+#shared-mfa p{font-size:12px;color:#b8c9d9;line-height:1.6}
+#shared-mfa label{display:block;font-size:12px;color:#d5e7fa;margin:12px 0}
+#shared-mfa input{display:block;width:100%;background:#071422;color:#fff;border:1px solid #65839d;border-radius:9px;padding:11px;font-size:15px;margin-top:6px}
+#shared-mfa button{cursor:pointer;padding:10px 13px;border:1px solid #5983a1;border-radius:9px;background:#16314a;color:#e3f5ff;font-weight:700;font-size:12px}
+#shared-mfa button:hover{background:#245178}
+#shared-mfa button:disabled{opacity:.5;cursor:wait}
+#shared-mfa #mfa-verify{width:100%;background:#256695}
+#shared-mfa #mfa-qr{display:block;margin:12px auto;background:#fff;padding:8px;object-fit:contain;border-radius:9px;max-width:90%}
+#shared-mfa .mfa-factor{background:#132b40;border:1px solid #325170;border-radius:7px;padding:8px 11px}
+#shared-mfa .mfa-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:13px}
+#shared-mfa .mfa-recovery{border-top:1px solid #385571;padding-top:13px;font-size:11px}
+#shared-mfa .mfa-status{color:#a3e2ff;min-height:0}
+#shared-mfa #mfa-secret{font-size:11px;letter-spacing:.03em}
+#shared-mfa #mfa-done{margin-left:auto}
+.mfa-settings-widget{margin-top:14px;padding:13px;border:1px solid rgba(120,166,200,.33);border-radius:10px}
+.mfa-settings-widget p{font-size:11px;line-height:1.5}
+.mfa-settings-widget button{cursor:pointer}
+@media(max-width:520px){
+ #shared-mfa .mfa-window{padding:19px}
+ #shared-mfa .mfa-actions button{min-height:43px}
+}
