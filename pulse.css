@@ -1,0 +1,65 @@
+/* ORBIT PULSE — an observatory for private mood & reflection */
+.home-mini-pulse{border-top:2px solid rgba(110,192,255,.52)!important;background:linear-gradient(136deg,rgba(13,30,52,.96),rgba(10,19,34,.96))}
+.home-mini-pulse .home-mini-icon{border-radius:50%;color:#79d7ff;background:rgba(51,166,238,.13)}
+.home-mini-pulse .eyebrow{color:#9ed9ff!important}
+.pulse-view{--pulse-blue:#65cfff;--pulse-violet:#b9a1ff}
+.pulse-view .page-head h1{letter-spacing:-.055em}
+.pulse-intro{display:flex;align-items:center;gap:23px;padding:19px 24px;border-radius:15px;border:1px solid rgba(91,175,230,.29);background:linear-gradient(115deg,rgba(22,53,86,.48),rgba(9,22,41,.9));margin:15px 0 13px}
+.pulse-intro strong{color:#d8efff;font-size:15px}
+.pulse-intro p{margin:5px 0 0;color:#95abc1;font-size:12px;line-height:1.55}
+.pulse-intro-orbit{position:relative;width:60px;height:60px;flex:0 0 60px;border:2px solid #3fbbe9;border-radius:50%;display:grid;place-items:center;box-shadow:0 0 23px rgba(66,182,241,.3),inset 0 0 20px rgba(36,157,237,.17)}
+.pulse-intro-orbit::before{content:"";height:25px;width:77px;border:1px solid rgba(194,162,255,.65);border-radius:50%;transform:rotate(-30deg);position:absolute}
+.pulse-intro-orbit span{width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#c1edff,#35a0eb 75%);box-shadow:0 0 16px #269fe2}
+.pulse-columns{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(275px,.8fr);gap:15px;align-items:start}
+.pulse-main,.pulse-aside{display:grid;gap:15px;min-width:0}
+.pulse-view .module{min-width:0}
+.pulse-view .module-head{margin-bottom:17px}
+.pulse-view .module-head h2{font-size:20px;margin:4px 0 0}
+.pulse-view .module-head h3{font-size:17px;margin:4px 0 0}
+.pulse-overline{font-size:9px;letter-spacing:.16em;font-weight:780;color:#83caff}
+.pulse-muted-label,.pulse-optional{font-size:10px;color:#859db4}
+.pulse-mood-panels{display:grid;gap:13px}
+.pulse-mood-card{background:rgba(9,21,39,.75);border:1px solid rgba(93,148,205,.21);border-radius:12px;padding:17px 17px 14px}
+.pulse-mood-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.pulse-mood-head h3{font-size:16px;font-weight:750;margin:3px 0 0;color:#edf6ff}
+.pulse-mood-saved{color:#84d3bb;font-size:10px;text-align:right}
+.pulse-mood-scale{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}
+.pulse-mood-option{border:1px solid rgba(105,155,207,.24);background:rgba(13,29,51,.86);min-width:0;border-radius:10px;padding:10px 2px 8px;display:flex;align-items:center;flex-direction:column;justify-content:center;gap:6px;color:#a5b7c9;transition:background .15s,border .15s,transform .15s}
+.pulse-mood-option span{font-size:22px;line-height:1.2}
+.pulse-mood-option small{font-size:10px}
+.pulse-mood-option:hover:not(:disabled){background:rgba(49,93,139,.27);transform:translateY(-1px)}
+.pulse-mood-option.selected{background:rgba(74,159,219,.17);border-color:#76cbf7;color:#dff3ff;box-shadow:0 0 16px rgba(65,173,240,.13)}
+.pulse-mood-option:disabled{opacity:.5}
+.pulse-mood-detail{margin-top:12px;border-top:1px solid rgba(108,150,194,.2);padding-top:11px}
+.pulse-mood-detail summary{cursor:pointer;list-style:none;color:#a9bdd1;font-size:11px}
+.pulse-mood-detail summary::before{content:"＋";margin-right:7px;color:#77c9ff}
+.pulse-mood-detail[open] summary::before{content:"−"}
+.pulse-detail-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:13px 0 9px}
+.pulse-detail-fields label,.pulse-time-grid label,.pulse-timezone{font-size:11px;color:#adc0d8;display:grid;gap:5px}
+.pulse-detail-fields select,.pulse-time-grid input,.pulse-timezone input{min-width:0;background:#091525;color:#edf4ff;border:1px solid rgba(96,160,216,.28);border-radius:8px;padding:9px;width:100%;color-scheme:dark}
+.pulse-mood-detail textarea{background:rgba(6,18,34,.92);border:1px solid rgba(96,160,216,.29);border-radius:9px;padding:11px;resize:vertical;width:100%;color:#eaf4ff;min-height:65px}
+.pulse-mood-detail > .quiet-pill{margin-top:9px}
+.pulse-journal{border-top:2px solid rgba(183,139,255,.4)!important}
+.pulse-prompt{font-size:clamp(17px,1.7vw,24px);line-height:1.45;letter-spacing:-.02em;color:#eedfff;font-weight:740;border-left:3px solid #a38cfa;padding:9px 0 9px 19px;margin:0 0 16px;background:transparent}
+#pulse-journal-text{display:block;min-height:170px;width:100%;border:1px solid rgba(133,132,214,.29);background:rgba(9,17,36,.81);border-radius:11px;color:#e7f5ff;padding:15px;resize:vertical}
+.pulse-journal-actions{display:flex;gap:12px;justify-content:space-between;align-items:center;margin-top:12px}
+.pulse-journal-actions .watch-detail{margin:0}
+.pulse-history-list{display:grid;gap:6px}
+.pulse-history-day{display:flex;gap:11px;justify-content:space-between;align-items:center;padding:11px 12px;background:rgba(9,22,41,.7);border-radius:8px;border:1px solid rgba(82,144,201,.15)}
+.pulse-history-day strong{margin-right:auto;font-size:11px;color:#cbdbeb}
+.pulse-history-day span{font-size:18px;letter-spacing:.04em}
+.pulse-history-day small{color:#c2affc;font-size:10px}
+.pulse-time-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:15px 0}
+.pulse-timezone{margin-bottom:15px}
+.pulse-switch{display:flex;align-items:center;gap:9px;font-size:11px;color:#aec4d5;margin:12px 0 15px}
+.pulse-switch input{accent-color:#55c4f5}
+.pulse-push-actions{display:flex;flex-wrap:wrap;gap:8px;margin:15px 0}
+.pulse-discreet{font-size:11px}
+.pulse-view #pulse-status{margin:0 0 16px;font-size:11px}
+.pulse-notification-setup{border-top:2px solid rgba(89,198,255,.34)!important}
+@media(max-width:1140px){.pulse-columns{grid-template-columns:minmax(0,1fr) minmax(240px,.75fr)}}
+@media(max-width:900px){.pulse-columns{grid-template-columns:1fr}.pulse-aside{grid-template-columns:repeat(2,minmax(0,1fr))}.pulse-schedule,.pulse-notification-setup{min-width:0}}
+@media(max-width:620px){.pulse-intro{gap:14px;padding:14px}.pulse-intro-orbit{width:48px;height:48px;flex-basis:48px}.pulse-intro-orbit::before{width:62px}.pulse-intro p{font-size:11px}.pulse-aside{grid-template-columns:1fr}.pulse-mood-card{padding:12px 10px}.pulse-mood-scale{gap:4px}.pulse-mood-option{padding:9px 1px}.pulse-mood-option span{font-size:21px}.pulse-mood-option small{font-size:9px}.pulse-journal-actions{flex-wrap:wrap}.pulse-view .module-head{gap:6px}.pulse-muted-label{display:none}}
+@media(prefers-reduced-motion:reduce){.pulse-mood-option{transition:none}}
+body[data-theme="light"] .pulse-view{color:#dfefff}
+body[data-theme="light"] .pulse-intro,body[data-theme="light"] .pulse-mood-card,body[data-theme="light"] .pulse-schedule,body[data-theme="light"] .pulse-notification-setup{color:#e2f2ff}
