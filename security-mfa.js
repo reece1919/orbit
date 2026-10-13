@@ -39,10 +39,9 @@
   function show() {
     el.hidden = false;
     document.body.classList.add("mfa-dialog-visible");
-    $("#mfa-code").value = "";
-    $("#mfa-code-form").hidden = false;
     activeDialog = true;
-    $("#mfa-code").focus();
+    if(!$("#mfa-code-form").hidden) $("#mfa-code").focus();
+    else $("#mfa-add").focus();
   }
   function hide() {
     if(enrollment) return;
