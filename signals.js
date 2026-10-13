@@ -123,6 +123,9 @@ document.addEventListener("click",e=>{
 });
 document.addEventListener("orbit:auth-changed",e=>accountChanged(e.detail?.user||null));
 window.addEventListener("focus",()=>{if(account&&Date.now()-lastLoaded>120000)void refresh()});
+// Keep the visible dashboard in sync with the private snapshot updated by the hourly inbox job.
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&account)void refresh()});
+setInterval(()=>{if(!document.hidden&&account&&Date.now()-lastLoaded>120000)void refresh()},180000);
 render();
 void window.ORBITAuth.ready.then(()=>accountChanged(window.ORBITAuth.user||null));
 })();
