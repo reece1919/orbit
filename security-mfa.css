@@ -35,3 +35,5 @@
  #shared-mfa .mfa-window{padding:19px}
  #shared-mfa .mfa-actions button{min-height:43px}
 }
+
+#shared-mfa select{display:block;width:100%;background:#071422;color:#fff;border:1px solid #65839d;border-radius:9px;padding:11px;font-size:14px;margin-top:6px}
