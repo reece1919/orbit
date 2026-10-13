@@ -8,10 +8,16 @@
   <title>ORBIT — Celestial Command Center</title>
   <link rel="stylesheet" href="styles.css?v=0.6.2" />
   <link rel="stylesheet" href="celestial.css?v=0.9.0" />
+  <link rel="stylesheet" href="pulse.css?v=1.0.0" />
+  <link rel="manifest" href="pulse.webmanifest" />
+  <link rel="icon" type="image/svg+xml" href="orbit-icon.svg" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="ORBIT" />
   <script src="auth.js?v=0.6.2" defer></script>
   <script src="app.js?v=0.8.0" defer></script>
   <script src="integrations.js?v=0.9.0" defer></script>
   <script src="fuel.js?v=0.6.2" defer></script>
+  <script src="pulse.js?v=1.0.0" defer></script>
 </head>
 <body data-theme="dark" data-auth-state="checking">
   <section id="orbit-auth" class="auth-screen" aria-labelledby="auth-heading" aria-live="polite">
@@ -46,6 +52,7 @@
         <button type="button" class="nav-item" data-view="focus"><span data-icon="check-circle"></span> Todoist &amp; Tasks <span class="nav-count" id="nav-task-count">0</span></button>
         <button type="button" class="nav-item" data-view="gaia"><span data-icon="leaf"></span> GAIA <span class="nav-count" id="nav-gaia-count">—</span></button>
         <button type="button" class="nav-item" data-view="fuel"><span data-icon="heart-pulse"></span> FUEL <span class="nav-count" id="nav-fuel-count">—</span></button>
+        <button type="button" class="nav-item" data-view="pulse"><span data-icon="activity"></span> PULSE <span class="nav-indicator"></span></button>
         <button type="button" class="nav-item" data-view="routines"><span data-icon="repeat"></span> Routines </button>
         <button type="button" class="nav-item" data-view="settings"><span data-icon="settings"></span> Settings </button>
       </nav>
@@ -59,7 +66,7 @@
       </div>
       <div class="sidebar-bottom">
         <div class="local-badge"><span data-icon="hard-drive"></span><div><strong>CONNECTED WORKSPACE</strong><small>Tasks and plant data from connected sources</small></div></div>
-        <div class="sidebar-footer">ORBIT / SYSTEM 001 <span>v0.9</span></div>
+        <div class="sidebar-footer">ORBIT / SYSTEM 001 <span>v1.0</span></div>
       </div>
     </aside>
     <button type="button" id="nav-backdrop" class="nav-backdrop" aria-label="Close navigation" hidden></button>
@@ -166,6 +173,12 @@
               </section>
             </div>
             <div class="home-side-stack">
+              <section class="module home-mini-card home-mini-pulse">
+                <div class="home-mini-top"><span class="home-mini-icon"><span data-icon="activity"></span></span><span class="eyebrow small">PULSE / PERSONAL REFLECTION</span></div>
+                <h3>How's today going?</h3>
+                <p id="pulse-home-summary" class="watch-detail">Connecting your private PULSE journal…</p>
+                <div class="home-mini-actions"><button type="button" class="subtle-link" data-view="pulse">Check in <span data-icon="arrow-right"></span></button></div>
+              </section>
               <section class="module home-mini-card home-mini-fuel">
                 <div class="home-mini-top"><span class="home-mini-icon"><span data-icon="heart-pulse"></span></span><span class="eyebrow small">FUEL / NUTRITION</span></div>
                 <h3>Food journal</h3>
@@ -282,6 +295,45 @@
           <p class="helper-paragraph">Local priorities do not sync to Todoist. Use “Add Todoist task” above for items that should sync across your devices.</p>
         </section>
 
+        <section data-panel="pulse" class="view-panel pulse-view" hidden>
+          <div class="eyebrow"><span class="eyebrow-line"></span> PULSE / MOOD & REFLECTION</div>
+          <div class="page-head"><div><h1>PULSE<span class="accent-period">.</span></h1><p>Three small check-ins, one thoughtful question, and room to notice your patterns. No generated prompts or AI cost.</p></div><button id="pulse-refresh" type="button" class="quiet-pill">Refresh</button></div>
+          <div class="pulse-intro"><span class="pulse-intro-orbit" aria-hidden="true"><span></span></span><div><strong>A moment to check your coordinates.</strong><p>There is no good or bad score. You can skip anything, change an answer later, or write as little as you like.</p></div></div>
+          <p id="pulse-status" class="watch-detail" role="status" aria-live="polite">Connecting PULSE…</p>
+          <div class="pulse-columns">
+            <div class="pulse-main">
+              <section class="module pulse-checkins"><div class="module-head"><div><div class="eyebrow small">THROUGHOUT THE DAY</div><h2>Mood check-ins</h2></div><span class="pulse-muted-label">A tap is enough</span></div><div id="pulse-mood-panels" class="pulse-mood-panels"></div></section>
+              <section class="module pulse-journal"><div class="module-head"><div><div class="eyebrow small">ONE PROMPT A DAY / 20 IN ROTATION</div><h2>Daily journal</h2></div><span class="pulse-muted-label">Only you can see your entries</span></div>
+                <blockquote id="pulse-prompt-text" class="pulse-prompt">Loading today's reflection…</blockquote>
+                <label class="sr-only" for="pulse-journal-text">Your journal entry</label>
+                <textarea id="pulse-journal-text" rows="6" maxlength="12000" placeholder="Take a moment to write whatever comes to mind…"></textarea>
+                <div class="pulse-journal-actions"><span id="pulse-journal-state" class="watch-detail">Nothing written today yet.</span><button id="pulse-journal-save" type="button" class="primary-button">Save reflection</button></div>
+              </section>
+              <section class="module pulse-history"><div class="module-head"><div><div class="eyebrow small">YOUR RECENT RECORD</div><h2>Reflection history</h2></div></div><div id="pulse-history" class="pulse-history-list"></div></section>
+            </div>
+            <div class="pulse-aside">
+              <section class="module pulse-schedule"><div class="module-head"><div><div class="eyebrow small">YOUR LOCAL SCHEDULE</div><h3>Gentle reminders</h3></div></div>
+                <p class="watch-detail">Choose when you'd like to hear from PULSE. Scheduled Web Push can work even with ORBIT closed, after you enable notifications on each device.</p>
+                <form id="pulse-schedule-form">
+                  <div class="pulse-time-grid">
+                    <label>Morning <input data-pulse-time="morning" type="time" value="09:00" required/></label>
+                    <label>Afternoon <input data-pulse-time="afternoon" type="time" value="14:00" required/></label>
+                    <label>Evening <input data-pulse-time="evening" type="time" value="20:00" required/></label>
+                    <label>Journal <input id="pulse-journal-time" type="time" value="20:30" required/></label>
+                  </div>
+                  <label class="pulse-timezone">Time zone <input id="pulse-timezone" type="text" maxlength="80" placeholder="America/Los_Angeles" spellcheck="false" required/></label>
+                  <label class="pulse-switch"><input id="pulse-notification-enabled" type="checkbox"/><span>Reminders enabled for my account</span></label>
+                  <button type="submit" class="quiet-pill">Save reminder schedule</button>
+                </form>
+              </section>
+              <section class="module pulse-notification-setup"><div class="module-head"><div><div class="eyebrow small">DEVICE NOTIFICATIONS</div><h3>Enable Web Push</h3></div></div>
+                <p id="pulse-push-status" class="watch-detail">Checking notification support…</p>
+                <div class="pulse-push-actions"><button id="pulse-enable-push" class="primary-button" type="button">Enable notifications</button><button id="pulse-disable-push" class="quiet-pill" type="button" hidden>Disable on this device</button><button id="pulse-test-push" class="quiet-pill" type="button" disabled>Send test</button></div>
+                <p class="watch-detail pulse-discreet">Notifications show generic check-in reminders—not your mood or private journal text. They require device permission, and Focus / Do Not Disturb may silence them.</p>
+              </section>
+            </div>
+          </div>
+        </section>
         <section data-panel="routines" class="view-panel" hidden>
           <div class="eyebrow"><span class="eyebrow-line"></span> ROUTINES / WEEKLY PROGRESS</div><div class="page-head"><div><h1>Routines<span class="accent-period">.</span></h1><p>Keep score on the habits that matter. Check off each occurrence as you do it.</p></div><button data-action="add-routine" type="button" class="primary-button"><span data-icon="plus"></span> New routine</button></div>
           <div class="privacy-ribbon"><span data-icon="repeat"></span><div>Weekly progress resets each Monday. Your older completions remain in the local history, and marking one complete does not create or complete a Todoist task.</div></div>
@@ -296,7 +348,7 @@
           <section class="module setting-card"><div class="settings-icon"><span data-icon="database"></span></div><h3>Your data</h3><p>Save a backup of your local projects, priorities, routines, links, and notes (plus any legacy local records). Todoist and GAIA are not copied into the backup. Import it on another browser to move your setup. Keep this sensitive export secure.</p><div class="data-actions"><button type="button" class="outline-button" id="export-data"><span data-icon="download"></span> Export backup</button><label class="outline-button file-label"><span data-icon="upload"></span> Import backup <input id="import-data" type="file" accept="application/json,.json" hidden></label></div><div class="settings-warning"><span data-icon="info"></span> Backups are not automatic cloud sync.</div><button type="button" id="orbit-import-legacy" class="outline-button legacy-import" hidden>Import older ORBIT browser data</button></section>
           <section class="module setting-card"><div class="settings-icon"><span data-icon="shield-check"></span></div><h3>Privacy & integrations</h3><p>Todoist supports an encrypted server-side OAuth connection across devices, with a temporary browser-tab token fallback. Your ORBIT sign-in uses GAIA’s existing Supabase account and owner-restricted tables. Todoist normally connects through its approval screen without a personal API token. No finance or health syncing.</p><div class="integrations"><div><span class="status-dot ready"></span> GAIA <span>Public catalog + signed-in tasks</span></div><div><span class="status-dot planned"></span> Todoist <span>Cloud OAuth; connect from Tasks</span></div><div><span class="status-dot planned"></span> Money &amp; Health <span>Paused</span></div><div><span class="status-dot ready"></span> Supabase authentication <span>Shared with GAIA</span></div><div><span class="status-dot planned"></span> ORBIT notes sync <span>Browser-only for now</span></div></div><button type="button" class="danger-link" id="reset-data">Reset ORBIT data on this device</button></section></div>
         </section>
-        <footer class="main-footer"><span>ORBIT HEADQUARTERS <span class="foot-dot">◆</span> BUILT TO KEEP THINGS MOVING</span><span>VERSION 0.9 · CELESTIAL SIDE QUESTS</span></footer>
+        <footer class="main-footer"><span>ORBIT HEADQUARTERS <span class="foot-dot">◆</span> BUILT TO KEEP THINGS MOVING</span><span>VERSION 1.0 · PULSE REFLECTIONS</span></footer>
       </main>
       <nav class="mobile-nav" aria-label="Quick navigation">
         <button class="mobile-nav-item active" type="button" data-view="home"><span data-icon="layout-dashboard"></span><span>Home</span></button>
