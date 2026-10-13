@@ -3,7 +3,7 @@
   "use strict";
   const $ = s => document.querySelector(s);
   const name = location.pathname.startsWith("/gaia") ? "GAIA" : "ORBIT";
-  let client = null, userId = "", verified = [], activeId = "", busy = false, enrollment = null, activeDialog = false;
+  let client = null, userId = "", verified = [], activeId = "", busy = false, enrollment = null, activeDialog = false, verificationRequired = false;
   const el = document.createElement("section");
   el.id = "shared-mfa";
   el.className = "mfa-shell";
@@ -17,7 +17,7 @@
     '<form id="mfa-code-form" hidden><label id="mfa-factor-choice" hidden>Use authenticator <select id="mfa-factor-select"></select></label><label>6-digit authenticator code <input id="mfa-code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required></label><button type="submit" id="mfa-verify">Verify code</button></form>',
     '<p class="mfa-status" id="mfa-result" role="status" aria-live="polite"></p>',
     '<p class="mfa-recovery">Recovery codes are not provided by Supabase. Before requiring MFA, add a second authenticator on a separate device and confirm both work.</p>',
-    '<div class="mfa-actions"><button type="button" id="mfa-add">Add authenticator</button><button type="button" id="mfa-cancel" hidden>Cancel setup</button><button type="button" id="mfa-done">Close</button></div>',
+    '<div class="mfa-actions"><button type="button" id="mfa-add">Add authenticator</button><button type="button" id="mfa-cancel" hidden>Cancel setup</button><button type="button" id="mfa-signout" hidden>Sign out</button><button type="button" id="mfa-done">Close</button></div>',
     "</div>"
   ].join("");
   document.body.appendChild(el);
@@ -45,7 +45,7 @@
     else $("#mfa-add").focus();
   }
   function hide() {
-    if(enrollment) return;
+    if(enrollment || verificationRequired) return;
     el.hidden = true;
     document.body.classList.remove("mfa-dialog-visible");
     activeDialog = false;
@@ -65,6 +65,8 @@
       const current = assurance.data?.currentLevel || "aal1";
       const next = assurance.data?.nextLevel || current;
       const pending = verified.length > 0 && next === "aal2" && current !== "aal2";
+      verificationRequired = pending;
+      $("#mfa-signout").hidden = !pending;
       if(pending) {
         $("#mfa-heading").textContent = "Verify your sign-in";
         $("#mfa-explain").textContent = "Your account has an authenticator. Enter its current code to finish signing in to " + name + ".";
@@ -72,7 +74,7 @@
         fillFactors();
         $("#mfa-code-form").hidden = false;
         $("#mfa-add").hidden = true;
-        $("#mfa-done").hidden = false; // Setup stage: do not lock out a lost-factor account
+        $("#mfa-done").hidden = true; // AAL2 is enforced in Supabase RLS and Edge Functions.
         show();
       } else if(!activeDialog) hide();
       const status = $("#mfa-settings-status");
@@ -144,15 +146,17 @@
       const {error}=await client.auth.mfa.challengeAndVerify({factorId,code});
       if(error)throw error;
       resetEnrollment();
-      message("Authenticator verified. Your current session is protected.");
-      await refresh();
-      if(!enrollment && !($("#mfa-add").hidden))setTimeout(()=>{if(!enrollment)hide()},850);
+      verificationRequired = false;
+      message("Authenticator verified. Refreshing private modules…");
+      window.location.reload();
     }catch(err){message("Could not verify code: "+(err?.message||"Please try the next code."));}
     finally{changeBusy(false)}
   }
   function openSettings(){
     if(!client||!userId){message("Sign in first.");return}
+    if(verificationRequired){show();return;}
     resetEnrollment();
+    $("#mfa-signout").hidden=true;
     $("#mfa-add").hidden=false;
     $("#mfa-done").hidden=false;
     $("#mfa-heading").textContent="Account security";
@@ -161,7 +165,7 @@
   }
   function accountChanged(nextClient,nextUser){
     const next=nextUser?.id || "";
-    if(!nextClient||!next) {client=nextClient||null;userId="";verified=[];activeId="";resetEnrollment();hide();return;}
+    if(!nextClient||!next) {client=nextClient||null;userId="";verified=[];activeId="";verificationRequired=false;resetEnrollment();hide();return;}
     client=nextClient;
     if(userId!==next){userId=next;verified=[];activeDialog=false;resetEnrollment();}
     void refresh();
@@ -177,6 +181,18 @@
     void refresh();
   });
   $("#mfa-done").addEventListener("click",hide);
+  $("#mfa-signout").addEventListener("click",async()=>{
+    if(!client || busy)return;
+    changeBusy(true);
+    message("Signing out…");
+    const {error}=await client.auth.signOut({scope:"local"});
+    changeBusy(false);
+    if(error){message("Could not sign out: "+error.message);return;}
+    verificationRequired=false;
+    resetEnrollment();
+    hide();
+    window.location.reload();
+  });
   document.addEventListener("click", e=>{
     if(e.target.closest("#mfa-open") || e.target.closest("#gaia-mfa-open"))openSettings();
   });
