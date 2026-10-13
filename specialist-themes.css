@@ -1,0 +1,31 @@
+/* Specialist surfaces: FUEL kitchen ledger, PULSE reflection room */
+[data-panel="fuel"]{--fuel-copper:#dfa66a}
+[data-panel="fuel"] .page-head{padding:20px 24px;background:linear-gradient(110deg,#3b2d28,#242932);border-left:4px solid #d69b61;border-radius:6px}
+[data-panel="fuel"] .page-head h1{color:#f5d4a8;font-family:Georgia,serif;font-weight:600;letter-spacing:-.025em}
+[data-panel="fuel"] .module{background:linear-gradient(135deg,#23292c,#1c252b);border-color:#635044;border-radius:6px;box-shadow:inset 0 1px 0 #f1c08e13}
+[data-panel="fuel"] .fuel-overview{border-top:3px solid #dfa66a}
+[data-panel="fuel"] .fuel-metric{background:linear-gradient(150deg,#443329,#282a30);border-color:#7e6049}
+[data-panel="fuel"] .fuel-metric strong{color:#ffe1b5;font-family:Georgia,serif}
+[data-panel="fuel"] .module-head h3{color:#f1d5b0}
+[data-panel="fuel"] .fuel-entry-list>*{border-color:#735544}
+[data-panel="fuel"] .fuel-manual summary{color:#efc794}
+[data-panel="fuel"] .primary-button{background:#895b37;border-color:#b78d60}
+[data-panel="fuel"] .system-todoist{border-color:#72543f}
+[data-panel="pulse"]{--pulse-blue:#c2afd9;--pulse-violet:#c4acd7}
+[data-panel="pulse"] .page-head{padding:19px 23px;background:linear-gradient(120deg,#242b45,#29243c);border:1px solid #504969;border-radius:12px}
+[data-panel="pulse"] .page-head h1{font-family:Georgia,serif;color:#eadbf3;letter-spacing:.02em}
+[data-panel="pulse"] .pulse-intro{background:linear-gradient(110deg,#39334c,#242940);border-color:#716487;box-shadow:0 8px 28px #00000014}
+[data-panel="pulse"] .pulse-intro strong{color:#f1e5f3;font-family:Georgia,serif;font-size:20px}
+[data-panel="pulse"] .pulse-intro-orbit{width:59px;height:59px;flex-basis:59px;border:1px solid #a68cb9;border-radius:14px;background:linear-gradient(135deg,#6e608a,#373c5d);box-shadow:none}
+[data-panel="pulse"] .pulse-intro-orbit:before{content:"✧";position:static;transform:none;width:auto;height:auto;border:0;border-radius:0;font-size:31px;color:#ebdaf9}
+[data-panel="pulse"] .pulse-intro-orbit span{display:none}
+[data-panel="pulse"] .module{background:linear-gradient(145deg,#22283a,#252538);border-color:#5a526c;border-radius:13px}
+[data-panel="pulse"] .module-head h2,[data-panel="pulse"] .module-head h3{color:#e4d8ed;font-family:Georgia,serif;font-weight:500}
+[data-panel="pulse"] .pulse-journal{border-top:3px solid #aa91c6!important}
+[data-panel="pulse"] .pulse-prompt{color:#e7d5ed;font-family:Georgia,serif;font-weight:500}
+[data-panel="pulse"] .pulse-mood-card{background:#23273b;border-color:#635a78}
+[data-panel="pulse"] .pulse-mood-option{background:#303046;border-color:#665b80}
+[data-panel="pulse"] .pulse-mood-option.selected{background:#4b3e65;border-color:#c5addb;box-shadow:inset 0 0 0 1px #c5addb30}
+[data-panel="pulse"] .pulse-history-day{background:#2e2a40;border-color:#574e70}
+[data-panel="pulse"] .pulse-time-grid input,[data-panel="pulse"] .pulse-timezone input,[data-panel="pulse"] textarea{background:#191f30;border-color:#695c85}
+@media(max-width:620px){[data-panel="fuel"] .page-head,[data-panel="pulse"] .page-head{padding:14px 15px}}
