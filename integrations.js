@@ -8,7 +8,10 @@
   const $$ = selector => [...document.querySelectorAll(selector)];
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const TODAY = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
-  const dayOf = t => String(t?.due?.date || '').slice(0,10);
+  // A subtask with no explicit due date inherits its visible parent's date.
+  const byTaskId = id => tasks.find(x=>String(x.id)===String(id));
+  const ancestorsOf = t => {const result=[];const seen=new Set([String(t.id)]);let pid=t.parent_id;while(pid&&result.length<25&&!seen.has(String(pid))){seen.add(String(pid));const p=byTaskId(pid);if(!p)break;result.push(p);pid=p.parent_id;}return result};
+  const dayOf = t => String(t?.due?.date || ancestorsOf(t).find(p=>p.due?.date)?.due.date || '').slice(0,10);
   const timeText = () => new Date().toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});
   const gaiaRoot='https://reece1919.github.io/gaia/';
   const gaiaCatalog=gaiaRoot+'plants.json';
@@ -91,17 +94,17 @@
   function taskMarkup(t){
     const due=dayOf(t),overdue=due && due<TODAY();
     const detail=[due?(overdue?'Overdue · ':'Due ')+prettyDate(due):'No due date', Number(t.priority||1)>=3?'High priority':''].filter(Boolean).join(' · ');
-    return `<article class="live-task${overdue?' is-overdue':''}"><input type="checkbox" data-todoist-done="${esc(t.id)}" aria-label="Complete ${esc(t.content)}"><div class="live-task-body"><strong>${esc(t.content)}</strong><small>${esc(detail)}</small><a href="${esc(safeTaskLink(t.id))}" target="_blank" rel="noopener noreferrer">Open in Todoist ↗</a></div></article>`;
+    return `<article class="live-task${overdue?' is-overdue':''}"${t.parent_id?' style="margin-left:1.15rem;border-left:2px solid currentColor"':''}><input type="checkbox" data-todoist-done="${esc(t.id)}" aria-label="Complete ${esc(t.content)}"><div class="live-task-body"><strong>${t.parent_id?'↳ ':''}${esc(t.content)}</strong><small>${esc(detail)}</small><a href="${esc(safeTaskLink(t.id))}" target="_blank" rel="noopener noreferrer">Open in Todoist ↗</a></div></article>`;
   }
   const HOME_SYSTEMS=['gaia','echo','rune','fuel','pulse'];
   function homeTaskSystem(t){
     const labels=Array.isArray(t?.labels)?t.labels.map(x=>String(x).replace(/^@/,'').trim().toLowerCase()):[];
-    return HOME_SYSTEMS.find(x=>labels.includes(x))||'general';
+    return HOME_SYSTEMS.find(x=>labels.includes(x)) || ancestorsOf(t).map(p=>homeTaskSystem(p)).find(x=>x!=='general') || 'general';
   }
   function homeTaskMarkup(t){
     const system=homeTaskSystem(t);
     const icon=system==='general'?'':`<img class="agenda-system-icon" src="assets/systems/${system}.svg" alt="" width="20" height="20">`;
-    return `<article class="agenda-row"><input type="checkbox" data-todoist-done="${esc(t.id)}" aria-label="Complete ${esc(t.content)}"><span class="agenda-system-label">${icon}${esc(system==='general'?'GENERAL':system.toUpperCase())}</span><a href="${esc(safeTaskLink(t.id))}" target="_blank" rel="noopener noreferrer" class="agenda-task-title">${esc(t.content)}</a></article>`;
+    return `<article class="agenda-row"><input type="checkbox" data-todoist-done="${esc(t.id)}" aria-label="Complete ${esc(t.content)}"><span class="agenda-system-label">${icon}${esc(system==='general'?'GENERAL':system.toUpperCase())}</span><a href="${esc(safeTaskLink(t.id))}" target="_blank" rel="noopener noreferrer" class="agenda-task-title">${t.parent_id?'↳ ':''}${esc(t.content)}</a></article>`;
   }
   function homeAgenda(){
     const today=TODAY(),future=new Date(today+'T12:00:00');
@@ -111,7 +114,7 @@
     const next=ordered(tasks.filter(t=>!isSideQuest(t)&&dayOf(t)===tomorrow));
     const group=(name,list,limit)=>{
       if(!list.length)return `<section class="agenda-day"><h4>${name} <span class="agenda-count">0</span></h4><p class="agenda-empty">Nothing scheduled</p></section>`;
-      return `<section class="agenda-day"><h4>${name} <span class="agenda-count">${list.length}</span></h4>${list.slice(0,limit).map(homeTaskMarkup).join('')}${list.length>limit?`<p class="agenda-more">${list.length-limit} more in Todoist</p>`:''}</section>`;
+      return `<section class="agenda-day"><h4>${name} <span class="agenda-count">${list.length}</span></h4>${list.map(homeTaskMarkup).join('')}</section>`;
     };
     return group('Today',fresh,6)+group('Tomorrow',next,4);
   }
@@ -138,14 +141,14 @@
     const selected=ordered(selectTasks(todoistFilter));
     $('#todoist-task-list').innerHTML=!active?'<p class="watch-detail">Connect Todoist to manage your actual tasks here.</p>':
       todoistLoading&&!todoistSyncTime?'<p class="watch-detail">Loading your Todoist tasks…</p>':
-      selected.length?selected.slice(0,100).map(taskMarkup).join('')+ (selected.length>100?`<p class="watch-detail">Showing 100 of ${selected.length} matching tasks.</p>`:''):
+      selected.length?selected.map(taskMarkup).join(''):
       `<p class="watch-detail">${esc(todoistError||'No tasks in this view.')}</p>`;
     $('#todoist-home-list').innerHTML=!active?'<p class="watch-detail">Connect Todoist to see your agenda.</p>':
       todoistLoading&&!todoistSyncTime?'<p class="watch-detail">Loading…</p>':homeAgenda();
     const sideQuestList=$('#sidequest-list');
     if(sideQuestList)sideQuestList.innerHTML=!active?'<p class="watch-detail">Connect Todoist to view and add side quests.</p>':
       todoistLoading&&!todoistSyncTime?'<p class="watch-detail">Looking for your side quests…</p>':
-      sidequests.length?sidequests.slice(0,8).map(sideQuestMarkup).join('')+(sidequests.length>8?`<p class="watch-detail">Showing 8 of ${sidequests.length} optional quests. See the full list in Todoist.</p>`:''):
+      sidequests.length?sidequests.map(sideQuestMarkup).join(''):
       `<p class="watch-detail">${esc(todoistError||'No side quests.')}</p>`;
   }
   async function todoistRequest(path, opts={}, apiToken=token){
