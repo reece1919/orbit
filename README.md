@@ -2,6 +2,12 @@
 
 **v1.1.1 navigation refinement:** Added Gmail as a fifth blue, depth-shaded planet in the upper-left portion of the desktop/tablet orbital navigation. It opens ORBIT's existing Inbox snapshot (`data-view="inbox"`), not external Gmail directly. The mobile phone orbital map remains hidden in favor of compact navigation.
 
+## v1.1.3 — ChatGPT and Edit ORBIT quick-launch
+
+The fixed top header now provides GitHub, **ChatGPT**, and **Edit ORBIT** shortcuts from any dashboard panel. Desktop shows labels; tablets/phones use compact icons to preserve room. The ChatGPT button opens https://chatgpt.com/ in a new tab.
+
+**Edit ORBIT** opens this specific ChatGPT development conversation once its URL has been configured. ChatGPT does not expose the current conversation URL to the website or to this assistant, so the shortcut initially opens a one-time setup dialog (also available from Settings → Quick launch links). Paste the **address-bar URL of the actual conversation**, not a read-only public share link or generic ChatGPT Project page. Valid chatgpt.com conversation paths are accepted, and the URL is saved to `public.orbit_chat_shortcuts` in the existing Supabase project under owner-only RLS. Signed-in browsers can retrieve the saved URL across devices and can update or clear it later. The URL is never written to public GitHub source.
+
 ## v1.1 — Inbox & Automations (private, dated snapshots)
 
 ORBIT now includes **Unread Inbox** and **ChatGPT Automations** on the homepage and as separate sections. Their saved data is owner-restricted in the shared GAIA/ORBIT Supabase project.
