@@ -22,6 +22,17 @@ async function setting(name){
  if(error||!data?.value)throw new Error("PULSE server setting missing: "+name);
  return cached[name]=data.value;
 }
+function hasVerifiedMfa(req){
+  // Only call AFTER Supabase Auth has verified the bearer token with getUser().
+  const header=req.headers.get("authorization")||"";
+  const jwt=header.replace(/^Bearer\s+/i,"");
+  const payloadPart=jwt.split(".")[1];
+  if(!payloadPart)return false;
+  try{
+    const decoded=atob(payloadPart.replace(/-/g,"+").replace(/_/g,"/").padEnd(Math.ceil(payloadPart.length/4)*4,"="));
+    return JSON.parse(decoded).aal==="aal2";
+  }catch{return false}
+}
 async function me(req){
  const a=req.headers.get("authorization")||"";
  if(!/^Bearer \S+$/i.test(a))return null;
@@ -118,6 +129,7 @@ Deno.serve(async req=>{
   if(req.headers.get("Origin")!==ORIGIN)return reply({error:"Origin blocked"},403);
   const user=await me(req);
   if(!user)return reply({error:"Sign into ORBIT first"},401);
+  if(!hasVerifiedMfa(req))return reply({error:"MFA_REQUIRED: Verify an authenticator in ORBIT and retry."},403);  if(!user)return reply({error:"Sign into ORBIT first"},401);
   if(body?.action==="status"){
    const {count,error}=await db.from("pulse_push_subscriptions").select("id",{count:"exact",head:true}).eq("owner_id",user.id);
    if(error)throw error;
