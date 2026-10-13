@@ -126,7 +126,7 @@
   function renderTasks(){
     const open=state.tasks.filter(t=>!t.done).sort((a,b)=>(a.priority==='High'?-1:1)-(b.priority==='High'?-1:1)||((a.due||'9999').localeCompare(b.due||'9999')));
     if(!window.ORBITConnectedTodoist || !window.ORBITConnectedTodoist.active()) {
-      $('#stat-tasks').textContent='—';$('#nav-task-count').textContent=open.length;
+      $('#nav-task-count').textContent=open.length;
     }
     $('#home-tasks').innerHTML=open.length?open.slice(0,4).map(t=>`<label class="home-task"><input type="checkbox" class="task-check" data-check-task="${esc(t.id)}"><span><span class="task-text">${esc(t.title)}</span><span class="task-meta" style="display:block">${esc(taskMeta(t))}</span></span></label>`).join(''):`<div class="empty-state">${icon('check-circle')}<div><strong>Clear horizon.</strong><p>No priorities added yet. Start with one important next step.</p></div></div>`;
     const items=state.tasks.filter(t=>focusFilter==='all'||(focusFilter==='open'?!t.done:t.done)).sort((a,b)=>(a.done-b.done)||((a.priority==='High'?-1:1)-(b.priority==='High'?-1:1))||((a.due||'9999').localeCompare(b.due||'9999')));
