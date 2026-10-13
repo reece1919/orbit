@@ -2,6 +2,10 @@
 
 **v0.7 — Secure cross-device Todoist OAuth connection, responsive PC/tablet/iPhone dashboard, shared ORBIT/GAIA sign-in, and GAIA/FUEL integrations.** Other health metrics and money tracking remain paused. Previously saved health/money data, if any, remains inside the legacy browser data and backup format so upgrading does not silently erase it.
 
+## Compact iPhone home (v0.8.1)
+
+Phones no longer render the large decorative orbital navigation diagram or the duplicate three-button quick-action row above the data. The existing fixed bottom navigation remains the primary section launcher, while a condensed dark celestial header contains a one-tap **Log a meal** link to the FUEL ChatGPT Project. Live Todoist/FUEL/GAIA summary cards appear immediately below the header. The full interactive star map remains on desktop and tablets. Compact treatment also applies to short-height phone landscape viewports. This is presentation-only; no integration, authentication, database, or stored records were changed.
+
 ## Celestial Navigation redesign (v0.8)
 
 The ORBIT homepage now presents an interactive solar-system navigation map instead of a generic header. The central ORBIT core is surrounded by four accessible planetary navigation buttons: Tasks (amber), GAIA (green), FUEL (orange) and Projects (violet). Clicking a planet uses ORBIT's existing section routing. No external illustration or new data dependencies are needed; planetary rings, stars and glows are built in CSS.
