@@ -147,7 +147,6 @@
     side.querySelectorAll('a').forEach(a=>a.lastElementChild.classList.add('right-icon'));
   }
   function renderCount(){
-    $('#stat-projects').textContent=effectiveProjects().length;
     $('#nav-project-count').textContent=String(effectiveProjects().length).padStart(2,'0');
   }
 
