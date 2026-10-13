@@ -7,6 +7,7 @@
   <meta name="description" content="ORBIT Personal Command Center — Todoist tasks, GAIA plants, routines, projects, and daily focus." />
   <title>ORBIT — Celestial Command Center</title>
   <link rel="stylesheet" href="styles.css?v=0.6.2" />
+  <link rel="stylesheet" href="security-mfa.css?v=1.2.0" />
   <link rel="stylesheet" href="celestial.css?v=1.1.5" />
   <link rel="stylesheet" href="pulse.css?v=1.0.0" />
   <link rel="stylesheet" href="signals.css?v=1.1.4" />
@@ -15,6 +16,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="ORBIT" />
   <script src="auth.js?v=0.6.2" defer></script>
+  <script src="security-mfa.js?v=1.2.0" defer></script>
   <script src="app.js?v=1.1.5" defer></script>
   <script src="integrations.js?v=1.1.4" defer></script>
   <script src="fuel.js?v=0.6.2" defer></script>
@@ -377,7 +379,7 @@
         <section data-panel="settings" class="view-panel" hidden>
           <div class="eyebrow"><span class="eyebrow-line"></span> CONTROL & PERSONALIZATION</div><div class="page-head"><div><h1>Configuration<span class="accent-period">.</span></h1><p>Make ORBIT yours. Local notes stay on this device; linked data comes from their original services.</p></div></div>
           <div class="settings-grid">
-          <section class="module setting-card account-settings"><div class="settings-icon"><span data-icon="shield-check"></span></div><h3>Your ORBIT account</h3><p>Signed in with your GAIA account. Signing out of ORBIT also signs out of GAIA in this browser.</p><div id="orbit-settings-email" class="account-email">Loading account…</div><button id="orbit-signout" class="outline-button" type="button">Sign out</button><p class="settings-warning">Local projects, routines and notes are saved to this browser under this account; they do not yet sync to another device.</p></section>
+          <section class="module setting-card account-settings"><div class="settings-icon"><span data-icon="shield-check"></span></div><h3>Your ORBIT account</h3><p>Signed in with your GAIA account. Signing out of ORBIT also signs out of GAIA in this browser.</p><div id="orbit-settings-email" class="account-email">Loading account…</div><button id="orbit-signout" class="outline-button" type="button">Sign out</button><div class="mfa-settings-widget"><strong>Two-factor authentication</strong><p id="mfa-settings-status">Checking your authenticators…</p><button type="button" id="mfa-open" class="outline-button">Manage authenticators</button><p>Optional during recovery setup. No new MFA database restrictions are active yet.</p></div><p class="settings-warning">Local projects, routines and notes are saved to this browser under this account; they do not yet sync to another device.</p></section>
           <section class="module setting-card"><div class="settings-icon"><span data-icon="palette"></span></div><h3>Appearance</h3><p>Choose a look for your command center.</p><div class="theme-choices"><button id="theme-dark" type="button" data-theme-choice="dark" class="theme-choice selected"><span data-icon="moon"></span> Midnight</button><button id="theme-light" type="button" data-theme-choice="light" class="theme-choice"><span data-icon="sun"></span> Daylight</button></div></section>
           <section class="module setting-card"><div class="settings-icon"><span data-icon="link"></span></div><h3>Quick launch links</h3><p>Add shortcuts for apps, ChatGPT Projects, or frequently visited pages.</p><div id="settings-links" class="settings-links"></div><button type="button" class="outline-button setting-action" data-action="add-link"><span data-icon="plus"></span> Add shortcut</button><div class="chat-shortcut-settings"><strong>ORBIT development chat</strong><p id="orbit-chat-setting-status" class="watch-detail">Checking your saved chat link…</p><button type="button" class="quiet-pill" id="orbit-chat-configure"><span data-icon="pen-line"></span> Set or change chat link</button></div></section>
           <section class="module setting-card"><div class="settings-icon"><span data-icon="database"></span></div><h3>Your data</h3><p>Save a backup of your local projects, priorities, routines, links, and notes (plus any legacy local records). Todoist and GAIA are not copied into the backup. Import it on another browser to move your setup. Keep this sensitive export secure.</p><div class="data-actions"><button type="button" class="outline-button" id="export-data"><span data-icon="download"></span> Export backup</button><label class="outline-button file-label"><span data-icon="upload"></span> Import backup <input id="import-data" type="file" accept="application/json,.json" hidden></label></div><div class="settings-warning"><span data-icon="info"></span> Backups are not automatic cloud sync.</div><button type="button" id="orbit-import-legacy" class="outline-button legacy-import" hidden>Import older ORBIT browser data</button></section>
