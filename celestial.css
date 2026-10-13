@@ -698,3 +698,7 @@ body[data-theme="light"] .home-view .home-snapshot-caption{color:#b9c6d6}
 
 .chat-shortcut-actions #orbit-chat-remove[hidden]{display:none!important}
 .topbar .top-launch-orbit[aria-haspopup="dialog"]{cursor:pointer}
+
+/* v1.1.5 — Keep scratchpad as one clean full-width capture panel. */
+.home-view .home-capture{display:grid;grid-template-columns:minmax(0,1fr)}
+.home-view .home-capture .note-module{width:100%;max-width:none}
