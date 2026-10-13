@@ -695,3 +695,6 @@ body[data-theme="light"] .home-view .home-snapshot-caption{color:#b9c6d6}
   .topbar .top-github-shortcut{min-height:32px;min-width:32px;padding:0 6px}
   .topbar .top-account{min-height:33px;min-width:33px;max-width:33px}
 }
+
+.chat-shortcut-actions #orbit-chat-remove[hidden]{display:none!important}
+.topbar .top-launch-orbit[aria-haspopup="dialog"]{cursor:pointer}
