@@ -21,7 +21,13 @@
   const modeKey = id => "orbit-sync-enabled-v1:"+id;
   const backupKey = id => "orbit-sync-device-backup-v1:"+id;
   const localSnapshot = () => local().snapshot();
-  const serialized = x => JSON.stringify(x);
+  // Supabase jsonb canonicalizes object key order; compare values, not insertion order.
+  function serialized(value){
+    if(Array.isArray(value))return "["+value.map(serialized).join(",")+"]";
+    if(value && typeof value==="object")return "{"+Object.keys(value).sort()
+      .map(key=>JSON.stringify(key)+":"+serialized(value[key])).join(",")+"}";
+    return JSON.stringify(value);
+  }
   const isSame = (a,b) => serialized(a) === serialized(b);
   const setStatus = (text,detail="") => {statusEl.textContent=text;detailEl.textContent=detail};
   const fmt = value => {
