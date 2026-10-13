@@ -1,6 +1,21 @@
 # ORBIT — Headquarters for Execution, Logic, and Memory
 
-**v0.9 — Wider desktop command center, perspective-tilted celestial orbits, today's tasks, and Todoist-synced Side Quests.** Other health metrics and money tracking remain paused. Previously saved health/money data, if any, remains inside the legacy browser data and backup format so upgrading does not silently erase it.
+## PULSE — Mood and reflection (v1.0)
+
+PULSE is a private mood tracker and journal inside ORBIT; it is not a treatment service or an AI-generated journal.
+
+- Three mood check-ins with five possible ratings; optional energy/stress and private notes. Default reminder times are 9 AM, 2 PM, and 8 PM. The journal reminder defaults to 8:30 PM. All four times and the IANA time zone can be changed in PULSE.
+- One daily journal question from a fixed library of exactly 20 prompts. A deterministic 20-day rotation requires no AI calls or separate AI bill.
+- Saved records live in Supabase tables pulse_settings, pulse_moods, and pulse_journals with owner-only RLS.
+- An authenticated Edge Function (orbit-pulse) stores private Web Push endpoints server-side. The VAPID signing key and scheduled-call token are never committed to GitHub or exposed to regular users.
+- The pg_cron job orbit-pulse-web-push-dispatch runs every 10 minutes through pg_net. Its token lives in Supabase Vault. The function checks each user's time zone, skips completed entries, and deduplicates notifications by device, day, and reminder slot. Delivery can be roughly 10–15 minutes later than a chosen time.
+- Notification messages are discreet and do not include saved mood or journal text.
+- Notification permission is strictly opt-in on each device. Enable notifications inside PULSE and send a test alert. Browsers and operating systems can silence notifications via Focus or notification settings.
+- On iPhone/iPad, install ORBIT as a Home Screen app on iOS/iPadOS 16.4+ (Safari → Share → Add to Home Screen), open that installed icon, sign in, then enable PULSE notifications. Safari tabs cannot subscribe to iPhone Home Screen web push.
+- Pause notifications account-wide using the PULSE schedule checkbox, or disconnect one device from the Web Push panel. The mood journal works without any notification permission.
+- Backend dispatch was tested with HTTP 200 and no failures while zero devices were subscribed. Actual encrypted push delivery requires the owner's device opt-in and test notification.
+
+**v1.0 — PULSE private mood check-ins, daily journaling, and Web Push; preserves the v0.9 celestial command center.** Other health metrics and money tracking remain paused. Previously saved health/money data, if any, remains inside the legacy browser data and backup format so upgrading does not silently erase it.
 
 ## Desktop and Side Quests update (v0.9)
 
