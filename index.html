@@ -7,7 +7,7 @@
   <meta name="description" content="ORBIT Personal Command Center — Todoist tasks, GAIA plants, routines, projects, and daily focus." />
   <title>ORBIT — Celestial Command Center</title>
   <link rel="stylesheet" href="styles.css?v=0.6.2" />
-  <link rel="stylesheet" href="celestial.css?v=0.8.0" />
+  <link rel="stylesheet" href="celestial.css?v=0.8.1" />
   <script src="auth.js?v=0.6.2" defer></script>
   <script src="app.js?v=0.8.0" defer></script>
   <script src="integrations.js?v=0.7.1" defer></script>
@@ -59,7 +59,7 @@
       </div>
       <div class="sidebar-bottom">
         <div class="local-badge"><span data-icon="hard-drive"></span><div><strong>CONNECTED WORKSPACE</strong><small>Tasks and plant data from connected sources</small></div></div>
-        <div class="sidebar-footer">ORBIT / SYSTEM 001 <span>v0.8</span></div>
+        <div class="sidebar-footer">ORBIT / SYSTEM 001 <span>v0.8.1</span></div>
       </div>
     </aside>
     <button type="button" id="nav-backdrop" class="nav-backdrop" aria-label="Close navigation" hidden></button>
@@ -76,6 +76,7 @@
               <h1 class="celestial-greeting" id="home-greeting">Good evening.</h1>
               <p class="celestial-headline">Your life,<br><em>in orbit.</em></p>
               <p class="celestial-description">Tasks, nourishment, growth, and creation. Everything connected, everything in motion.</p>
+              <a class="celestial-mobile-log" href="https://chatgpt.com/g/g-p-6acd6e86e82081919497cb8e044c60bd/project" target="_blank" rel="noopener noreferrer"><span data-icon="heart-pulse"></span> Log a meal <span data-icon="arrow-up-right"></span></a>
               <div class="celestial-hero-status"><span class="celestial-status-dot" aria-hidden="true"></span><span>ALL SYSTEMS IN VIEW</span><span id="home-date" class="celestial-datestamp"></span></div>
             </div>
             <div class="orbit-system" aria-label="Navigate ORBIT's connected modules">
@@ -280,7 +281,7 @@
           <section class="module setting-card"><div class="settings-icon"><span data-icon="database"></span></div><h3>Your data</h3><p>Save a backup of your local projects, priorities, routines, links, and notes (plus any legacy local records). Todoist and GAIA are not copied into the backup. Import it on another browser to move your setup. Keep this sensitive export secure.</p><div class="data-actions"><button type="button" class="outline-button" id="export-data"><span data-icon="download"></span> Export backup</button><label class="outline-button file-label"><span data-icon="upload"></span> Import backup <input id="import-data" type="file" accept="application/json,.json" hidden></label></div><div class="settings-warning"><span data-icon="info"></span> Backups are not automatic cloud sync.</div><button type="button" id="orbit-import-legacy" class="outline-button legacy-import" hidden>Import older ORBIT browser data</button></section>
           <section class="module setting-card"><div class="settings-icon"><span data-icon="shield-check"></span></div><h3>Privacy & integrations</h3><p>Todoist supports an encrypted server-side OAuth connection across devices, with a temporary browser-tab token fallback. Your ORBIT sign-in uses GAIA’s existing Supabase account and owner-restricted tables. Todoist normally connects through its approval screen without a personal API token. No finance or health syncing.</p><div class="integrations"><div><span class="status-dot ready"></span> GAIA <span>Public catalog + signed-in tasks</span></div><div><span class="status-dot planned"></span> Todoist <span>Cloud OAuth; connect from Tasks</span></div><div><span class="status-dot planned"></span> Money &amp; Health <span>Paused</span></div><div><span class="status-dot ready"></span> Supabase authentication <span>Shared with GAIA</span></div><div><span class="status-dot planned"></span> ORBIT notes sync <span>Browser-only for now</span></div></div><button type="button" class="danger-link" id="reset-data">Reset ORBIT data on this device</button></section></div>
         </section>
-        <footer class="main-footer"><span>ORBIT HEADQUARTERS <span class="foot-dot">◆</span> BUILT TO KEEP THINGS MOVING</span><span>VERSION 0.8 · CELESTIAL NAVIGATION</span></footer>
+        <footer class="main-footer"><span>ORBIT HEADQUARTERS <span class="foot-dot">◆</span> BUILT TO KEEP THINGS MOVING</span><span>VERSION 0.8.1 · COMPACT PHONE HOME</span></footer>
       </main>
       <nav class="mobile-nav" aria-label="Quick navigation">
         <button class="mobile-nav-item active" type="button" data-view="home"><span data-icon="layout-dashboard"></span><span>Home</span></button>
