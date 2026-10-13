@@ -14,7 +14,7 @@
     '<p id="mfa-explain">Protect your private workspace with an authenticator app.</p>',
     '<div id="mfa-factors"></div>',
     '<div id="mfa-enroll" hidden><p>Scan this QR code with your authenticator app, or enter the setup key manually.</p><img id="mfa-qr" width="174" height="174" alt="Scan this QR code with your authenticator app"><label>Setup key <input id="mfa-secret" type="text" readonly autocomplete="off"></label></div>',
-    '<form id="mfa-code-form" hidden><label>6-digit authenticator code <input id="mfa-code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required></label><button type="submit" id="mfa-verify">Verify code</button></form>',
+    '<form id="mfa-code-form" hidden><label id="mfa-factor-choice" hidden>Use authenticator <select id="mfa-factor-select"></select></label><label>6-digit authenticator code <input id="mfa-code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required></label><button type="submit" id="mfa-verify">Verify code</button></form>',
     '<p class="mfa-status" id="mfa-result" role="status" aria-live="polite"></p>',
     '<p class="mfa-recovery">Recovery codes are not provided by Supabase. Before requiring MFA, add a second authenticator on a separate device and confirm both work.</p>',
     '<div class="mfa-actions"><button type="button" id="mfa-add">Add authenticator</button><button type="button" id="mfa-cancel" hidden>Cancel setup</button><button type="button" id="mfa-done">Close</button></div>',
@@ -34,6 +34,7 @@
     $("#mfa-secret").value = "";
     $("#mfa-code").value = "";
     $("#mfa-code-form").hidden = true;
+    $("#mfa-factor-choice").hidden = true;
     $("#mfa-cancel").hidden = true;
   }
   function show() {
@@ -75,7 +76,7 @@
         show();
       } else if(!activeDialog) hide();
       const status = $("#mfa-settings-status");
-      if(status) status.textContent = verified.length ? verified.length + " authenticator" + (verified.length === 1 ? "" : "s") + " connected · " + (current==="aal2" ? "Verified session" : "Verification available") : "No authenticator added · MFA enrollment is optional during setup.";
+      if(status) status.textContent = verified.length ? verified.length + " verified authenticator" + (verified.length === 1 ? "" : "s") + " · " + (verified.length < 2 ? "Add a separate backup before mandatory enforcement" : "Backup factors available") + " · " + (current==="aal2" ? "Verified session" : "Verification available") : "No authenticator added · MFA enrollment is optional during setup.";
       if(!pending && activeDialog && !enrollment) {
         $("#mfa-add").hidden = false;
         $("#mfa-done").hidden = false;
@@ -88,16 +89,26 @@
   }
   function fillFactors(){
     const place=$("#mfa-factors");
+    const chooser=$("#mfa-factor-select");
     place.replaceChildren();
+    chooser.replaceChildren();
+    const previous=activeId;
     for(const f of verified){
       const row=document.createElement("p");
       row.className="mfa-factor";
       row.textContent="Verified: " + (f.friendly_name || "Authenticator") + " · " + f.id.slice(0,8);
       place.appendChild(row);
+      const option=document.createElement("option");
+      option.value=f.id;
+      option.textContent=f.friendly_name || "Authenticator";
+      chooser.appendChild(option);
     }
     if(!verified.length) place.textContent="No verified authenticator yet.";
-    activeId=verified[0]?.id || "";
+    activeId=verified.some(f=>f.id===previous) ? previous : (verified[0]?.id || "");
+    chooser.value=activeId;
+    $("#mfa-factor-choice").hidden=verified.length<2 || Boolean(enrollment);
   }
+
   async function beginEnrollment(){
     if(!client || !userId || busy)return;
     changeBusy(true);message("");
@@ -111,6 +122,7 @@
       $("#mfa-secret").value=data.totp?.secret || "";
       $("#mfa-enroll").hidden=false;
       $("#mfa-code-form").hidden=false;
+      $("#mfa-factor-choice").hidden=true;
       $("#mfa-cancel").hidden=false;
       $("#mfa-add").hidden=true;
       $("#mfa-done").hidden=true;
@@ -125,7 +137,7 @@
     if(!client||busy)return;
     const code=$("#mfa-code").value.trim();
     if(!validated(code)){message("Enter exactly six digits.");return}
-    const factorId=enrollment?.id || activeId;
+    const factorId=enrollment?.id || $("#mfa-factor-select").value || activeId;
     if(!factorId){message("No factor is available. Refresh and try again.");return}
     changeBusy(true);message("");
     try{
@@ -155,6 +167,7 @@
     void refresh();
   }
   $("#mfa-code-form").addEventListener("submit",e=>void verify(e));
+  $("#mfa-factor-select").addEventListener("change",e=>{activeId=e.target.value;$("#mfa-code").value="";message("");});
   $("#mfa-add").addEventListener("click",()=>void beginEnrollment());
   $("#mfa-cancel").addEventListener("click",async()=>{
     const id=enrollment?.id;
