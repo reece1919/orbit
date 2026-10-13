@@ -1,5 +1,18 @@
 # ORBIT — Headquarters for Execution, Logic, and Memory
 
+## v1.1 — Inbox & Automations (private, dated snapshots)
+
+ORBIT now includes **Unread Inbox** and **ChatGPT Automations** on the homepage and as separate sections. Their saved data is owner-restricted in the shared GAIA/ORBIT Supabase project.
+
+- The Gmail view shows the most recent unread inbox message metadata (id, subject, sender when available, short snippet, Gmail link and message date) plus the unread inbox total from the last connected ChatGPT Gmail sync.
+- The Automations view shows **enabled recurring** ChatGPT scheduled tasks only, with title, cadence, last run, and a link to `https://chatgpt.com/schedules`. Paused/disabled tasks are excluded from the snapshot.
+- The table `public.orbit_external_snapshots` uses RLS; signed-in users can only SELECT their own rows, and ordinary browser accounts cannot insert/update or read anyone else's data. Neither email contents nor automation instructions are published in GitHub.
+- Both views display **last synced**, clearly identify that this is a **saved snapshot rather than live Gmail / ChatGPT API access**, and show a freshness warning for old data.
+- The "Reload saved data" button re-reads Supabase only. It does **not** refresh Gmail or ChatGPT. The "Copy sync request" button provides a clear user-initiated workflow for having ChatGPT read connected Gmail and scheduled tasks and save refreshed metadata to Supabase; Open ChatGPT is a separate link.
+- Google Gmail OAuth for independent continuous website refresh is a future feature and requires separate Google Cloud OAuth setup / restricted Gmail scopes. ChatGPT personal scheduled tasks do not provide a documented direct API for third-party dashboards through our available interface.
+- Initial private snapshot created on October 13, 2026: 3 unread messages and 2 enabled recurring automations. Subsequent changes in the source accounts will not appear until a new sync.
+- Mobile modules are horizontally swipeable so the phone dashboard retains its compact daily layout. Direct opening of source pages goes to Gmail or ChatGPT.
+
 ## PULSE — Mood and reflection (v1.0)
 
 PULSE is a private mood tracker and journal inside ORBIT; it is not a treatment service or an AI-generated journal.
@@ -15,7 +28,7 @@ PULSE is a private mood tracker and journal inside ORBIT; it is not a treatment 
 - Pause notifications account-wide using the PULSE schedule checkbox, or disconnect one device from the Web Push panel. The mood journal works without any notification permission.
 - Backend dispatch was tested with HTTP 200 and no failures while zero devices were subscribed. Actual encrypted push delivery requires the owner's device opt-in and test notification.
 
-**v1.0 — PULSE private mood check-ins, daily journaling, and Web Push; preserves the v0.9 celestial command center.** Other health metrics and money tracking remain paused. Previously saved health/money data, if any, remains inside the legacy browser data and backup format so upgrading does not silently erase it.
+**v1.1 — Private unread Inbox and ChatGPT recurring-task snapshots, alongside PULSE and the celestial command center.** Other health metrics and money tracking remain paused. Previously saved health/money data, if any, remains inside the legacy browser data and backup format so upgrading does not silently erase it.
 
 ## Desktop and Side Quests update (v0.9)
 
