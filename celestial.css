@@ -561,3 +561,30 @@ body[data-theme="light"] .home-view .home-snapshot-caption{color:#b9c6d6}
 @media(max-width:370px){
   .sidequest-submit span{display:none}
 }
+
+
+/* v1.1.1 — Gmail: a fifth navigation world in the angled desktop solar system.
+   Desktop and tablet have room; the existing compact phone header stays unchanged. */
+.orbit-world-gmail{
+  --world:#7bafff;
+  left:22%;
+  top:20%;
+  z-index:5;
+}
+.orbit-world-gmail .orbit-world-sphere{
+  width:52px;height:52px;flex-basis:52px;
+  background:radial-gradient(circle at 31% 22%,#bbdbff 0,#345b99 37%,#142947 68%,#081423 100%);
+  box-shadow:inset -8px -11px 16px rgba(0,5,21,.54),
+    inset 6px 7px 13px rgba(161,205,255,.22),
+    0 8px 16px rgba(0,0,0,.31),0 0 23px rgba(105,156,255,.33);
+}
+.orbit-world-gmail .orbit-world-sphere svg{width:22px;height:22px;stroke-width:1.85}
+@media(min-width:981px){
+  .orbit-world-gmail{left:23%;top:21%}
+  .orbit-world-gmail .orbit-world-sphere{width:56px;height:56px;flex-basis:56px}
+}
+@media(min-width:611px) and (max-width:980px){
+  .orbit-world-gmail{left:20%;top:22%}
+  .orbit-world-gmail .orbit-world-sphere{width:48px;height:48px;flex-basis:48px}
+  .orbit-world-gmail .orbit-world-sub{font-size:8px}
+}
