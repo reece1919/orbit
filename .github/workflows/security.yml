@@ -1,0 +1,41 @@
+name: Security baseline
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: '17 8 * * 1'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  baseline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check JavaScript syntax
+        run: |
+          for file in ./*.js; do
+            [ -f "$file" ] || continue
+            node --check "$file"
+          done
+      - name: Reject obvious embedded secrets
+        run: |
+          if git grep -nE 'sb_secret_[A-Za-z0-9_-]{10,}|-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----' -- '*.js' '*.ts' '*.html' '*.json' ':!*.md'; then
+            echo 'Potential secret committed to public code'
+            exit 1
+          fi
+      - name: Require browser Content Security Policy
+        run: grep -q 'http-equiv="Content-Security-Policy"' index.html
+  codeql:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v4
+        with:
+          languages: javascript-typescript
+          queries: security-extended
+      - uses: github/codeql-action/analyze@v4
