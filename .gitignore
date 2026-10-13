@@ -1,0 +1,12 @@
+# Keep local credentials and private keys out of the public GitHub Pages repos.
+.env
+.env.*
+!.env.example
+*.pem
+*.p12
+*.p8
+*.key
+*.private
+credentials.json
+credentials-*.json
+service-account*.json
