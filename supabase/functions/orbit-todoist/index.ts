@@ -95,6 +95,17 @@ async function callback(req){
     return redirect("connected");
   }catch(e){console.error("Todoist callback failed",e?.message);return redirect("error");}
 }
+function hasVerifiedMfa(req){
+  // Only call AFTER Supabase Auth has verified the bearer token with getUser().
+  const header=req.headers.get("authorization")||"";
+  const jwt=header.replace(/^Bearer\s+/i,"");
+  const payloadPart=jwt.split(".")[1];
+  if(!payloadPart)return false;
+  try{
+    const decoded=atob(payloadPart.replace(/-/g,"+").replace(/_/g,"/").padEnd(Math.ceil(payloadPart.length/4)*4,"="));
+    return JSON.parse(decoded).aal==="aal2";
+  }catch{return false}
+}
 async function authorize(req){
   const header=req.headers.get("Authorization")||"";
   if(!/^Bearer \S+$/i.test(header))return null;
@@ -158,6 +169,7 @@ Deno.serve(async req=>{
   if(req.headers.get("Origin")!==ORIGIN)return errors(403,"Invalid request origin.");
   const user=await authorize(req);
   if(!user)return errors(401,"Sign in to ORBIT to connect Todoist.");
+  if(!hasVerifiedMfa(req))return errors(403,"MFA_REQUIRED: Verify an authenticator in ORBIT and retry.");  if(!user)return errors(401,"Sign in to ORBIT to connect Todoist.");
   let payload;
   try { payload=await req.json(); } catch(_) {return errors(400,"Invalid JSON payload.");}
   try{
