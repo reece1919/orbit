@@ -1,5 +1,7 @@
 # ORBIT — Headquarters for Execution, Logic, and Memory
 
+**v1.1.1 navigation refinement:** Added Gmail as a fifth blue, depth-shaded planet in the upper-left portion of the desktop/tablet orbital navigation. It opens ORBIT's existing Inbox snapshot (`data-view="inbox"`), not external Gmail directly. The mobile phone orbital map remains hidden in favor of compact navigation.
+
 ## v1.1 — Inbox & Automations (private, dated snapshots)
 
 ORBIT now includes **Unread Inbox** and **ChatGPT Automations** on the homepage and as separate sections. Their saved data is owner-restricted in the shared GAIA/ORBIT Supabase project.
