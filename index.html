@@ -79,7 +79,7 @@
         <a href="https://github.com/reece1919" target="_blank" rel="noopener noreferrer"><span data-icon="github"></span> GitHub <span data-icon="arrow-up-right" class="right-icon"></span></a>
       </div>
       <div class="sidebar-bottom">
-        <div class="local-badge"><span data-icon="hard-drive"></span><div><strong>CONNECTED WORKSPACE</strong><small>Tasks and plant data from connected sources</small></div></div>
+        
         <div class="sidebar-footer">ORBIT / SYSTEM 001 <span>v1.3.0</span></div>
       </div>
     </aside>
@@ -129,7 +129,7 @@
           <div class="home-work-grid">
             <div class="home-main-stack">
               <section class="module home-agenda">
-                <div class="module-head home-module-head"><div><div class="eyebrow small">TODOIST / LIVE</div><h3>Today &amp; tomorrow</h3></div><div class="home-module-actions"><button type="button" class="quiet-pill" data-refresh="todoist">Refresh</button><button type="button" class="subtle-link" data-view="focus">All tasks <span data-icon="arrow-right"></span></button></div></div>
+                <div class="module-head home-module-head"><div><div class="eyebrow small">TODOIST</div><h3>Today &amp; tomorrow</h3></div><div class="home-module-actions"><button type="button" class="quiet-pill" data-refresh="todoist">Refresh</button><button type="button" class="subtle-link" data-view="focus">All tasks <span data-icon="arrow-right"></span></button></div></div>
                 <p id="todoist-home-note" class="watch-detail home-source-note"></p>
                 <div id="todoist-home-list" class="live-task-list"><p class="watch-detail">Connect Todoist to load your agenda.</p></div>
               </section>
@@ -142,7 +142,7 @@
                 <div id="sidequest-list" class="sidequest-list" aria-live="polite"><p class="watch-detail">Connect Todoist to see your side quests.</p></div>
                 <form id="sidequest-create-form" class="sidequest-create">
                   <label for="sidequest-add-input" class="sr-only">New optional side quest</label>
-                  <input type="text" id="sidequest-add-input" name="title" placeholder="e.g. Make hot honey" maxlength="500" autocomplete="off" required disabled>
+                  <input type="text" id="sidequest-add-input" name="title" placeholder="Add side quest" maxlength="500" autocomplete="off" required disabled>
                   <button type="submit" id="sidequest-add-btn" class="sidequest-submit" disabled><span data-icon="plus"></span><span>Add quest</span></button>
                 </form>
               </section>
@@ -181,14 +181,14 @@
             </div>
           </div>
 
-          <div class="home-projects-head"><div><div class="eyebrow small">PROJECTS</div><h2>Workspaces</h2></div><div class="home-projects-cta"><span><strong id="stat-projects">3</strong> spaces</span><button type="button" class="subtle-link" data-view="projects">All projects <span data-icon="arrow-right"></span></button></div></div>
+          <div class="home-projects-head"><div><div class="eyebrow small">PROJECTS</div><h2>Workspaces</h2></div><div class="home-projects-cta"><button type="button" class="subtle-link" data-view="projects">All projects <span data-icon="arrow-right"></span></button></div></div>
           <div class="featured-projects" id="featured-projects"></div>
           <div class="dashboard-lower home-capture">
             <section class="module note-module"><div class="module-head"><div><div class="eyebrow small">NOTES</div><h3>Scratchpad</h3></div><span data-icon="pen-line" class="muted-icon"></span></div><textarea id="scratchpad" placeholder="An idea, a reminder, something to remember…" aria-label="Scratchpad notes"></textarea><div class="note-bottom"><span data-icon="hard-drive"></span> Saved on this device · cloud optional <span id="note-saved" aria-live="polite"></span></div></section>
           </div>
         </section>
         <section data-panel="projects" class="view-panel" hidden>
-          <div class="eyebrow"><span class="eyebrow-line"></span> ALL ACTIVE & FUTURE SYSTEMS</div><div class="page-head"><div><h1>Your projects<span class="accent-period">.</span></h1><p>Every specialized workspace has a home. Add its actual URL when you're ready.</p></div><button class="primary-button" data-action="add-project" type="button"><span data-icon="plus"></span> New project</button></div>
+          <div class="eyebrow"><span class="eyebrow-line"></span> PROJECTS</div><div class="page-head"><div><h1>Your projects<span class="accent-period">.</span></h1><p>Every specialized workspace has a home. Add its actual URL when you're ready.</p></div><button class="primary-button" data-action="add-project" type="button"><span data-icon="plus"></span> New project</button></div>
           <div class="toolbar"><label class="search-field"><span data-icon="search"></span><input id="project-search" type="search" placeholder="Search your projects" aria-label="Search projects"></label><span id="project-summary" class="result-label"></span></div>
           <div class="all-projects" id="all-projects"></div>
         </section>
@@ -210,7 +210,7 @@
           <p class="helper-paragraph">ORBIT reads published plant care notes; actual watering history and personal photographs remain in GAIA. Care alerts are not inferred from rigid watering intervals.</p>
         </section>
         <section data-panel="fuel" class="view-panel" hidden>
-          <div class="eyebrow"><span class="eyebrow-line"></span> FUEL / FOOD UNDERSTANDING, ENERGY &amp; LOGGING</div>
+          <div class="eyebrow"><span class="eyebrow-line"></span> FUEL</div>
           <div class="page-head"><div><h1>Your food journal<span class="accent-period">.</span></h1><p>Meals and nutrition.</p></div><a class="primary-button" href="https://chatgpt.com/g/g-p-6acd6e86e82081919497cb8e044c60bd/project" target="_blank" rel="noopener noreferrer">Ask FUEL <span data-icon="arrow-up-right"></span></a></div>
           <section class="system-todoist" data-system-todoist="fuel" aria-label="FUEL Todoist tasks"></section>
           <section class="module fuel-overview">
