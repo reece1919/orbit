@@ -919,3 +919,28 @@ body[data-theme="dark"]::before{opacity:.25}
 @media(prefers-reduced-motion:reduce){
   .home-view .orbit-world,.home-view .orbit-world-sphere{transition:none}
 }
+
+
+/* System-tagged Todoist agenda: only calendar today/tomorrow, no filler. */
+.home-view #todoist-home-list{display:grid;gap:17px}
+.home-view .agenda-day{display:grid;gap:4px}
+.home-view .agenda-day h4{display:flex;align-items:center;gap:9px;margin:0 0 5px;font-size:12px;font-weight:750;letter-spacing:.04em;color:#e1dacd}
+.home-view .agenda-count{font-size:10px;font-weight:600;color:#b2b6bb;border:1px solid rgba(160,166,176,.25);border-radius:20px;padding:2px 6px}
+.home-view .agenda-row{display:grid;grid-template-columns:20px 77px minmax(0,1fr);align-items:center;gap:10px;
+  padding:9px 3px;border-bottom:1px solid rgba(166,173,178,.11);min-width:0}
+.home-view .agenda-row:last-of-type{border-bottom:0}
+.home-view .agenda-row input{margin:0;accent-color:#a6ac9c}
+.home-view .agenda-system-label{font-size:9px;color:#9facad;letter-spacing:.065em;
+  display:flex;align-items:center;gap:5px;white-space:nowrap}
+.home-view .agenda-system-icon{width:23px;height:23px;object-fit:contain}
+.home-view .agenda-task-title{font-size:12px;line-height:1.5;min-width:0;color:#e2e3dd;text-decoration:none}
+.home-view .agenda-task-title:hover{text-decoration:underline}
+.home-view .agenda-empty,.home-view .agenda-more{font-size:11px;color:#939ba7;margin:5px 0}
+.home-view .agenda-more{padding:0 0 0 33px}
+.home-mini-top .home-mini-icon:has(img){border:0;background:none;padding:0}
+.home-mini-top .home-mini-icon img{width:37px!important;height:37px!important}
+@media(max-width:440px){
+ .home-view .agenda-row{grid-template-columns:19px 69px minmax(0,1fr);gap:8px}
+ .home-view .agenda-system-icon{height:19px;width:19px}
+ .home-view .agenda-system-label{font-size:8px}
+}
