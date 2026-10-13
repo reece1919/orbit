@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="styles.css?v=0.6.2" />
   <link rel="stylesheet" href="security-mfa.css?v=1.2.1" />
   <link rel="stylesheet" href="celestial.css?v=1.3.0" />
+  <link rel="stylesheet" href="assets/todoist-system.css?v=1.3.0" />
   <link rel="stylesheet" href="pulse.css?v=1.0.0" />
   <link rel="stylesheet" href="signals.css?v=1.1.4" />
   <link rel="manifest" href="pulse.webmanifest" />
@@ -22,6 +23,7 @@
   <script src="app.js?v=1.3.0" defer></script>
   <script src="orbit-cloud-sync.js?v=1.2.2" defer></script>
   <script src="integrations.js?v=1.3.0" defer></script>
+  <script src="assets/todoist-system.js?v=1.3.0" defer></script>
   <script src="fuel.js?v=0.6.2" defer></script>
   <script src="pulse.js?v=1.0.0" defer></script>
   <script src="signals.js?v=1.1.4" defer></script>
@@ -192,7 +194,8 @@
         </section>
         <section data-panel="gaia" class="view-panel" hidden>
           <div class="eyebrow"><span class="eyebrow-line"></span> GAIA / LIVING COLLECTION</div>
-          <div class="page-head"><div><h1>Your herbarium<span class="accent-period">.</span></h1><p>A live overview of your published GAIA catalog and personal care tasks when signed in.</p></div><a class="primary-button" href="https://reece1919.github.io/gaia/" target="_blank" rel="noopener noreferrer">Open GAIA <span data-icon="arrow-up-right"></span></a></div>
+          <div class="page-head"><div><h1>Your herbarium<span class="accent-period">.</span></h1><p>Plant care, notes, and tasks.</p></div><a class="primary-button" href="https://reece1919.github.io/gaia/" target="_blank" rel="noopener noreferrer">Open GAIA <span data-icon="arrow-up-right"></span></a></div>
+          <section class="system-todoist" data-system-todoist="gaia" aria-label="GAIA Todoist tasks"></section>
           <div class="gaia-metrics">
             <article class="module"><div class="eyebrow small">PLANTS</div><div class="big-figure" id="gaia-count">—</div><p class="watch-detail">Published profiles</p></article>
             <article class="module"><div class="eyebrow small">WATCH / CONCERN</div><div class="big-figure" id="gaia-watch-count">—</div><p class="watch-detail">Watch or Concern status</p></article>
@@ -208,7 +211,8 @@
         </section>
         <section data-panel="fuel" class="view-panel" hidden>
           <div class="eyebrow"><span class="eyebrow-line"></span> FUEL / FOOD UNDERSTANDING, ENERGY &amp; LOGGING</div>
-          <div class="page-head"><div><h1>Your food journal<span class="accent-period">.</span></h1><p>Log meals by chatting with FUEL; confirmed entries appear here when FUEL is connected to the private journal.</p></div><a class="primary-button" href="https://chatgpt.com/g/g-p-6acd6e86e82081919497cb8e044c60bd/project" target="_blank" rel="noopener noreferrer">Ask FUEL <span data-icon="arrow-up-right"></span></a></div>
+          <div class="page-head"><div><h1>Your food journal<span class="accent-period">.</span></h1><p>Meals and nutrition.</p></div><a class="primary-button" href="https://chatgpt.com/g/g-p-6acd6e86e82081919497cb8e044c60bd/project" target="_blank" rel="noopener noreferrer">Ask FUEL <span data-icon="arrow-up-right"></span></a></div>
+          <section class="system-todoist" data-system-todoist="fuel" aria-label="FUEL Todoist tasks"></section>
           <section class="module fuel-overview">
             <div class="module-head"><div><div class="eyebrow small">PRIVATE / SYNCED FROM SUPABASE</div><h3>Daily nutrition</h3></div><div class="live-actions"><label for="fuel-date" class="sr-only">Food journal date</label><input type="date" id="fuel-date" aria-label="Food journal date"><button type="button" class="quiet-pill" id="fuel-refresh">Refresh</button></div></div>
             <div class="fuel-metrics">
@@ -273,8 +277,9 @@
 
         <section data-panel="pulse" class="view-panel pulse-view" hidden>
           <div class="eyebrow"><span class="eyebrow-line"></span> PULSE / MOOD & REFLECTION</div>
-          <div class="page-head"><div><h1>PULSE<span class="accent-period">.</span></h1><p>Three small check-ins, one thoughtful question, and room to notice your patterns. No generated prompts or AI cost.</p></div><button id="pulse-refresh" type="button" class="quiet-pill">Refresh</button></div>
-          <div class="pulse-intro"><span class="pulse-intro-orbit" aria-hidden="true"><span></span></span><div><strong>A moment to check your coordinates.</strong><p>There is no good or bad score. You can skip anything, change an answer later, or write as little as you like.</p></div></div>
+          <div class="page-head"><div><h1>PULSE<span class="accent-period">.</span></h1><p>Mood and journal.</p></div><button id="pulse-refresh" type="button" class="quiet-pill">Refresh</button></div>
+          <section class="system-todoist" data-system-todoist="pulse" aria-label="PULSE Todoist tasks"></section>
+          <div class="pulse-intro"><span class="pulse-intro-orbit" aria-hidden="true"><span></span></span><div><strong>Check in</strong><p>Any question is optional.</p></div></div>
           <p id="pulse-status" class="watch-detail" role="status" aria-live="polite">Connecting PULSE…</p>
           <div class="pulse-columns">
             <div class="pulse-main">
