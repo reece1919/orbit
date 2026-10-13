@@ -1,5 +1,14 @@
 # ORBIT — Headquarters for Execution, Logic, and Memory
 
+## v1.1.4 — Focused Overview
+
+- Removed the **Today's Tasks** total tile, overall **GAIA Plants** inventory tile, and entire homepage **Recurring Tasks** preview. Both detailed Tasks and ChatGPT Automations modules remain available via navigation.
+- Removed duplicated task totals in the home agenda and optional Side Quests header; the actual tasks and Side Quests remain actionable.
+- The GAIA card now reports whether there are plant-care flags rather than showing the overall plant inventory.
+- Moved the daily FUEL calorie figure into the Food Journal mini-card so the disconnected three-tile summary row could be removed completely.
+- Kept the unread Gmail preview, now using the full available row (three columns at wide desktop sizes, stacked on phones), plus the agenda, notes, follow-ups, PULSE, FUEL, GAIA, projects, routines, and quick-launch header.
+- Removed obsolete homepage automation render bindings while retaining the detailed Automations page and nav count. No underlying task, email, plant, or nutrition data was changed.
+
 **v1.1.1 navigation refinement:** Added Gmail as a fifth blue, depth-shaded planet in the upper-left portion of the desktop/tablet orbital navigation. It opens ORBIT's existing Inbox snapshot (`data-view="inbox"`), not external Gmail directly. The mobile phone orbital map remains hidden in favor of compact navigation.
 
 ## v1.1.3 — ChatGPT and Edit ORBIT quick-launch
