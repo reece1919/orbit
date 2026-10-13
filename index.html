@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="styles.css?v=0.6.2" />
   <link rel="stylesheet" href="celestial.css?v=0.9.0" />
   <link rel="stylesheet" href="pulse.css?v=1.0.0" />
+  <link rel="stylesheet" href="signals.css?v=1.1.0" />
   <link rel="manifest" href="pulse.webmanifest" />
   <link rel="icon" type="image/svg+xml" href="orbit-icon.svg" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -18,6 +19,7 @@
   <script src="integrations.js?v=0.9.0" defer></script>
   <script src="fuel.js?v=0.6.2" defer></script>
   <script src="pulse.js?v=1.0.0" defer></script>
+  <script src="signals.js?v=1.1.0" defer></script>
 </head>
 <body data-theme="dark" data-auth-state="checking">
   <section id="orbit-auth" class="auth-screen" aria-labelledby="auth-heading" aria-live="polite">
@@ -53,6 +55,8 @@
         <button type="button" class="nav-item" data-view="gaia"><span data-icon="leaf"></span> GAIA <span class="nav-count" id="nav-gaia-count">—</span></button>
         <button type="button" class="nav-item" data-view="fuel"><span data-icon="heart-pulse"></span> FUEL <span class="nav-count" id="nav-fuel-count">—</span></button>
         <button type="button" class="nav-item" data-view="pulse"><span data-icon="activity"></span> PULSE <span class="nav-indicator"></span></button>
+        <button type="button" class="nav-item" data-view="inbox"><span data-icon="mail"></span> Inbox <span class="nav-count" id="nav-inbox-count">—</span></button>
+        <button type="button" class="nav-item" data-view="automations"><span data-icon="clock"></span> Automations <span class="nav-count" id="nav-automations-count">—</span></button>
         <button type="button" class="nav-item" data-view="routines"><span data-icon="repeat"></span> Routines </button>
         <button type="button" class="nav-item" data-view="settings"><span data-icon="settings"></span> Settings </button>
       </nav>
@@ -66,7 +70,7 @@
       </div>
       <div class="sidebar-bottom">
         <div class="local-badge"><span data-icon="hard-drive"></span><div><strong>CONNECTED WORKSPACE</strong><small>Tasks and plant data from connected sources</small></div></div>
-        <div class="sidebar-footer">ORBIT / SYSTEM 001 <span>v1.0</span></div>
+        <div class="sidebar-footer">ORBIT / SYSTEM 001 <span>v1.1</span></div>
       </div>
     </aside>
     <button type="button" id="nav-backdrop" class="nav-backdrop" aria-label="Close navigation" hidden></button>
@@ -144,6 +148,25 @@
             <button type="button" class="home-snapshot-tile home-snapshot-tasks" data-view="focus"><span class="home-snapshot-label">TODAY’S TASKS <span data-icon="check-circle"></span></span><strong id="stat-tasks">—</strong><span class="home-snapshot-caption">Due today + overdue</span></button>
             <button type="button" class="home-snapshot-tile home-snapshot-fuel" data-view="fuel"><span class="home-snapshot-label">CALORIES LOGGED <span data-icon="heart-pulse"></span></span><strong id="fuel-home-value">—</strong><span class="home-snapshot-caption">Today in FUEL</span></button>
             <button type="button" class="home-snapshot-tile home-snapshot-gaia" data-view="gaia"><span class="home-snapshot-label">GAIA PLANTS <span data-icon="leaf"></span></span><strong id="stat-links">—</strong><span class="home-snapshot-caption">Collection profiles</span></button>
+          </div>
+
+          <div class="home-signals-grid" aria-label="Latest external activity">
+            <section class="module home-signal home-signal-mail">
+              <div class="module-head home-module-head">
+                <div><span class="eyebrow small">GMAIL / SAVED SNAPSHOT</span><h3><span data-icon="mail"></span> Unread inbox <span id="home-inbox-count" class="signal-count">—</span></h3></div>
+                <button class="subtle-link" type="button" data-view="inbox">View inbox <span data-icon="arrow-right"></span></button>
+              </div>
+              <div id="home-inbox-list" class="signal-list"><p class="watch-detail">Loading your last Gmail snapshot…</p></div>
+              <p id="home-inbox-synced" class="signal-synced">Not connected directly to Gmail · last synchronized view</p>
+            </section>
+            <section class="module home-signal home-signal-automations">
+              <div class="module-head home-module-head">
+                <div><span class="eyebrow small">CHATGPT / SAVED SNAPSHOT</span><h3><span data-icon="clock"></span> Recurring tasks <span id="home-automations-count" class="signal-count">—</span></h3></div>
+                <button class="subtle-link" type="button" data-view="automations">View tasks <span data-icon="arrow-right"></span></button>
+              </div>
+              <div id="home-automations-list" class="signal-list"><p class="watch-detail">Loading your latest task snapshot…</p></div>
+              <p id="home-automations-synced" class="signal-synced">Last synchronized view · not the live ChatGPT task list</p>
+            </section>
           </div>
 
           <div class="home-work-grid">
@@ -334,6 +357,28 @@
             </div>
           </div>
         </section>
+        <section data-panel="inbox" class="view-panel signals-view" hidden>
+          <div class="eyebrow"><span class="eyebrow-line"></span> CONNECTED SOURCES / GMAIL</div>
+          <div class="page-head"><div><h1>Inbox<span class="accent-period">.</span></h1><p>Your latest unread Gmail messages, from the most recent private sync.</p></div><a href="https://mail.google.com/mail/u/0/#inbox" class="primary-button" target="_blank" rel="noopener noreferrer">Open Gmail <span data-icon="arrow-up-right"></span></a></div>
+          <div class="signal-info-strip"><span data-icon="shield-check"></span><div>**Saved snapshot, not a live mailbox connection.** Email contents stay in Gmail. ORBIT only displays a private copy of message metadata from the last ChatGPT-assisted sync.</div></div>
+          <section class="module signals-module">
+            <div class="module-head"><div><div class="eyebrow small">UNREAD / MOST RECENT</div><h2>Unread inbox <span id="inbox-panel-count" class="signal-count">—</span></h2></div><button type="button" class="quiet-pill" data-signals-reload>Reload saved data</button></div>
+            <p id="inbox-panel-synced" class="signal-synced">Loading last synchronization…</p>
+            <div id="inbox-panel-list" class="signal-list signal-list-expanded"><p class="watch-detail">Loading your snapshot…</p></div>
+          </section>
+          <section class="module signals-sync-help"><div class="module-head"><div><div class="eyebrow small">DATA BRIDGE</div><h3>Update this snapshot</h3></div></div><p>ORBIT can't directly use Gmail access that you've granted inside ChatGPT. Copy the sync request into ChatGPT to refresh the private snapshot. It does not mark email as read.</p><div class="signals-sync-actions"><button type="button" class="quiet-pill" data-signals-copy>Copy sync request</button><a href="https://chatgpt.com/" class="subtle-link" target="_blank" rel="noopener noreferrer">Open ChatGPT <span data-icon="arrow-up-right"></span></a></div><p id="signals-copy-status-inbox" class="signal-synced" aria-live="polite"></p></section>
+        </section>
+        <section data-panel="automations" class="view-panel signals-view" hidden>
+          <div class="eyebrow"><span class="eyebrow-line"></span> CHATGPT / SCHEDULED TASKS</div>
+          <div class="page-head"><div><h1>Automations<span class="accent-period">.</span></h1><p>Your currently enabled recurring ChatGPT tasks, from the most recent private sync.</p></div><a href="https://chatgpt.com/schedules" class="primary-button" target="_blank" rel="noopener noreferrer">Manage in ChatGPT <span data-icon="arrow-up-right"></span></a></div>
+          <div class="signal-info-strip"><span data-icon="shield-check"></span><div>This is a dated view of the task schedules—not live task status. Changes made in ChatGPT appear here only after the snapshot is updated.</div></div>
+          <section class="module signals-module">
+            <div class="module-head"><div><div class="eyebrow small">ENABLED / RECURRING</div><h2>Recurring tasks <span id="automations-panel-count" class="signal-count">—</span></h2></div><button type="button" class="quiet-pill" data-signals-reload>Reload saved data</button></div>
+            <p id="automations-panel-synced" class="signal-synced">Loading last synchronization…</p>
+            <div id="automations-panel-list" class="signal-list signal-list-expanded"><p class="watch-detail">Loading your snapshot…</p></div>
+          </section>
+          <section class="module signals-sync-help"><div class="module-head"><div><div class="eyebrow small">DATA BRIDGE</div><h3>Refresh your scheduled tasks</h3></div></div><p>The ChatGPT scheduled-task list isn't available through a direct public website API. Copy a sync request and ask ChatGPT to update ORBIT's private record. You can manage the real tasks using the button above.</p><div class="signals-sync-actions"><button type="button" class="quiet-pill" data-signals-copy>Copy sync request</button><a href="https://chatgpt.com/" class="subtle-link" target="_blank" rel="noopener noreferrer">Open ChatGPT <span data-icon="arrow-up-right"></span></a></div><p id="signals-copy-status-automations" class="signal-synced" aria-live="polite"></p></section>
+        </section>
         <section data-panel="routines" class="view-panel" hidden>
           <div class="eyebrow"><span class="eyebrow-line"></span> ROUTINES / WEEKLY PROGRESS</div><div class="page-head"><div><h1>Routines<span class="accent-period">.</span></h1><p>Keep score on the habits that matter. Check off each occurrence as you do it.</p></div><button data-action="add-routine" type="button" class="primary-button"><span data-icon="plus"></span> New routine</button></div>
           <div class="privacy-ribbon"><span data-icon="repeat"></span><div>Weekly progress resets each Monday. Your older completions remain in the local history, and marking one complete does not create or complete a Todoist task.</div></div>
@@ -348,7 +393,7 @@
           <section class="module setting-card"><div class="settings-icon"><span data-icon="database"></span></div><h3>Your data</h3><p>Save a backup of your local projects, priorities, routines, links, and notes (plus any legacy local records). Todoist and GAIA are not copied into the backup. Import it on another browser to move your setup. Keep this sensitive export secure.</p><div class="data-actions"><button type="button" class="outline-button" id="export-data"><span data-icon="download"></span> Export backup</button><label class="outline-button file-label"><span data-icon="upload"></span> Import backup <input id="import-data" type="file" accept="application/json,.json" hidden></label></div><div class="settings-warning"><span data-icon="info"></span> Backups are not automatic cloud sync.</div><button type="button" id="orbit-import-legacy" class="outline-button legacy-import" hidden>Import older ORBIT browser data</button></section>
           <section class="module setting-card"><div class="settings-icon"><span data-icon="shield-check"></span></div><h3>Privacy & integrations</h3><p>Todoist supports an encrypted server-side OAuth connection across devices, with a temporary browser-tab token fallback. Your ORBIT sign-in uses GAIA’s existing Supabase account and owner-restricted tables. Todoist normally connects through its approval screen without a personal API token. No finance or health syncing.</p><div class="integrations"><div><span class="status-dot ready"></span> GAIA <span>Public catalog + signed-in tasks</span></div><div><span class="status-dot planned"></span> Todoist <span>Cloud OAuth; connect from Tasks</span></div><div><span class="status-dot planned"></span> Money &amp; Health <span>Paused</span></div><div><span class="status-dot ready"></span> Supabase authentication <span>Shared with GAIA</span></div><div><span class="status-dot planned"></span> ORBIT notes sync <span>Browser-only for now</span></div></div><button type="button" class="danger-link" id="reset-data">Reset ORBIT data on this device</button></section></div>
         </section>
-        <footer class="main-footer"><span>ORBIT HEADQUARTERS <span class="foot-dot">◆</span> BUILT TO KEEP THINGS MOVING</span><span>VERSION 1.0 · PULSE REFLECTIONS</span></footer>
+        <footer class="main-footer"><span>ORBIT HEADQUARTERS <span class="foot-dot">◆</span> BUILT TO KEEP THINGS MOVING</span><span>VERSION 1.1 · INBOX & AUTOMATIONS</span></footer>
       </main>
       <nav class="mobile-nav" aria-label="Quick navigation">
         <button class="mobile-nav-item active" type="button" data-view="home"><span data-icon="layout-dashboard"></span><span>Home</span></button>
