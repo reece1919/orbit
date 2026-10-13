@@ -12,6 +12,7 @@
   const restoreBtn = $("#orbit-sync-restore");
   const refreshBtn = $("#orbit-sync-recheck");
   const pauseBtn = $("#orbit-sync-pause");
+  const undoBtn = $("#orbit-sync-undo");
   if(!statusEl || !local())return;
 
   let owner="", client=null, revision=null, remote=null, baseline=null;
@@ -35,6 +36,8 @@
     restoreBtn.disabled=offline || !remote;
     pauseBtn.hidden=!enabled;
     pauseBtn.disabled=offline;
+    undoBtn.hidden=!owner || !localStorage.getItem(backupKey(owner));
+    undoBtn.disabled=offline;
     uploadBtn.textContent=remote?"Replace cloud with this device":"Start cloud sync from this device";
     if(enabled){
       uploadBtn.hidden=true;
@@ -183,6 +186,17 @@
     catch(e){disable("Cloud restore failed",e.message)}
   });
   refreshBtn.addEventListener("click",()=>void inspect());
+  undoBtn.addEventListener("click",()=>{
+    if(!owner || writing || checking)return;
+    const saved=localStorage.getItem(backupKey(owner));
+    if(!saved)return;
+    if(!window.confirm("Restore the most recent device safety copy? Cloud sync will be paused, and your existing cloud version will stay unchanged until you explicitly upload this device."))return;
+    try{
+      const data=JSON.parse(saved)?.data;
+      local().setFromCloud(data,owner);
+      disable("Device safety copy restored","Cloud sync paused. Review both versions before choosing whether to replace the remote workspace.");
+    }catch(error){setStatus("Could not restore device backup",error?.message||"The backup appears invalid.")}
+  });
   pauseBtn.addEventListener("click",()=>{
     if(!owner)return;
     if(timer){clearTimeout(timer);timer=null}
