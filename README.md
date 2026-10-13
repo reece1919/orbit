@@ -2,6 +2,19 @@
 
 **v0.7 — Secure cross-device Todoist OAuth connection, responsive PC/tablet/iPhone dashboard, shared ORBIT/GAIA sign-in, and GAIA/FUEL integrations.** Other health metrics and money tracking remain paused. Previously saved health/money data, if any, remains inside the legacy browser data and backup format so upgrading does not silently erase it.
 
+## Celestial Navigation redesign (v0.8)
+
+The ORBIT homepage now presents an interactive solar-system navigation map instead of a generic header. The central ORBIT core is surrounded by four accessible planetary navigation buttons: Tasks (amber), GAIA (green), FUEL (orange) and Projects (violet). Clicking a planet uses ORBIT's existing section routing. No external illustration or new data dependencies are needed; planetary rings, stars and glows are built in CSS.
+
+- `celestial.css` is a separate, cache-versioned theme stylesheet layered after the original styles, preserving all existing logic and Supabase/Todoist integrations.
+- The interface uses midnight-navy surfaces, electric cyan highlights, thin orbit lines, and restrained glass-like cards; task/GAIA/FUEL summaries retain their real linked data.
+- Desktop displays the complete navigation star chart, tablet reflows the map with large touch targets, and iPhone uses a compact four-planet arrangement above the existing quick actions and persistent bottom navigation.
+- Includes visible keyboard focus styles and respects `prefers-reduced-motion`.
+- The existing light-mode option remains available; the dark cosmic look is the intended default.
+- No changes were made to Todoist OAuth authorization, FUEL records, GAIA data, or browser-local notes and routines.
+
+**Testing:** Repository code, field IDs, navigation destinations, JS syntax, and stylesheet structure were checked. GitHub Pages publishing and pixel-level rendering on actual devices should be verified in a browser.
+
 ## Adaptive home dashboard (v0.6)
 
 - Desktop: compact greeting, primary quick actions, three connected-source summary cards, a two-column agenda and source overview, with projects and device-local notes below.
