@@ -60,7 +60,7 @@
         <button type="button" class="nav-item active" data-view="home"><span data-icon="layout-dashboard"></span> Overview <span class="nav-indicator"></span></button>
         <button type="button" class="nav-item" data-view="projects"><span data-icon="grid"></span> Projects <span class="nav-count" id="nav-project-count">03</span></button>
         <button type="button" class="nav-item" data-view="focus"><span data-icon="check-circle"></span> Todoist &amp; Tasks <span class="nav-count" id="nav-task-count">0</span></button>
-        <a class="nav-item" href="https://reece1919.github.io/gaia/" target="_blank" rel="noopener noreferrer"><img class="nav-system-emblem" src="assets/systems/gaia.svg?v=1.4.0" width="21" height="21" alt=""> GAIA <span class="nav-count" id="nav-gaia-count">—</span></a>
+        <span id="nav-gaia-count" hidden aria-hidden="true">—</span>
         <button type="button" class="nav-item" data-view="fuel"><img class="nav-system-emblem" src="assets/systems/fuel.svg" width="21" height="21" alt=""> FUEL <span class="nav-count" id="nav-fuel-count">—</span></button>
         <button type="button" class="nav-item" data-view="pulse"><img class="nav-system-emblem" src="assets/systems/pulse.svg" width="21" height="21" alt=""> PULSE <span class="nav-indicator"></span></button>
         <button type="button" class="nav-item" data-view="inbox"><span data-icon="mail"></span> Inbox <span class="nav-count" id="nav-inbox-count">—</span></button>
@@ -340,8 +340,8 @@
       <nav class="mobile-nav" aria-label="Quick navigation">
         <button class="mobile-nav-item active" type="button" data-view="home"><span data-icon="layout-dashboard"></span><span>Home</span></button>
         <button class="mobile-nav-item" type="button" data-view="focus"><span data-icon="check-circle"></span><span>Tasks</span></button>
-        <button class="mobile-nav-item" type="button" data-view="fuel"><span data-icon="heart-pulse"></span><span>FUEL</span></button>
-        <a class="mobile-nav-item" href="https://reece1919.github.io/gaia/" target="_blank" rel="noopener noreferrer"><img src="assets/systems/gaia.svg?v=1.4.0" width="21" height="21" alt=""><span>GAIA</span></a>
+        <button class="mobile-nav-item" type="button" data-view="projects"><span data-icon="grid"></span><span>Projects</span></button>
+        <button class="mobile-nav-item" type="button" data-view="inbox"><span data-icon="mail"></span><span>Inbox</span></button>
         <button class="mobile-nav-item" type="button" id="mobile-more" aria-controls="sidebar" aria-expanded="false"><span data-icon="menu"></span><span>More</span></button>
       </nav>
     </div>
