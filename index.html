@@ -7,16 +7,16 @@
   <meta name="description" content="ORBIT Personal Command Center — Todoist tasks, GAIA plants, routines, projects, and daily focus." />
   <title>ORBIT — Celestial Command Center</title>
   <link rel="stylesheet" href="styles.css?v=0.6.2" />
-  <link rel="stylesheet" href="celestial.css?v=1.1.3" />
+  <link rel="stylesheet" href="celestial.css?v=1.1.4" />
   <link rel="stylesheet" href="pulse.css?v=1.0.0" />
-  <link rel="stylesheet" href="signals.css?v=1.1.0" />
+  <link rel="stylesheet" href="signals.css?v=1.1.4" />
   <link rel="manifest" href="pulse.webmanifest" />
   <link rel="icon" type="image/svg+xml" href="orbit-icon.svg" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="ORBIT" />
   <script src="auth.js?v=0.6.2" defer></script>
-  <script src="app.js?v=1.1.3" defer></script>
-  <script src="integrations.js?v=0.9.0" defer></script>
+  <script src="app.js?v=1.1.4" defer></script>
+  <script src="integrations.js?v=1.1.4" defer></script>
   <script src="fuel.js?v=0.6.2" defer></script>
   <script src="pulse.js?v=1.0.0" defer></script>
   <script src="signals.js?v=1.1.0" defer></script>
@@ -71,7 +71,7 @@
       </div>
       <div class="sidebar-bottom">
         <div class="local-badge"><span data-icon="hard-drive"></span><div><strong>CONNECTED WORKSPACE</strong><small>Tasks and plant data from connected sources</small></div></div>
-        <div class="sidebar-footer">ORBIT / SYSTEM 001 <span>v1.1.3</span></div>
+        <div class="sidebar-footer">ORBIT / SYSTEM 001 <span>v1.1.4</span></div>
       </div>
     </aside>
     <button type="button" id="nav-backdrop" class="nav-backdrop" aria-label="Close navigation" hidden></button>
@@ -149,14 +149,7 @@
             <button type="button" class="home-fast-action" data-view="gaia"><span class="home-fast-icon"><span data-icon="leaf"></span></span><span class="home-fast-label"><strong>My plants</strong><small>Open GAIA</small></span><span data-icon="arrow-right" class="home-fast-arrow"></span></button>
           </div>
 
-          <div class="home-snapshot-head"><div><span class="eyebrow small">THE SNAPSHOT</span><h2>At a glance</h2></div><span class="home-live-label"><span class="pulse-dot"></span> CONNECTED SOURCES</span></div>
-          <div class="home-snapshot" aria-label="Today's summary">
-            <button type="button" class="home-snapshot-tile home-snapshot-tasks" data-view="focus"><span class="home-snapshot-label">TODAY’S TASKS <span data-icon="check-circle"></span></span><strong id="stat-tasks">—</strong><span class="home-snapshot-caption">Due today + overdue</span></button>
-            <button type="button" class="home-snapshot-tile home-snapshot-fuel" data-view="fuel"><span class="home-snapshot-label">CALORIES LOGGED <span data-icon="heart-pulse"></span></span><strong id="fuel-home-value">—</strong><span class="home-snapshot-caption">Today in FUEL</span></button>
-            <button type="button" class="home-snapshot-tile home-snapshot-gaia" data-view="gaia"><span class="home-snapshot-label">GAIA PLANTS <span data-icon="leaf"></span></span><strong id="stat-links">—</strong><span class="home-snapshot-caption">Collection profiles</span></button>
-          </div>
-
-          <div class="home-signals-grid" aria-label="Latest external activity">
+          <div class="home-signals-grid home-signals-grid-single" aria-label="Latest unread Gmail activity">
             <section class="module home-signal home-signal-mail">
               <div class="module-head home-module-head">
                 <div><span class="eyebrow small">GMAIL / SAVED SNAPSHOT</span><h3><span data-icon="mail"></span> Unread inbox <span id="home-inbox-count" class="signal-count">—</span></h3></div>
@@ -165,27 +158,19 @@
               <div id="home-inbox-list" class="signal-list"><p class="watch-detail">Loading your last Gmail snapshot…</p></div>
               <p id="home-inbox-synced" class="signal-synced">Not connected directly to Gmail · last synchronized view</p>
             </section>
-            <section class="module home-signal home-signal-automations">
-              <div class="module-head home-module-head">
-                <div><span class="eyebrow small">CHATGPT / SAVED SNAPSHOT</span><h3><span data-icon="clock"></span> Recurring tasks <span id="home-automations-count" class="signal-count">—</span></h3></div>
-                <button class="subtle-link" type="button" data-view="automations">View tasks <span data-icon="arrow-right"></span></button>
-              </div>
-              <div id="home-automations-list" class="signal-list"><p class="watch-detail">Loading your latest task snapshot…</p></div>
-              <p id="home-automations-synced" class="signal-synced">Last synchronized view · not the live ChatGPT task list</p>
-            </section>
+
           </div>
 
           <div class="home-work-grid">
             <div class="home-main-stack">
               <section class="module home-agenda">
                 <div class="module-head home-module-head"><div><div class="eyebrow small">TODOIST / LIVE</div><h3>Today’s agenda</h3></div><div class="home-module-actions"><button type="button" class="quiet-pill" data-refresh="todoist">Refresh</button><button type="button" class="subtle-link" data-view="focus">All tasks <span data-icon="arrow-right"></span></button></div></div>
-                <p id="todoist-home-value" class="home-inline-value">Loading your day…</p>
                 <p id="todoist-home-note" class="watch-detail home-source-note">Your upcoming and overdue items from Todoist.</p>
                 <div id="todoist-home-list" class="live-task-list"><p class="watch-detail">Connect Todoist to load your agenda.</p></div>
               </section>
               <section class="module home-sidequests">
                 <div class="module-head home-module-head">
-                  <div><div class="eyebrow small"><span data-icon="gamepad"></span> OPTIONAL / JUST FOR FUN</div><h3>Side Quests <span id="sidequest-count" class="sidequest-count" aria-label="Side quests remaining"></span></h3></div>
+                  <div><div class="eyebrow small"><span data-icon="gamepad"></span> OPTIONAL / JUST FOR FUN</div><h3>Side Quests</h3></div>
                   <a class="subtle-link" href="https://app.todoist.com/app/labels" target="_blank" rel="noopener noreferrer">Todoist labels <span data-icon="arrow-up-right"></span></a>
                 </div>
                 <p class="watch-detail sidequest-description">Fun ideas without deadlines or pressure. Saved in Todoist with <strong>@sidequest</strong>.</p>
@@ -211,13 +196,13 @@
               <section class="module home-mini-card home-mini-fuel">
                 <div class="home-mini-top"><span class="home-mini-icon"><span data-icon="heart-pulse"></span></span><span class="eyebrow small">FUEL / NUTRITION</span></div>
                 <h3>Food journal</h3>
+                <div id="fuel-home-value" class="home-inline-value">Loading today…</div>
                 <p id="fuel-home-note" class="watch-detail">Loading your private food journal…</p>
                 <div class="home-mini-actions"><a href="https://chatgpt.com/g/g-p-6acd6e86e82081919497cb8e044c60bd/project" class="primary-button" target="_blank" rel="noopener noreferrer">Ask FUEL <span data-icon="arrow-up-right"></span></a><button type="button" class="quiet-pill" data-view="fuel">View log</button></div>
               </section>
               <section class="module home-mini-card home-mini-gaia">
                 <div class="home-mini-top"><span class="home-mini-icon"><span data-icon="leaf"></span></span><span class="eyebrow small">GAIA / PLANTS</span></div>
                 <h3>Your living collection</h3>
-                <div id="gaia-home-value" class="home-inline-value">Loading collection…</div>
                 <p id="gaia-home-note" class="watch-detail">Reading your plant collection.</p>
                 <div class="home-mini-actions"><button type="button" class="subtle-link" data-view="gaia">Plant overview <span data-icon="arrow-right"></span></button><button type="button" class="quiet-pill" data-refresh="gaia">Refresh</button></div>
               </section>
@@ -399,7 +384,7 @@
           <section class="module setting-card"><div class="settings-icon"><span data-icon="database"></span></div><h3>Your data</h3><p>Save a backup of your local projects, priorities, routines, links, and notes (plus any legacy local records). Todoist and GAIA are not copied into the backup. Import it on another browser to move your setup. Keep this sensitive export secure.</p><div class="data-actions"><button type="button" class="outline-button" id="export-data"><span data-icon="download"></span> Export backup</button><label class="outline-button file-label"><span data-icon="upload"></span> Import backup <input id="import-data" type="file" accept="application/json,.json" hidden></label></div><div class="settings-warning"><span data-icon="info"></span> Backups are not automatic cloud sync.</div><button type="button" id="orbit-import-legacy" class="outline-button legacy-import" hidden>Import older ORBIT browser data</button></section>
           <section class="module setting-card"><div class="settings-icon"><span data-icon="shield-check"></span></div><h3>Privacy & integrations</h3><p>Todoist supports an encrypted server-side OAuth connection across devices, with a temporary browser-tab token fallback. Your ORBIT sign-in uses GAIA’s existing Supabase account and owner-restricted tables. Todoist normally connects through its approval screen without a personal API token. No finance or health syncing.</p><div class="integrations"><div><span class="status-dot ready"></span> GAIA <span>Public catalog + signed-in tasks</span></div><div><span class="status-dot planned"></span> Todoist <span>Cloud OAuth; connect from Tasks</span></div><div><span class="status-dot planned"></span> Money &amp; Health <span>Paused</span></div><div><span class="status-dot ready"></span> Supabase authentication <span>Shared with GAIA</span></div><div><span class="status-dot planned"></span> ORBIT notes sync <span>Browser-only for now</span></div></div><button type="button" class="danger-link" id="reset-data">Reset ORBIT data on this device</button></section></div>
         </section>
-        <footer class="main-footer"><span>ORBIT HEADQUARTERS <span class="foot-dot">◆</span> BUILT TO KEEP THINGS MOVING</span><span>VERSION 1.1.3 · QUICK LAUNCH</span></footer>
+        <footer class="main-footer"><span>ORBIT HEADQUARTERS <span class="foot-dot">◆</span> BUILT TO KEEP THINGS MOVING</span><span>VERSION 1.1.4 · FOCUSED OVERVIEW</span></footer>
       </main>
       <nav class="mobile-nav" aria-label="Quick navigation">
         <button class="mobile-nav-item active" type="button" data-view="home"><span data-icon="layout-dashboard"></span><span>Home</span></button>
