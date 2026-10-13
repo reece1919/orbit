@@ -7,7 +7,7 @@ const CATS=["Locations","Characters","Factions","Lore","Timeline","Scenes","Draf
 const STATES=["Seed","Researching","Drafting","Ready to publish","Published"];
 const $=q=>document.querySelector(q);
 const escapeHtml=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const safeUrl=v=>{try{const u=new URL(String(v||""));return u.protocol==="https:"?u.href:""}catch(_){return ""}};
+const safeUrl=v=>{try{const u=new window.URL(String(v||""));return u.protocol==="https:"?u.href:""}catch(_){return ""}};
 const form=$("#entry-form"), search=$("#search"),filter=$("#filter");
 const field=name=>form.querySelector('[name="'+name+'"]');
 let client=null,uid="",revision=0,entries=[],selected="",dirty=false,connected=false;
