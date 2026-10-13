@@ -7,7 +7,7 @@
   <meta name="description" content="ORBIT Personal Command Center — Todoist tasks, GAIA plants, routines, projects, and daily focus." />
   <title>ORBIT — Celestial Command Center</title>
   <link rel="stylesheet" href="styles.css?v=0.6.2" />
-  <link rel="stylesheet" href="celestial.css?v=1.1.2" />
+  <link rel="stylesheet" href="celestial.css?v=1.1.3" />
   <link rel="stylesheet" href="pulse.css?v=1.0.0" />
   <link rel="stylesheet" href="signals.css?v=1.1.0" />
   <link rel="manifest" href="pulse.webmanifest" />
@@ -20,6 +20,7 @@
   <script src="fuel.js?v=0.6.2" defer></script>
   <script src="pulse.js?v=1.0.0" defer></script>
   <script src="signals.js?v=1.1.0" defer></script>
+  <script src="chat-shortcuts.js?v=1.1.3" defer></script>
 </head>
 <body data-theme="dark" data-auth-state="checking">
   <section id="orbit-auth" class="auth-screen" aria-labelledby="auth-heading" aria-live="polite">
@@ -70,14 +71,14 @@
       </div>
       <div class="sidebar-bottom">
         <div class="local-badge"><span data-icon="hard-drive"></span><div><strong>CONNECTED WORKSPACE</strong><small>Tasks and plant data from connected sources</small></div></div>
-        <div class="sidebar-footer">ORBIT / SYSTEM 001 <span>v1.1</span></div>
+        <div class="sidebar-footer">ORBIT / SYSTEM 001 <span>v1.1.3</span></div>
       </div>
     </aside>
     <button type="button" id="nav-backdrop" class="nav-backdrop" aria-label="Close navigation" hidden></button>
     <div class="main-column">
       <header class="topbar">
         <div class="breadcrumbs"><button class="menu-button" type="button" id="menu-button" aria-label="Toggle menu" aria-controls="sidebar" aria-expanded="false"><span data-icon="menu"></span></button><span class="crumb-parent">HEADQUARTERS</span><span class="crumb-slash">/</span><span id="current-crumb">OVERVIEW</span></div>
-        <div class="topbar-right"><a class="top-github-shortcut" href="https://github.com/reece1919/orbit" target="_blank" rel="noopener noreferrer" title="Open ORBIT source code on GitHub" aria-label="Open ORBIT repository on GitHub"><span data-icon="github"></span><span class="top-github-text">GitHub</span><span class="top-github-external" data-icon="arrow-up-right"></span></a><span id="topbar-date" class="top-date"></span><span class="top-separator"></span><button type="button" id="orbit-account-button" class="top-account" title="Sign out of ORBIT and GAIA on this browser"><span data-icon="shield-check"></span><span id="orbit-account-label">Account</span></button></div>
+        <div class="topbar-right"><a class="top-github-shortcut" href="https://github.com/reece1919/orbit" target="_blank" rel="noopener noreferrer" title="Open ORBIT source code on GitHub" aria-label="Open ORBIT repository on GitHub"><span data-icon="github"></span><span class="top-github-text">GitHub</span><span class="top-github-external" data-icon="arrow-up-right"></span></a><a class="top-github-shortcut top-launch-chatgpt" href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer" title="Open ChatGPT" aria-label="Open ChatGPT"><span class="top-chatgpt-logo" aria-hidden="true">✳</span><span class="top-github-text">ChatGPT</span><span class="top-github-external" data-icon="arrow-up-right"></span></a><a class="top-github-shortcut top-launch-orbit" id="orbit-edit-chat" href="#" target="_blank" rel="noopener noreferrer" title="Set up your ORBIT development chat link" aria-label="Set up the ORBIT development chat shortcut" aria-haspopup="dialog"><span data-icon="pen-line"></span><span class="top-github-text">Edit ORBIT</span><span class="top-github-external" data-icon="arrow-up-right"></span></a><span id="topbar-date" class="top-date"></span><span class="top-separator"></span><button type="button" id="orbit-account-button" class="top-account" title="Sign out of ORBIT and GAIA on this browser"><span data-icon="shield-check"></span><span id="orbit-account-label">Account</span></button></div>
       </header>
       <main class="content" id="main-content">
         <section data-panel="home" class="view-panel home-view" aria-label="Today at a glance">
@@ -394,11 +395,11 @@
           <div class="settings-grid">
           <section class="module setting-card account-settings"><div class="settings-icon"><span data-icon="shield-check"></span></div><h3>Your ORBIT account</h3><p>Signed in with your GAIA account. Signing out of ORBIT also signs out of GAIA in this browser.</p><div id="orbit-settings-email" class="account-email">Loading account…</div><button id="orbit-signout" class="outline-button" type="button">Sign out</button><p class="settings-warning">Local projects, routines and notes are saved to this browser under this account; they do not yet sync to another device.</p></section>
           <section class="module setting-card"><div class="settings-icon"><span data-icon="palette"></span></div><h3>Appearance</h3><p>Choose a look for your command center.</p><div class="theme-choices"><button id="theme-dark" type="button" data-theme-choice="dark" class="theme-choice selected"><span data-icon="moon"></span> Midnight</button><button id="theme-light" type="button" data-theme-choice="light" class="theme-choice"><span data-icon="sun"></span> Daylight</button></div></section>
-          <section class="module setting-card"><div class="settings-icon"><span data-icon="link"></span></div><h3>Quick launch links</h3><p>Add shortcuts for apps, ChatGPT Projects, or frequently visited pages.</p><div id="settings-links" class="settings-links"></div><button type="button" class="outline-button setting-action" data-action="add-link"><span data-icon="plus"></span> Add shortcut</button></section>
+          <section class="module setting-card"><div class="settings-icon"><span data-icon="link"></span></div><h3>Quick launch links</h3><p>Add shortcuts for apps, ChatGPT Projects, or frequently visited pages.</p><div id="settings-links" class="settings-links"></div><button type="button" class="outline-button setting-action" data-action="add-link"><span data-icon="plus"></span> Add shortcut</button><div class="chat-shortcut-settings"><strong>ORBIT development chat</strong><p id="orbit-chat-setting-status" class="watch-detail">Checking your saved chat link…</p><button type="button" class="quiet-pill" id="orbit-chat-configure"><span data-icon="pen-line"></span> Set or change chat link</button></div></section>
           <section class="module setting-card"><div class="settings-icon"><span data-icon="database"></span></div><h3>Your data</h3><p>Save a backup of your local projects, priorities, routines, links, and notes (plus any legacy local records). Todoist and GAIA are not copied into the backup. Import it on another browser to move your setup. Keep this sensitive export secure.</p><div class="data-actions"><button type="button" class="outline-button" id="export-data"><span data-icon="download"></span> Export backup</button><label class="outline-button file-label"><span data-icon="upload"></span> Import backup <input id="import-data" type="file" accept="application/json,.json" hidden></label></div><div class="settings-warning"><span data-icon="info"></span> Backups are not automatic cloud sync.</div><button type="button" id="orbit-import-legacy" class="outline-button legacy-import" hidden>Import older ORBIT browser data</button></section>
           <section class="module setting-card"><div class="settings-icon"><span data-icon="shield-check"></span></div><h3>Privacy & integrations</h3><p>Todoist supports an encrypted server-side OAuth connection across devices, with a temporary browser-tab token fallback. Your ORBIT sign-in uses GAIA’s existing Supabase account and owner-restricted tables. Todoist normally connects through its approval screen without a personal API token. No finance or health syncing.</p><div class="integrations"><div><span class="status-dot ready"></span> GAIA <span>Public catalog + signed-in tasks</span></div><div><span class="status-dot planned"></span> Todoist <span>Cloud OAuth; connect from Tasks</span></div><div><span class="status-dot planned"></span> Money &amp; Health <span>Paused</span></div><div><span class="status-dot ready"></span> Supabase authentication <span>Shared with GAIA</span></div><div><span class="status-dot planned"></span> ORBIT notes sync <span>Browser-only for now</span></div></div><button type="button" class="danger-link" id="reset-data">Reset ORBIT data on this device</button></section></div>
         </section>
-        <footer class="main-footer"><span>ORBIT HEADQUARTERS <span class="foot-dot">◆</span> BUILT TO KEEP THINGS MOVING</span><span>VERSION 1.1.1 · FIVE WORLDS</span></footer>
+        <footer class="main-footer"><span>ORBIT HEADQUARTERS <span class="foot-dot">◆</span> BUILT TO KEEP THINGS MOVING</span><span>VERSION 1.1.3 · QUICK LAUNCH</span></footer>
       </main>
       <nav class="mobile-nav" aria-label="Quick navigation">
         <button class="mobile-nav-item active" type="button" data-view="home"><span data-icon="layout-dashboard"></span><span>Home</span></button>
@@ -411,6 +412,19 @@
   </div>
   <dialog id="item-dialog" class="item-dialog" aria-labelledby="dialog-title"><form id="item-form" method="dialog" novalidate><div class="dialog-header"><div><div id="dialog-eyebrow" class="eyebrow small">CREATE</div><h2 id="dialog-title">Add something</h2></div><button type="button" class="small-icon-btn" id="dialog-close" aria-label="Close"><span data-icon="x"></span></button></div><div id="dialog-fields" class="dialog-fields"></div><div class="dialog-actions"><button type="button" class="outline-button" id="dialog-cancel">Cancel</button><button type="submit" class="primary-button" id="dialog-submit">Save</button></div></form></dialog>
   <dialog id="todoist-create-dialog" class="item-dialog"><form id="todoist-create-form"><div class="dialog-header"><div><div class="eyebrow small">TODOIST / NEW TASK</div><h2>Add a task</h2></div><button class="small-icon-btn" type="button" id="todoist-create-close" aria-label="Close"><span data-icon="x"></span></button></div><div class="dialog-fields"><label class="dialog-field">Task name<input name="content" type="text" minlength="1" maxlength="300" required placeholder="What needs doing?"></label><label class="dialog-field">Due date (optional)<input name="due_date" type="date"></label><label class="dialog-field">Priority<select name="priority"><option value="1">Normal</option><option value="3">High (p2)</option><option value="4">Urgent (p1)</option></select></label></div><div class="dialog-actions"><button class="outline-button" type="button" id="todoist-create-cancel">Cancel</button><button class="primary-button" type="submit">Add to Todoist</button></div></form></dialog>
+  <dialog id="orbit-chat-dialog" class="item-dialog chat-shortcut-dialog" aria-labelledby="orbit-chat-dialog-title">
+    <form id="orbit-chat-form">
+      <div class="dialog-header"><div><div class="eyebrow small">QUICK ACCESS / CHATGPT</div><h2 id="orbit-chat-dialog-title">Link this ORBIT chat</h2></div><button type="button" id="orbit-chat-close" class="small-icon-btn" aria-label="Close"><span data-icon="x"></span></button></div>
+      <p class="chat-shortcut-intro">Open this development conversation in ChatGPT, copy the URL from your browser’s address bar, and paste it below. Save it once to make the <strong>Edit ORBIT</strong> button open this chat on any signed-in device.</p>
+      <div class="dialog-fields"><label class="dialog-field" for="orbit-chat-url">Conversation URL<input name="chat_url" id="orbit-chat-url" type="url" maxlength="1000" inputmode="url" autocomplete="off" spellcheck="false" required placeholder="https://chatgpt.com/c/…"></label></div>
+      <p id="orbit-chat-error" role="status" aria-live="polite" class="chat-shortcut-error"></p>
+      <div class="dialog-actions chat-shortcut-actions">
+        <button type="button" id="orbit-chat-remove" class="outline-button" hidden>Clear saved link</button>
+        <button type="button" id="orbit-chat-cancel" class="outline-button">Cancel</button>
+        <button type="submit" id="orbit-chat-save" class="primary-button">Save link</button>
+      </div>
+    </form>
+  </dialog>
   <div id="toast" role="status" aria-live="polite" class="toast" hidden></div>
 </body>
 </html>
