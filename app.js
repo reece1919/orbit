@@ -72,7 +72,7 @@
   const effectiveProjects = () => {
     const source = state.projects;
     const has = p => source.some(x => x.id === p.id || x.name.toLowerCase() === p.name.toLowerCase());
-    return [...source,...[fuelProject,echoProject,runeProject].filter(p=>!has(p))];
+    return [...source,...[fuelProject,echoProject,runeProject].filter(p=>!has(p))].filter(p=>!["gaia","echo","rune"].includes(String(p.id).toLowerCase())&&!["gaia","echo","rune"].includes(String(p.name).toLowerCase()));
   };
   const safeText = (s,limit=200) => typeof s === 'string' ? s.slice(0,limit) : '';
   function safeUrl(url){
