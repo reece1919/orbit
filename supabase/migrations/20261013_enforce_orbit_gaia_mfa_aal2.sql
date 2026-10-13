@@ -5,7 +5,7 @@
 do $guard$
 begin
  if (select count(*) from auth.users) <> 1 or
-    (select count(distinct user_id) from auth.mfa_factors where factor_type='totp' and status='verified' group by user_id having count(*) >=2) <> 1 then
+    (select count(*) from (select user_id from auth.mfa_factors where factor_type='totp' and status='verified' group by user_id having count(*) >=2) as backups) <> 1 then
    raise exception 'MFA migration halted: single account with two verified TOTP factors required';
  end if;
 end $guard$;
