@@ -93,6 +93,28 @@
     const detail=[due?(overdue?'Overdue · ':'Due ')+prettyDate(due):'No due date', Number(t.priority||1)>=3?'High priority':''].filter(Boolean).join(' · ');
     return `<article class="live-task${overdue?' is-overdue':''}"><input type="checkbox" data-todoist-done="${esc(t.id)}" aria-label="Complete ${esc(t.content)}"><div class="live-task-body"><strong>${esc(t.content)}</strong><small>${esc(detail)}</small><a href="${esc(safeTaskLink(t.id))}" target="_blank" rel="noopener noreferrer">Open in Todoist ↗</a></div></article>`;
   }
+  const HOME_SYSTEMS=['gaia','echo','rune','fuel','pulse'];
+  function homeTaskSystem(t){
+    const labels=Array.isArray(t?.labels)?t.labels.map(x=>String(x).replace(/^@/,'').trim().toLowerCase()):[];
+    return HOME_SYSTEMS.find(x=>labels.includes(x))||'general';
+  }
+  function homeTaskMarkup(t){
+    const system=homeTaskSystem(t);
+    const icon=system==='general'?'':`<img class="agenda-system-icon" src="assets/systems/${system}.svg" alt="" width="20" height="20">`;
+    return `<article class="agenda-row"><input type="checkbox" data-todoist-done="${esc(t.id)}" aria-label="Complete ${esc(t.content)}"><span class="agenda-system-label">${icon}${esc(system==='general'?'GENERAL':system.toUpperCase())}</span><a href="${esc(safeTaskLink(t.id))}" target="_blank" rel="noopener noreferrer" class="agenda-task-title">${esc(t.content)}</a></article>`;
+  }
+  function homeAgenda(){
+    const today=TODAY(),future=new Date(today+'T12:00:00');
+    future.setDate(future.getDate()+1);
+    const tomorrow=`${future.getFullYear()}-${String(future.getMonth()+1).padStart(2,'0')}-${String(future.getDate()).padStart(2,'0')}`;
+    const fresh=ordered(tasks.filter(t=>!isSideQuest(t)&&dayOf(t)===today));
+    const next=ordered(tasks.filter(t=>!isSideQuest(t)&&dayOf(t)===tomorrow));
+    const group=(name,list,limit)=>{
+      if(!list.length)return `<section class="agenda-day"><h4>${name} <span class="agenda-count">0</span></h4><p class="agenda-empty">Nothing scheduled</p></section>`;
+      return `<section class="agenda-day"><h4>${name} <span class="agenda-count">${list.length}</span></h4>${list.slice(0,limit).map(homeTaskMarkup).join('')}${list.length>limit?`<p class="agenda-more">${list.length-limit} more in Todoist</p>`:''}</section>`;
+    };
+    return group('Today',fresh,6)+group('Tomorrow',next,4);
+  }
   function sideQuestMarkup(t){
     const due=dayOf(t);
     return `<article class="sidequest-row"><input type="checkbox" data-todoist-done="${esc(t.id)}" aria-label="Complete side quest: ${esc(t.content)}"><div class="sidequest-row-body"><strong class="sidequest-row-title">${esc(t.content)}</strong><small class="sidequest-row-sub">${esc(due?'Optional · '+prettyDate(due):'No deadline · just for fun')}</small></div><a href="${esc(safeTaskLink(t.id))}" target="_blank" rel="noopener noreferrer" aria-label="Open ${esc(t.content)} in Todoist">↗</a></article>`;
@@ -110,7 +132,7 @@
     if(addQuest)addQuest.disabled=!active||todoistLoading;
     if(questInput)questInput.disabled=!active||todoistLoading;
     $('#nav-task-count').textContent=active && todoistSyncTime?String(due.length):'—';
-    note('#todoist-home-note',!active?(oauthChecking?'Checking secure Todoist connection…':'Connect Todoist to see what needs attention.'):todoistError?todoistError:todoistSyncTime?(due.length?'Due today and overdue · refreshed ':'All clear for today · refreshed ')+todoistSyncTime:'Connecting…');
+    note('#todoist-home-note',!active?'':todoistError?todoistError:todoistSyncTime?'Updated '+todoistSyncTime:'');
     note('#todoist-status',todoistLoading?'Refreshing Todoist…':todoistError?'Could not refresh: '+todoistError:todoistSyncTime?`${total}${todoistPartial?'+':''} open tasks · last refreshed ${todoistSyncTime}`:'Ready to sync');
     $$('[data-todoist-filter]').forEach(el=>el.classList.toggle('selected',el.dataset.todoistFilter===todoistFilter));
     const selected=ordered(selectTasks(todoistFilter));
@@ -118,13 +140,13 @@
       todoistLoading&&!todoistSyncTime?'<p class="watch-detail">Loading your Todoist tasks…</p>':
       selected.length?selected.slice(0,100).map(taskMarkup).join('')+ (selected.length>100?`<p class="watch-detail">Showing 100 of ${selected.length} matching tasks.</p>`:''):
       `<p class="watch-detail">${esc(todoistError||'No tasks in this view.')}</p>`;
-    $('#todoist-home-list').innerHTML=!active?'<p class="watch-detail">Connect Todoist under Todoist & Tasks to see your agenda.</p>':
-      due.length?ordered(due).slice(0,5).map(taskMarkup).join(''):`<p class="watch-detail">${esc(todoistError||'No tasks due today or overdue.')}</p>`;
+    $('#todoist-home-list').innerHTML=!active?'<p class="watch-detail">Connect Todoist to see your agenda.</p>':
+      todoistLoading&&!todoistSyncTime?'<p class="watch-detail">Loading…</p>':homeAgenda();
     const sideQuestList=$('#sidequest-list');
     if(sideQuestList)sideQuestList.innerHTML=!active?'<p class="watch-detail">Connect Todoist to view and add side quests.</p>':
       todoistLoading&&!todoistSyncTime?'<p class="watch-detail">Looking for your side quests…</p>':
       sidequests.length?sidequests.slice(0,8).map(sideQuestMarkup).join('')+(sidequests.length>8?`<p class="watch-detail">Showing 8 of ${sidequests.length} optional quests. See the full list in Todoist.</p>`:''):
-      `<p class="watch-detail">${esc(todoistError||'No side quests yet. Add something enjoyable — like making hot honey.')}</p>`;
+      `<p class="watch-detail">${esc(todoistError||'No side quests.')}</p>`;
   }
   async function todoistRequest(path, opts={}, apiToken=token){
     if(serverConnected && (!apiToken || apiToken===token)){
