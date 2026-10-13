@@ -29,3 +29,11 @@
 [data-panel="pulse"] .pulse-history-day{background:#2e2a40;border-color:#574e70}
 [data-panel="pulse"] .pulse-time-grid input,[data-panel="pulse"] .pulse-timezone input,[data-panel="pulse"] textarea{background:#191f30;border-color:#695c85}
 @media(max-width:620px){[data-panel="fuel"] .page-head,[data-panel="pulse"] .page-head{padding:14px 15px}}
+
+/* Distinct native workspace emblems for FUEL and PULSE. */
+[data-panel="fuel"] .specialist-headline,[data-panel="pulse"] .specialist-headline{display:flex;align-items:center;gap:16px;min-width:0}
+[data-panel="fuel"] .specialist-headline>div,[data-panel="pulse"] .specialist-headline>div{min-width:0}
+[data-panel="fuel"] .specialist-logo,[data-panel="pulse"] .specialist-logo{width:58px;height:58px;flex:0 0 58px;object-fit:contain;display:block}
+[data-panel="fuel"] .specialist-logo{filter:drop-shadow(0 4px 7px #0004)}
+[data-panel="pulse"] .specialist-logo{filter:drop-shadow(0 4px 7px #0003)}
+@media(max-width:620px){[data-panel="fuel"] .specialist-headline,[data-panel="pulse"] .specialist-headline{gap:10px}[data-panel="fuel"] .specialist-logo,[data-panel="pulse"] .specialist-logo{width:43px;height:43px;flex-basis:43px}}
