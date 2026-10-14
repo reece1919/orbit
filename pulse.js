@@ -32,7 +32,7 @@ const PROMPTS=[
 const localDay=()=>{const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-")};
 const promptIndex=day=>((Math.floor((Date.parse(day+"T00:00:00Z")-Date.UTC(2026,0,1))/86400000)%PROMPTS.length)+PROMPTS.length)%PROMPTS.length;
 const defaults=()=>({time_zone:Intl.DateTimeFormat().resolvedOptions().timeZone||"America/Los_Angeles",mood_times:["09:00","14:00","20:00"],journal_time:"20:30",notifications_enabled:false});
-let user=null,client=null,settings=defaults(),moods=[],journals=[],isLoading=false,saving=false,deviceSubscribed=false,pushPublicKey="";
+let user=null,client=null,settings=defaults(),moods=[],journals=[],isLoading=false,saving=false,deviceSubscribed=false,pushPublicKey="",pushRegistration=null,pushExisting=null,pushSetupReady=false,pushError="";
 const log=(m)=>{const el=$("#pulse-status");if(el)el.textContent=m;};
 const on=(node,type,handler)=>node?.addEventListener(type,handler);
 function currentMood(slot){return moods.find(m=>m.entry_date===localDay()&&m.slot===slot)}
@@ -91,12 +91,14 @@ function renderSchedule(){
  if(status){
   status.textContent=!capable?"Web push is not available in this browser. Use a supported browser or install ORBIT as a web app.":
   ios&&!standalone?"iPhone: In Safari, tap Share → Add to Home Screen. Then open ORBIT from the new icon to enable notifications.":
-  deviceSubscribed?"Notifications are enabled on this device. They can arrive while ORBIT is closed.":
   Notification.permission==="denied"?"Notifications are blocked in device/browser settings. Allow ORBIT notifications there first.":
-  "Notifications are not enabled on this device yet.";
+  pushError?pushError:
+  deviceSubscribed?"This device is registered with ORBIT. Notifications can arrive while ORBIT is closed.":
+  !pushSetupReady?"Preparing secure notification registration…":
+  "This device is not registered yet. Tap Enable notifications to connect it.";
  }
  const enable=$("#pulse-enable-push"),disable=$("#pulse-disable-push"),test=$("#pulse-test-push");
- if(enable)enable.hidden=!capable||deviceSubscribed;
+ if(enable){enable.hidden=!capable||deviceSubscribed;enable.disabled=!user||!pushSetupReady||Notification.permission==="denied"}
  if(disable)disable.hidden=!capable||!deviceSubscribed;
  if(test)test.disabled=!deviceSubscribed;
 }
@@ -196,41 +198,73 @@ async function api(action,payload={}){
  return result;
 }
 function bytes(base64){const s=base64.replace(/-/g,"+").replace(/_/g,"/");return Uint8Array.from(atob(s+"=".repeat((4-s.length%4)%4)),ch=>ch.charCodeAt(0))}
+function base64url(buffer){
+ const value=Array.from(new Uint8Array(buffer),b=>String.fromCharCode(b)).join("");
+ return btoa(value).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+}
+function subscriptionPayload(sub){
+ // Use the browser's raw encryption key bytes; Safari's JSON serialization is not
+ // relied upon for registration. Never put these keys in logs or error messages.
+ const p256dh=sub.getKey("p256dh"),auth=sub.getKey("auth");
+ if(!p256dh||!auth||p256dh.byteLength!==65||auth.byteLength!==16)throw Error("Browser returned incomplete push encryption keys.");
+ return {endpoint:sub.endpoint,keys:{p256dh:base64url(p256dh),auth:base64url(auth)}};
+}
 async function checkDevice(){
- if(!user||!("serviceWorker" in navigator)||!("PushManager" in window))return;
+ if(!user||!("serviceWorker" in navigator)||!("PushManager" in window)||!("Notification" in window))return;
+ const owner=user.id;
+ pushSetupReady=false;pushError="";deviceSubscribed=false;renderSchedule();
  try{
-  const reg=await navigator.serviceWorker.getRegistration("/orbit/");
-  const existing=reg?await reg.pushManager.getSubscription():null;
-  deviceSubscribed=!!existing&&Notification.permission==="granted";
-  if(deviceSubscribed){
-   // Keep this subscription associated with the current signed-in ORBIT account.
-   await api("subscribe",{subscription:existing.toJSON(),label:navigator.platform||"Browser"});
+  // Prepare the service worker and public VAPID key before the user's click.
+  // iOS requires subscribe() to follow the actual permission gesture without a network fetch.
+  const config=await api("status");
+  if(!config?.vapid_public_key||bytes(config.vapid_public_key).length!==65)throw Error("Invalid public notification key.");
+  const reg=await navigator.serviceWorker.register("./pulse-sw.js",{scope:"/orbit/"});
+  if(user?.id!==owner)return;
+  pushPublicKey=config.vapid_public_key;
+  pushRegistration=reg;
+  pushExisting=await reg.pushManager.getSubscription();
+  pushSetupReady=true;
+  if(pushExisting&&Notification.permission==="granted"){
+   // Only display Connected after the server confirms this device has been stored.
+   await api("subscribe",{subscription:subscriptionPayload(pushExisting),label:navigator.platform||"Browser"});
+   if(user?.id!==owner)return;
+   deviceSubscribed=true;
   }
- }catch(e){console.warn("PULSE device status",e.message)}
+ }catch(e){
+  if(user?.id!==owner)return;
+  pushError="Device registration needs attention: "+(e.message||"Unknown error")+". Tap PULSE Refresh to retry.";
+  console.warn("PULSE registration needs attention:",e.message);
+ }
  renderSchedule();
 }
 async function enablePush(){
  if(!("Notification" in window)||!("serviceWorker" in navigator)||!("PushManager" in window)){log("This device does not support Web Push.");return}
  if(/iPhone|iPad|iPod/.test(navigator.userAgent)&&!window.matchMedia("(display-mode: standalone)").matches&&!navigator.standalone){log("Add ORBIT to your iPhone Home Screen, then open it from the icon and enable notifications there.");return}
- // Permission is requested directly from a user click, never on page load.
- const permission=await Notification.requestPermission();
- if(permission!=="granted"){log("Notification permission wasn't granted.");renderSchedule();return}
+ if(!user||!pushSetupReady||!pushRegistration){log("Notification setup is not ready. Tap PULSE Refresh, then try again.");return}
  try{
-  const config=await api("status");pushPublicKey=config.vapid_public_key;
-  const reg=await navigator.serviceWorker.register("./pulse-sw.js",{scope:"/orbit/"});
-  let sub=await reg.pushManager.getSubscription();
-  if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:bytes(pushPublicKey)});
-  await api("subscribe",{subscription:sub.toJSON(),label:navigator.platform||"Browser"});
+  // No network request or service-worker registration between this permission
+  // gesture and pushManager.subscribe() — important for iOS Home Screen apps.
+  const permission=await Notification.requestPermission();
+  if(permission!=="granted"){log("Notification permission wasn't granted.");renderSchedule();return}
+  let sub=pushExisting;
+  if(!sub)sub=await pushRegistration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:bytes(pushPublicKey)});
+  pushExisting=sub;
+  await api("subscribe",{subscription:subscriptionPayload(sub),label:navigator.platform||"Browser"});
   await saveSettings({notifications_enabled:true});
-  deviceSubscribed=true;renderSchedule();log("Web Push enabled. Scheduled reminders can reach this device while ORBIT is closed.");
- }catch(e){log("Couldn't enable Web Push: "+e.message)}
+  deviceSubscribed=true;pushError="";renderSchedule();
+  log("This device is registered. Use Send test to verify that its notifications appear.");
+ }catch(e){
+  deviceSubscribed=false;
+  pushError="Device registration failed: "+(e.message||"Unknown error");
+  renderSchedule();log(pushError);
+ }
 }
 async function disablePush(){
  try{
   const reg=await navigator.serviceWorker.getRegistration("/orbit/");
   const sub=reg?await reg.pushManager.getSubscription():null;
   if(sub){await api("unsubscribe",{endpoint:sub.endpoint});await sub.unsubscribe()}
-  deviceSubscribed=false;
+  deviceSubscribed=false;pushExisting=null;pushError="";
   const state=await api("status");
   if(!state.device_count)await saveSettings({notifications_enabled:false});
   renderSchedule();log("Notifications disabled on this device.");
@@ -241,12 +275,12 @@ async function testPush(){
   const reg=await navigator.serviceWorker.getRegistration("/orbit/");
   const sub=reg?await reg.pushManager.getSubscription():null;
   if(!sub)throw Error("Enable notifications first.");
-  await api("test",{endpoint:sub.endpoint});log("Test notification sent. Check your device notifications.");
+  await api("test",{endpoint:sub.endpoint});log("Push provider accepted the test. Check device notifications and Focus settings.");
  }catch(e){log("Couldn't send test: "+e.message)}
 }
 function handleAccount(u){
  user=u||null;client=window.ORBITAuth?.client||null;
- moods=[];journals=[];settings=defaults();deviceSubscribed=false;render();
+ moods=[];journals=[];settings=defaults();deviceSubscribed=false;pushSetupReady=false;pushRegistration=null;pushExisting=null;pushError="";render();
  if(user&&client)void refresh();
  else log("Sign into ORBIT to use your private PULSE journal.");
 }
