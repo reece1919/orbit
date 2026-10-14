@@ -58,9 +58,17 @@ function validKey(value,expectedBytes){
   return atob(base64+"=".repeat((4-base64.length%4)%4)).length===expectedBytes;
  }catch{return false}
 }
+function safePushHost(endpoint){
+ // Hosts identify push services; endpoint paths identify devices and MUST never be logged.
+ if(typeof endpoint!=="string")return "(not provided)";
+ try{
+  const url=new URL(endpoint);
+  return url.hostname.slice(0,128)||"(no hostname)";
+ }catch{return "(unparseable)"}
+}
 function subscriptionError(s){
  if(!s||typeof s!=="object")return "Browser push subscription is missing.";
- if(!validEndpoint(s.endpoint))return "Unsupported push service address. Please report this device/browser to ORBIT support.";
+ if(!validEndpoint(s.endpoint))return "Unsupported push service address (provider host: "+safePushHost(s.endpoint)+"). ORBIT requires a supported, secure push service.";
  if(!s.keys||!s.keys.p256dh||!s.keys.auth)return "Browser push encryption keys are missing.";
  if(!validKey(s.keys.p256dh,65)||!validKey(s.keys.auth,16))return "Browser push encryption keys have an invalid format.";
  return null;
