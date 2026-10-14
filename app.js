@@ -202,13 +202,13 @@
     $('#mobile-more').setAttribute('aria-expanded',String(show));
   }
   function setView(next){
-    if(!['home','projects','focus','gaia','fuel','pulse','inbox','automations','routines','settings'].includes(next))return;
+    if(!['home','projects','focus','gaia','fuel','pulse','wellness','inbox','automations','routines','settings'].includes(next))return;
     view=next;
     $$('[data-panel]').forEach(x=>x.hidden=x.dataset.panel!==view);
     $('.main-nav [data-view], .mobile-nav [data-view]').forEach(x=>{x.classList.toggle('active',x.dataset.view===view);if(x.dataset.view===view)x.setAttribute('aria-current','page');else x.removeAttribute('aria-current')});
     const more=$('#mobile-more');
     more.classList.toggle('active',!['home','focus','projects','inbox'].includes(view));
-    $('#current-crumb').textContent=({home:'OVERVIEW',projects:'PROJECTS',focus:'TASKS',gaia:'GAIA',fuel:'FUEL',pulse:'PULSE',inbox:'INBOX',automations:'AUTOMATIONS',routines:'ROUTINES',settings:'SETTINGS'})[view];
+    $('#current-crumb').textContent=({home:'OVERVIEW',projects:'PROJECTS',focus:'TASKS',gaia:'GAIA',fuel:'FUEL',pulse:'PULSE',wellness:'WELLNESS',inbox:'INBOX',automations:'AUTOMATIONS',routines:'ROUTINES',settings:'SETTINGS'})[view];
     closeNavigation();window.scrollTo({top:0,behavior:'instant'});
   }
   const field = (name,label,value='',type='text',other='') => `<label class="dialog-field">${label}<input name="${name}" type="${type}" value="${esc(value)}" ${other}></label>`;
