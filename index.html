@@ -13,7 +13,8 @@
   <link rel="stylesheet" href="celestial.css?v=1.4.0" />
   <link rel="stylesheet" href="assets/todoist-system.css?v=1.1.0" />
   <link rel="stylesheet" href="pulse.css?v=1.0.0" />
-  <link rel="stylesheet" href="signals.css?v=1.1.4" /><link rel="stylesheet" href="compact-systems.css?v=1.8.0" /><link rel="stylesheet" href="specialist-themes.css?v=1.1.0" />
+  <link rel="stylesheet" href="signals.css?v=1.1.4" /><link rel="stylesheet" href="compact-systems.css?v=1.9.0" /><link rel="stylesheet" href="specialist-themes.css?v=1.1.0" />
+  <link rel="stylesheet" href="wellness.css?v=1.0.0" />
   <link rel="manifest" href="pulse.webmanifest" />
   <link rel="icon" type="image/svg+xml" href="orbit-icon.svg?v=1.3.0" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -26,6 +27,7 @@
   <script src="assets/todoist-system.js?v=1.4.0" defer></script>
   <script src="fuel.js?v=0.6.2" defer></script>
   <script src="pulse.js?v=1.0.0" defer></script>
+  <script src="wellness.js?v=1.0.0" defer></script>
   <script src="signals.js?v=1.1.4" defer></script>
   <script src="chat-shortcuts.js?v=1.1.3" defer></script>
 </head>
@@ -87,6 +89,7 @@
 <a class="system-launch" href="https://reece1919.github.io/rune-web/" target="_blank" rel="noopener noreferrer" aria-label="Open RUNE"><img src="assets/systems/rune.svg?v=1.6.0" alt="" width="34" height="34"><span>RUNE</span></a>
 <button class="system-launch" type="button" data-view="fuel" aria-label="Open FUEL"><img src="assets/systems/fuel.svg?v=1.6.0" alt="" width="34" height="34"><span>FUEL</span></button>
 <button class="system-launch" type="button" data-view="pulse" aria-label="Open PULSE"><img src="assets/systems/pulse.svg?v=1.6.0" alt="" width="34" height="34"><span>PULSE</span></button>
+<button class="system-launch" type="button" data-view="wellness" aria-label="Open WELLNESS"><img src="assets/systems/wellness.svg?v=1.0.0" alt="" width="34" height="34"><span>WELLNESS</span></button>
 <button class="system-launch" type="button" data-view="inbox" aria-label="Open INBOX"><img src="assets/systems/inbox.svg?v=1.4.0" alt="" width="34" height="34"><span>INBOX</span></button>
 <a class="system-launch" href="driftmark/" aria-label="Open DRIFTMARK"><img src="assets/systems/driftmark.svg?v=1.0.0" alt="" width="34" height="34"><span>DRIFTMARK</span></a></div></section>
 
@@ -278,6 +281,25 @@
               </section>
             </div>
           </div>
+        </section>
+        <section data-panel="wellness" id="wellness-panel" class="view-panel wellness-view" hidden aria-label="Wellness trends">
+          <div class="eyebrow"><span class="eyebrow-line"></span> WELLNESS / APPLE HEALTH SUMMARY</div>
+          <div class="page-head">
+            <div class="wellness-heading"><img src="assets/systems/wellness.svg?v=1.0.0" width="58" height="58" alt="">
+              <div><h1>Wellness<span class="accent-period">.</span></h1><p>Daily trends, privately synced.</p></div></div>
+            <div class="home-module-actions"><button id="wellness-reload" type="button" class="quiet-pill">Reload data</button><button type="button" class="subtle-link" data-view="home">Overview <span data-icon="arrow-right"></span></button></div>
+          </div>
+          <p id="wellness-status" class="wellness-meta" role="status" aria-live="polite">Checking your verified sign-in…</p>
+          <div class="wellness-grid">
+            <article class="wellness-metric"><span>Daily steps</span><strong id="wellness-steps">—</strong><small id="wellness-steps-date">Loading…</small></article>
+            <article class="wellness-metric"><span>Resting heart rate</span><strong id="wellness-rhr">—</strong><small id="wellness-rhr-date">Loading…</small></article>
+            <article class="wellness-metric"><span>Weight</span><strong id="wellness-weight">—</strong><small id="wellness-weight-date">Loading…</small></article>
+            <article class="wellness-metric"><span>Body fat</span><strong id="wellness-fat">—</strong><small id="wellness-fat-date">Loading…</small></article>
+            <article class="wellness-metric"><span>Sleep</span><strong id="wellness-sleep">—</strong><small id="wellness-sleep-date">No recent synced reading</small></article>
+          </div>
+          <section class="module wellness-module"><div class="module-head"><h2>Steps over time</h2></div><div id="wellness-step-chart" class="wellness-steps-bars" aria-label="Last ten synced days of steps"></div></section>
+          <section class="module wellness-module"><div class="module-head"><h2>Recent daily summaries</h2></div><div id="wellness-history" class="wellness-list"></div></section>
+          <p class="wellness-footnote">Apple Health is the source. This screen reads dated summaries from a private Supabase table; it does not request live readings or store complete medical records. Missing values are not estimated. <span id="wellness-last-sync"></span></p>
         </section>
         <section data-panel="inbox" class="view-panel signals-view" hidden>
           <div class="eyebrow"><span class="eyebrow-line"></span> CONNECTED SOURCES / GMAIL</div>
