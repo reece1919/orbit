@@ -13,21 +13,23 @@
   <link rel="stylesheet" href="celestial.css?v=1.4.0" />
   <link rel="stylesheet" href="assets/todoist-system.css?v=1.1.0" />
   <link rel="stylesheet" href="pulse.css?v=1.0.0" />
-  <link rel="stylesheet" href="signals.css?v=1.1.4" /><link rel="stylesheet" href="compact-systems.css?v=1.9.0" /><link rel="stylesheet" href="specialist-themes.css?v=1.1.0" />
+  <link rel="stylesheet" href="signals.css?v=1.1.4" /><link rel="stylesheet" href="compact-systems.css?v=2.0.0" /><link rel="stylesheet" href="specialist-themes.css?v=1.1.0" />
   <link rel="stylesheet" href="wellness.css?v=1.0.0" />
+  <link rel="stylesheet" href="vita.css?v=1.0.0" />
   <link rel="manifest" href="pulse.webmanifest" />
   <link rel="icon" type="image/svg+xml" href="orbit-icon.svg?v=1.3.0" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="ORBIT" />
   <script src="auth.js?v=0.6.2" defer></script>
   <script src="security-mfa.js?v=1.3.1" defer></script>
-  <script src="app.js?v=1.3.1" defer></script>
+  <script src="app.js?v=1.4.0" defer></script>
   <script src="orbit-cloud-sync.js?v=1.2.2" defer></script>
   <script src="integrations.js?v=1.5.1" defer></script>
   <script src="assets/todoist-system.js?v=1.4.0" defer></script>
   <script src="fuel.js?v=0.6.2" defer></script>
   <script src="pulse.js?v=1.0.2" defer></script>
   <script src="wellness.js?v=1.0.0" defer></script>
+  <script src="vita.js?v=1.0.0" defer></script>
   <script src="signals.js?v=1.1.4" defer></script>
   <script src="chat-shortcuts.js?v=1.1.3" defer></script>
 </head>
@@ -63,8 +65,8 @@
         <a class="nav-item" href="driftmark/"><img class="nav-system-emblem" src="assets/systems/driftmark.svg?v=1.0.0" width="21" height="21" alt=""> DRIFTMARK <span class="nav-indicator"></span></a>
         <button type="button" class="nav-item" data-view="focus"><span data-icon="check-circle"></span> Todoist &amp; Tasks <span class="nav-count" id="nav-task-count">0</span></button>
         <span id="nav-gaia-count" hidden aria-hidden="true">—</span>
-        <button type="button" class="nav-item" data-view="fuel"><img class="nav-system-emblem" src="assets/systems/fuel.svg?v=1.6.0" width="21" height="21" alt=""> FUEL <span class="nav-count" id="nav-fuel-count">—</span></button>
-        <button type="button" class="nav-item" data-view="pulse"><img class="nav-system-emblem" src="assets/systems/pulse.svg?v=1.6.0" width="21" height="21" alt=""> PULSE <span class="nav-indicator"></span></button>
+        <button type="button" class="nav-item" data-view="vita"><img class="nav-system-emblem" src="assets/systems/vita.svg?v=1.0.0" width="21" height="21" alt=""> VITA <span class="nav-indicator"></span></button>
+        <span id="nav-fuel-count" hidden aria-hidden="true">—</span>
         <button type="button" class="nav-item" data-view="inbox"><span data-icon="mail"></span> Inbox <span class="nav-count" id="nav-inbox-count">—</span></button>
         <button type="button" class="nav-item" data-view="automations"><span data-icon="clock"></span> Automations <span class="nav-count" id="nav-automations-count">—</span></button>
         <button type="button" class="nav-item" data-view="routines"><span data-icon="repeat"></span> Routines </button>
@@ -87,9 +89,7 @@
           <section class="system-launch-bar" aria-label="System navigation"><div class="system-launch-heading"><span class="eyebrow small">SYSTEMS</span><span id="home-date"></span><span id="home-greeting" class="visually-hidden">Welcome.</span></div><div class="system-launch-items"><a class="system-launch" href="https://reece1919.github.io/gaia/" target="_blank" rel="noopener noreferrer" aria-label="Open GAIA"><img src="assets/systems/gaia.svg?v=1.4.0" alt="" width="34" height="34"><span>GAIA</span></a>
 <a class="system-launch" href="https://reece1919.github.io/echo/" target="_blank" rel="noopener noreferrer" aria-label="Open ECHO"><img src="assets/systems/echo.svg?v=1.6.0" alt="" width="34" height="34"><span>ECHO</span></a>
 <a class="system-launch" href="https://reece1919.github.io/rune-web/" target="_blank" rel="noopener noreferrer" aria-label="Open RUNE"><img src="assets/systems/rune.svg?v=1.6.0" alt="" width="34" height="34"><span>RUNE</span></a>
-<button class="system-launch" type="button" data-view="fuel" aria-label="Open FUEL"><img src="assets/systems/fuel.svg?v=1.6.0" alt="" width="34" height="34"><span>FUEL</span></button>
-<button class="system-launch" type="button" data-view="pulse" aria-label="Open PULSE"><img src="assets/systems/pulse.svg?v=1.6.0" alt="" width="34" height="34"><span>PULSE</span></button>
-<button class="system-launch" type="button" data-view="wellness" aria-label="Open WELLNESS"><img src="assets/systems/wellness.svg?v=1.0.0" alt="" width="34" height="34"><span>WELLNESS</span></button>
+<button class="system-launch" type="button" data-view="vita" aria-label="Open VITA"><img src="assets/systems/vita.svg?v=1.0.0" alt="" width="34" height="34"><span>VITA</span></button>
 <button class="system-launch" type="button" data-view="inbox" aria-label="Open INBOX"><img src="assets/systems/inbox.svg?v=1.4.0" alt="" width="34" height="34"><span>INBOX</span></button>
 <a class="system-launch" href="driftmark/" aria-label="Open DRIFTMARK"><img src="assets/systems/driftmark.svg?v=1.0.0" alt="" width="34" height="34"><span>DRIFTMARK</span></a></div></section>
 
@@ -131,16 +131,12 @@
               </section>
             </div>
             <div class="home-side-stack">
-              <section class="module home-mini-card home-mini-pulse home-mini-compact" aria-label="PULSE overview">
-                <div class="home-mini-top"><span class="home-mini-icon"><img src="assets/systems/pulse.svg?v=1.6.0" alt="" width="37" height="37"></span><span class="eyebrow small">PULSE</span></div>
-                <p id="pulse-home-summary" class="watch-detail">Loading…</p>
-                <div class="home-mini-actions"><button type="button" class="subtle-link" data-view="pulse">Open <span data-icon="arrow-right"></span></button></div>
-              </section>
-              <section class="module home-mini-card home-mini-fuel home-mini-compact" aria-label="FUEL overview">
-                <div class="home-mini-top"><span class="home-mini-icon"><img src="assets/systems/fuel.svg?v=1.6.0" alt="" width="37" height="37"></span><span class="eyebrow small">FUEL</span></div>
-                <div id="fuel-home-value" class="home-inline-value">Loading…</div>
+              <section class="module home-mini-card home-mini-vita home-mini-compact" aria-label="VITA overview">
+                <div class="home-mini-top"><span class="home-mini-icon"><img src="assets/systems/vita.svg?v=1.0.0" alt="" width="37" height="37"></span><span class="eyebrow small">VITA</span></div>
+                <div class="vita-home-metrics"><strong id="fuel-home-value">Loading…</strong><small>Calories today</small></div>
+                <p id="pulse-home-summary" class="watch-detail">Loading check-ins…</p>
                 <p id="fuel-home-note" class="watch-detail" hidden></p>
-                <div class="home-mini-actions"><button type="button" class="subtle-link" data-view="fuel">Open <span data-icon="arrow-right"></span></button></div>
+                <div class="home-mini-actions"><button type="button" class="subtle-link" data-view="vita">Open VITA <span data-icon="arrow-right"></span></button></div>
               </section>
               <section class="module home-mini-card home-mini-routines home-mini-compact" aria-label="Routines overview">
                 <div class="home-mini-top"><span class="home-mini-icon"><span data-icon="repeat"></span></span><span class="eyebrow small">ROUTINES</span></div>
@@ -176,9 +172,44 @@
           </section>
           <p class="helper-paragraph">ORBIT reads published plant care notes; actual watering history and personal photographs remain in GAIA. Care alerts are not inferred from rigid watering intervals.</p>
         </section>
-        <section data-panel="fuel" class="view-panel" hidden>
-          <div class="eyebrow"><span class="eyebrow-line"></span> FUEL</div>
-          <div class="page-head"><div class="specialist-headline"><img class="specialist-logo" src="assets/systems/fuel.svg?v=1.6.0" width="58" height="58" alt=""><div><h1>Your food journal<span class="accent-period">.</span></h1></div></div><a class="primary-button" href="https://chatgpt.com/g/g-p-6acd6e86e82081919497cb8e044c60bd/project" target="_blank" rel="noopener noreferrer">Ask FUEL <span data-icon="arrow-up-right"></span></a></div>
+        
+        <section data-panel="vita" class="view-panel vita-dashboard" id="vita-dashboard" hidden aria-label="VITA personal wellness dashboard">
+          <header class="vita-hero"><img class="vita-hero-mark" src="assets/systems/vita.svg?v=1.0.0" width="78" height="78" alt="">
+            <div class="vita-hero-copy"><span class="vita-kicker">Personal wellness</span><h1>VITA<span class="accent-period">.</span></h1><p>Food, mood and health in one place.</p></div>
+          </header>
+          <nav class="vita-nav" id="vita-tabs" aria-label="VITA sections">
+            <button class="vita-tab active" type="button" data-view="vita" aria-current="page"><span data-icon="layout-dashboard"></span><span>Overview</span></button>
+            <button class="vita-tab" type="button" data-view="fuel"><img src="assets/systems/fuel.svg?v=1.6.0" alt=""><span>Nutrition</span></button>
+            <button class="vita-tab" type="button" data-view="pulse"><img src="assets/systems/pulse.svg?v=1.6.0" alt=""><span>Mind</span></button>
+            <button class="vita-tab" type="button" data-view="wellness"><img src="assets/systems/wellness.svg?v=1.0.0" alt=""><span>Body</span></button>
+          </nav>
+          <section id="vita-overview" class="vita-overview" aria-label="VITA overview">
+            <div class="vita-overview-grid">
+              <article class="vita-overview-card" data-kind="nutrition">
+                <div class="vita-card-top"><img src="assets/systems/fuel.svg?v=1.6.0" alt="" width="41" height="41"><span>Nutrition</span></div>
+                <strong id="vita-summary-food" class="vita-card-figure">Loading…</strong>
+                <p class="vita-card-detail">Calories logged today in your private food journal.</p>
+                <button class="vita-card-action" type="button" data-view="fuel">Open nutrition →</button>
+              </article>
+              <article class="vita-overview-card" data-kind="mind">
+                <div class="vita-card-top"><img src="assets/systems/pulse.svg?v=1.6.0" alt="" width="41" height="41"><span>Mind</span></div>
+                <strong class="vita-card-figure">Daily check-in</strong>
+                <p id="vita-summary-mind" class="vita-card-detail">Loading mood and journal status…</p>
+                <button class="vita-card-action" type="button" data-view="pulse">Open mind →</button>
+              </article>
+              <article class="vita-overview-card" data-kind="body">
+                <div class="vita-card-top"><img src="assets/systems/wellness.svg?v=1.0.0" alt="" width="41" height="41"><span>Body</span></div>
+                <strong id="vita-summary-steps" class="vita-card-figure">—</strong>
+                <p class="vita-card-detail">Steps: <span id="vita-summary-steps-date">no synced reading</span></p>
+                <p class="vita-card-detail">Weight: <strong id="vita-summary-weight">—</strong> <span id="vita-summary-weight-date"></span></p>
+                <button class="vita-card-action" type="button" data-view="wellness">Open body →</button>
+              </article>
+            </div>
+            <p class="vita-privacy-note">Your food and mood entries remain in their existing private databases. Body measurements are read-only Apple Health summaries with dated readings. VITA does not merge or republish the underlying records.</p>
+          </section>
+          <section data-panel="fuel" class="view-panel" hidden>
+          <div class="eyebrow"><span class="eyebrow-line"></span> VITA / NUTRITION</div>
+          <div class="page-head"><div class="specialist-headline"><img class="specialist-logo" src="assets/systems/fuel.svg?v=1.6.0" width="58" height="58" alt=""><div><h1>Nutrition<span class="accent-period">.</span></h1></div></div><a class="primary-button" href="https://chatgpt.com/g/g-p-6acd6e86e82081919497cb8e044c60bd/project" target="_blank" rel="noopener noreferrer">Ask FUEL <span data-icon="arrow-up-right"></span></a></div>
           <section class="system-todoist" data-system-todoist="fuel" aria-label="FUEL Todoist tasks"></section>
           <section class="module fuel-overview">
             <div class="module-head"><div><div class="eyebrow small">PRIVATE / SYNCED FROM SUPABASE</div><h3>Daily nutrition</h3></div><div class="live-actions"><label for="fuel-date" class="sr-only">Food journal date</label><input type="date" id="fuel-date" aria-label="Food journal date"><button type="button" class="quiet-pill" id="fuel-refresh">Refresh</button></div></div>
@@ -216,35 +247,9 @@
           </details>
           <p class="helper-paragraph">ORBIT only displays entries stored in Supabase. ChatGPT conversations do not automatically write to this journal, and Apple Health synchronization is not active yet.</p>
         </section>
-        <section data-panel="focus" class="view-panel" hidden>
-          <div class="eyebrow"><span class="eyebrow-line"></span> WHAT MATTERS NEXT</div><div class="page-head"><div><h1>Tasks<span class="accent-period">.</span></h1></div><button class="primary-button" data-action="add-task" type="button"><span data-icon="plus"></span> Add local priority</button></div>
-          <section class="module todoist-panel" aria-labelledby="todoist-live-head">
-            <div class="module-head"><div><div class="eyebrow small">TODOIST / SOURCE OF TRUTH</div><h3 id="todoist-live-head">Live Todoist tasks</h3></div><div class="live-actions"><button type="button" class="outline-button" data-refresh="todoist">Refresh</button><button type="button" class="primary-button" id="todoist-add" disabled>Add Todoist task</button></div></div>
-            <div id="todoist-connect" class="connector-box">
-              <strong>Connect Todoist across all your devices</strong>
-              <p>Authorize ORBIT directly with Todoist. Your approved connection is stored securely on the server, so it works on PC, tablet and iPhone when you sign in to ORBIT.</p>
-              <button type="button" class="primary-button" id="todoist-oauth-connect">Connect with Todoist <span data-icon="arrow-up-right"></span></button>
-              <p id="todoist-oauth-checking" class="watch-detail" hidden>Checking your existing Todoist connection…</p>
-              <p class="watch-detail">ORBIT Personal Command Center is not created by, affiliated with, or supported by Todoist.</p>
-              <details class="todoist-token-fallback"><summary>Temporary API token connection (advanced fallback)</summary>
-                <p>Only use this if Todoist authorization is unavailable. This token stays in the current browser tab and does not sync across devices.</p>
-                <form id="todoist-connect-form" class="connect-form"><label class="sr-only" for="todoist-token">Todoist personal API token</label><input type="password" id="todoist-token" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste token privately" required><button type="submit" class="outline-button">Use temporary token</button></form>
-              </details>
-            </div>
-            <div id="todoist-connected" class="connected-toolbar" hidden><span id="todoist-status" class="watch-detail">Connected</span><span id="todoist-connection-mode" class="watch-detail"></span><button type="button" id="todoist-disconnect" class="quiet-pill">Disconnect</button></div>
-            <div class="focus-filters live-filter-bar" role="group" aria-label="Filter Todoist tasks"><button type="button" class="filter-button selected" data-todoist-filter="today">Today &amp; overdue</button><button type="button" class="filter-button" data-todoist-filter="upcoming">Upcoming</button><button type="button" class="filter-button" data-todoist-filter="all">All open</button></div>
-            <div id="todoist-task-list" class="live-task-list"><p class="watch-detail">Todoist will appear here after connecting.</p></div>
-          </section>
-          <div class="section-head"><div><div class="eyebrow small">OFFLINE TASKS</div><h2>Local priorities<span class="accent-period">.</span></h2></div></div>
-          <p class="helper-paragraph">Existing local tasks are separate from Todoist. They sync through ORBIT workspace sync when enabled.</p>
-          <div class="focus-toolbar"><div class="focus-filters" role="group" aria-label="Filter priorities"><button class="filter-button selected" data-filter="open" type="button">Open</button><button class="filter-button" data-filter="all" type="button">All</button><button class="filter-button" data-filter="done" type="button">Completed</button></div><span id="focus-count" class="result-label"></span></div>
-          <div class="focus-list module" id="focus-list"></div>
-          <p class="helper-paragraph">Local tasks don't appear in Todoist. They can sync between devices through ORBIT workspace sync.</p>
-        </section>
-
-        <section data-panel="pulse" class="view-panel pulse-view" hidden>
-          <div class="eyebrow"><span class="eyebrow-line"></span> PULSE / MOOD & REFLECTION</div>
-          <div class="page-head"><div class="specialist-headline"><img class="specialist-logo" src="assets/systems/pulse.svg?v=1.6.0" width="58" height="58" alt=""><div><h1>PULSE<span class="accent-period">.</span></h1></div></div><button id="pulse-refresh" type="button" class="quiet-pill">Refresh</button></div>
+          <section data-panel="pulse" class="view-panel pulse-view" hidden>
+          <div class="eyebrow"><span class="eyebrow-line"></span> VITA / MIND</div>
+          <div class="page-head"><div class="specialist-headline"><img class="specialist-logo" src="assets/systems/pulse.svg?v=1.6.0" width="58" height="58" alt=""><div><h1>Mind<span class="accent-period">.</span></h1></div></div><button id="pulse-refresh" type="button" class="quiet-pill">Refresh</button></div>
           <section class="system-todoist" data-system-todoist="pulse" aria-label="PULSE Todoist tasks"></section>
           <div class="pulse-intro"><span class="pulse-intro-orbit" aria-hidden="true"><span></span></span><div><strong>Check in</strong><p>Any question is optional.</p></div></div>
           <p id="pulse-status" class="watch-detail" role="status" aria-live="polite">Connecting PULSE…</p>
@@ -283,12 +288,12 @@
             </div>
           </div>
         </section>
-        <section data-panel="wellness" id="wellness-panel" class="view-panel wellness-view" hidden aria-label="Wellness trends">
-          <div class="eyebrow"><span class="eyebrow-line"></span> WELLNESS / APPLE HEALTH SUMMARY</div>
+          <section data-panel="wellness" id="wellness-panel" class="view-panel wellness-view" hidden aria-label="Wellness trends">
+          <div class="eyebrow"><span class="eyebrow-line"></span> VITA / BODY</div>
           <div class="page-head">
             <div class="wellness-heading"><img src="assets/systems/wellness.svg?v=1.0.0" width="58" height="58" alt="">
-              <div><h1>Wellness<span class="accent-period">.</span></h1><p>Daily trends, privately synced.</p></div></div>
-            <div class="home-module-actions"><button id="wellness-reload" type="button" class="quiet-pill">Reload data</button><button type="button" class="subtle-link" data-view="home">Overview <span data-icon="arrow-right"></span></button></div>
+              <div><h1>Body<span class="accent-period">.</span></h1></div></div>
+            <div class="home-module-actions"><button id="wellness-reload" type="button" class="quiet-pill">Reload data</button><button type="button" class="subtle-link" data-view="vita">VITA overview <span data-icon="arrow-right"></span></button></div>
           </div>
           <p id="wellness-status" class="wellness-meta" role="status" aria-live="polite">Checking your verified sign-in…</p>
           <div class="wellness-grid">
@@ -302,6 +307,35 @@
           <section class="module wellness-module"><div class="module-head"><h2>Recent daily summaries</h2></div><div id="wellness-history" class="wellness-list"></div></section>
           <p class="wellness-footnote">Apple Health is the source. This screen reads dated summaries from a private Supabase table; it does not request live readings or store complete medical records. Missing values are not estimated. <span id="wellness-last-sync"></span></p>
         </section>
+        </section>
+        <section data-panel="focus" class="view-panel" hidden>
+          <div class="eyebrow"><span class="eyebrow-line"></span> WHAT MATTERS NEXT</div><div class="page-head"><div><h1>Tasks<span class="accent-period">.</span></h1></div><button class="primary-button" data-action="add-task" type="button"><span data-icon="plus"></span> Add local priority</button></div>
+          <section class="module todoist-panel" aria-labelledby="todoist-live-head">
+            <div class="module-head"><div><div class="eyebrow small">TODOIST / SOURCE OF TRUTH</div><h3 id="todoist-live-head">Live Todoist tasks</h3></div><div class="live-actions"><button type="button" class="outline-button" data-refresh="todoist">Refresh</button><button type="button" class="primary-button" id="todoist-add" disabled>Add Todoist task</button></div></div>
+            <div id="todoist-connect" class="connector-box">
+              <strong>Connect Todoist across all your devices</strong>
+              <p>Authorize ORBIT directly with Todoist. Your approved connection is stored securely on the server, so it works on PC, tablet and iPhone when you sign in to ORBIT.</p>
+              <button type="button" class="primary-button" id="todoist-oauth-connect">Connect with Todoist <span data-icon="arrow-up-right"></span></button>
+              <p id="todoist-oauth-checking" class="watch-detail" hidden>Checking your existing Todoist connection…</p>
+              <p class="watch-detail">ORBIT Personal Command Center is not created by, affiliated with, or supported by Todoist.</p>
+              <details class="todoist-token-fallback"><summary>Temporary API token connection (advanced fallback)</summary>
+                <p>Only use this if Todoist authorization is unavailable. This token stays in the current browser tab and does not sync across devices.</p>
+                <form id="todoist-connect-form" class="connect-form"><label class="sr-only" for="todoist-token">Todoist personal API token</label><input type="password" id="todoist-token" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste token privately" required><button type="submit" class="outline-button">Use temporary token</button></form>
+              </details>
+            </div>
+            <div id="todoist-connected" class="connected-toolbar" hidden><span id="todoist-status" class="watch-detail">Connected</span><span id="todoist-connection-mode" class="watch-detail"></span><button type="button" id="todoist-disconnect" class="quiet-pill">Disconnect</button></div>
+            <div class="focus-filters live-filter-bar" role="group" aria-label="Filter Todoist tasks"><button type="button" class="filter-button selected" data-todoist-filter="today">Today &amp; overdue</button><button type="button" class="filter-button" data-todoist-filter="upcoming">Upcoming</button><button type="button" class="filter-button" data-todoist-filter="all">All open</button></div>
+            <div id="todoist-task-list" class="live-task-list"><p class="watch-detail">Todoist will appear here after connecting.</p></div>
+          </section>
+          <div class="section-head"><div><div class="eyebrow small">OFFLINE TASKS</div><h2>Local priorities<span class="accent-period">.</span></h2></div></div>
+          <p class="helper-paragraph">Existing local tasks are separate from Todoist. They sync through ORBIT workspace sync when enabled.</p>
+          <div class="focus-toolbar"><div class="focus-filters" role="group" aria-label="Filter priorities"><button class="filter-button selected" data-filter="open" type="button">Open</button><button class="filter-button" data-filter="all" type="button">All</button><button class="filter-button" data-filter="done" type="button">Completed</button></div><span id="focus-count" class="result-label"></span></div>
+          <div class="focus-list module" id="focus-list"></div>
+          <p class="helper-paragraph">Local tasks don't appear in Todoist. They can sync between devices through ORBIT workspace sync.</p>
+        </section>
+
+        
+        
         <section data-panel="inbox" class="view-panel signals-view" hidden>
           <div class="eyebrow"><span class="eyebrow-line"></span> CONNECTED SOURCES / GMAIL</div>
           <div class="page-head"><div><h1>Inbox<span class="accent-period">.</span></h1><p>Your latest unread Gmail messages, from the most recent private sync.</p></div><a href="https://mail.google.com/mail/u/0/#inbox" class="primary-button" target="_blank" rel="noopener noreferrer">Open Gmail <span data-icon="arrow-up-right"></span></a></div>
@@ -357,7 +391,7 @@
       <nav class="mobile-nav" aria-label="Quick navigation">
         <button class="mobile-nav-item active" type="button" data-view="home"><span data-icon="layout-dashboard"></span><span>Home</span></button>
         <button class="mobile-nav-item" type="button" data-view="focus"><span data-icon="check-circle"></span><span>Tasks</span></button>
-        <a class="mobile-nav-item" href="driftmark/" aria-label="Open DRIFTMARK"><img src="assets/systems/driftmark.svg?v=1.0.0" width="21" height="21" alt=""><span>Driftmark</span></a>
+        <button class="mobile-nav-item" type="button" data-view="vita"><img src="assets/systems/vita.svg?v=1.0.0" width="21" height="21" alt=""><span>VITA</span></button>
         <button class="mobile-nav-item" type="button" data-view="inbox"><span data-icon="mail"></span><span>Inbox</span></button>
         <button class="mobile-nav-item" type="button" id="mobile-more" aria-controls="sidebar" aria-expanded="false"><span data-icon="menu"></span><span>More</span></button>
       </nav>
