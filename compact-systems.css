@@ -20,3 +20,13 @@ body[data-theme="light"] .system-launch{color:#253748;background:rgba(255,255,25
 .mobile-nav>a.mobile-nav-item{text-decoration:none}
 @media(max-width:980px){.system-launch-items{display:flex;overflow-x:auto;scrollbar-width:thin;min-width:0}.system-launch{flex:1 0 94px}.system-launch-bar{overflow:hidden}}
 @media(max-width:610px){.system-launch-items{overflow-x:auto}.system-launch{flex:0 0 80px;font-size:8px}.system-launch-bar{overflow:hidden}}
+
+/* ORBIT v1.7: compact module summaries; keep live values without redundant explanatory copy. */
+.home-view .home-mini-compact{min-height:125px;padding:15px 17px;gap:9px}
+.home-view .home-mini-compact .home-mini-top{gap:9px}
+.home-view .home-mini-compact .home-inline-value{margin:0;font-size:19px;line-height:1.3}
+.home-view .home-mini-compact .watch-detail:not([hidden]){margin:0;font-size:11px;line-height:1.4}
+.home-view .home-mini-compact [hidden]{display:none!important}
+.home-view .home-mini-compact .home-mini-actions{margin-top:auto}
+.home-view .home-mini-compact .home-mini-actions .subtle-link{font-size:11px}
+@media(max-width:610px){.home-view .home-mini-compact{min-height:110px;padding:13px}}
