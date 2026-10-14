@@ -3,7 +3,7 @@
 "use strict";
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const URL="https://zdurujqwhxqrwbhwzzxg.supabase.co/functions/v1/orbit-pulse";
+const PULSE_API_URL="https://zdurujqwhxqrwbhwzzxg.supabase.co/functions/v1/orbit-pulse";
 const SLOTS=["morning","afternoon","evening"];
 const TITLES=["Morning","Afternoon","Evening"];
 const RATINGS=[["😞","Rough"],["😕","Low"],["😐","Okay"],["🙂","Good"],["😄","Great"]];
@@ -195,7 +195,7 @@ async function api(action,payload={}){
  const {client}=await withAccount();
  const {data,error}=await client.auth.getSession();
  if(error||!data?.session?.access_token)throw Error("Sign in again before managing notifications.");
- const response=await fetch(URL,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+data.session.access_token},body:JSON.stringify({action,...payload})});
+ const response=await fetch(PULSE_API_URL,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+data.session.access_token},body:JSON.stringify({action,...payload})});
  const result=await response.json().catch(()=>({}));
  if(!response.ok)throw Error(result.error||"Notification service unavailable");
  return result;
@@ -208,7 +208,7 @@ function base64url(buffer){
 function validPushAddress(value){
  if(typeof value!=="string"||value.length>2000)return false;
  try{
-  const u=new URL(value);
+  const u=new globalThis.URL(value);
   return u.protocol==="https:"&&!!u.hostname&&!u.username&&!u.password&&!u.port;
  }catch{return false}
 }
@@ -377,7 +377,7 @@ void window.ORBITAuth.ready.then(()=>{
  const p=new URLSearchParams(location.search);
  if(p.get("view")==="pulse"){
   (document.querySelector("#vita-tabs [data-view=pulse]")||document.querySelector(".main-nav [data-view=pulse]"))?.click();
-  const clean=new URL(location.href);clean.searchParams.delete("view");
+  const clean=new globalThis.URL(location.href);clean.searchParams.delete("view");
   history.replaceState(null,"",clean.pathname+clean.search+clean.hash);
  }
 });
