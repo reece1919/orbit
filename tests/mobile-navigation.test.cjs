@@ -9,6 +9,7 @@ const root=path.join(__dirname,"..");
 const html=fs.readFileSync(path.join(root,"index.html"),"utf8");
 const app=fs.readFileSync(path.join(root,"app.js"),"utf8");
 const css=fs.readFileSync(path.join(root,"mobile-nav.css"),"utf8");
+const launchCss=fs.readFileSync(path.join(root,"compact-systems.css"),"utf8");
 const within=(str,left,right)=>{
  const a=str.indexOf(left),b=str.indexOf(right,a+left.length);
  assert.ok(a>=0&&b>a,"Expected bounds: "+left);
@@ -104,8 +105,8 @@ test("Home system shortcuts omit duplicate VITA and Inbox destinations",()=>{
   prev=index;
  }
  assert.doesNotMatch(row,/>VITA<|>INBOX<|data-view="vita"|data-view="inbox"/);
- assert.match(css,/\.system-launch-items\{display:grid;grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/);
- assert.doesNotMatch(css,/\.system-launch-items[^\n]*repeat\(6,minmax\(0,1fr\)\)/);
+ assert.match(launchCss,/\.system-launch-items\{display:grid;grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/);
+ assert.doesNotMatch(launchCss,/\.system-launch-items[^\n]*repeat\(6,minmax\(0,1fr\)\)/);
  // Direct VITA navigation and Inbox on Home remain available.
  const nav=within(html,'<nav class="mobile-nav"','</nav>');
  assert.match(nav,/data-view="vita"/);
