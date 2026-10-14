@@ -347,7 +347,7 @@ async function testPush(){
   const reg=await navigator.serviceWorker.getRegistration("/orbit/");
   const sub=reg?await reg.pushManager.getSubscription():null;
   if(!sub)throw Error("Enable notifications first.");
-  await api("test",{endpoint:sub.endpoint});logPush("Push provider accepted the test. Check device notifications and Focus settings.");
+  await api("test",{endpoint:subscriptionEndpoint(sub)});logPush("Push provider accepted the test. Check device notifications and Focus settings.");
  }catch(e){logPush("Couldn't send test: "+e.message)}
 }
 function handleAccount(u){
