@@ -58,3 +58,16 @@ test("Registration reports errors instead of claiming the device is subscribed",
  assert.ok(browser.includes("pushRegistration.pushManager.subscribe"));
  assert.ok(!browser.includes("sub.toJSON()"));
 });
+
+
+test("Notification controls show inline actionable feedback even without a registered device",()=>{
+ const html=fs.readFileSync(path.join(root,"index.html"),"utf8");
+ assert.match(html,/id="pulse-push-feedback"[^>]*role="status"/);
+ assert.match(html,/id="pulse-check-push"/);
+ const schedule=excerpt(browser,"function renderSchedule(){","function render(){");
+ assert.ok(!schedule.includes("if(test)test.disabled=!deviceSubscribed"));
+ assert.ok(schedule.includes("enable.disabled=false"));
+ assert.match(browser,/const logPush=\(m\)=>/);
+ assert.match(browser,/if\(e.target.closest\("#pulse-check-push"\)\)/);
+ assert.match(browser,/logPush\("Checking whether the push provider accepts a test/);
+});
