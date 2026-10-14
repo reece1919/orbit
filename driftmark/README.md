@@ -47,7 +47,7 @@ Workspace/backup version 3 adds World Anvil source snapshots. Versions 1 and 2 r
 
 ## World Anvil connection (v0.3.1)
 
-Deployment of the saved connection is pending the private storage migration below. The live v0.3 dashboard still uses a token for the current tab only.
+Saved connections restore automatically after a verified ORBIT login, including a new tab or page reload. Enter the existing user token once through **Check and save connection**.
 
 The supplied Driftbound GPT Action schema identifies https://worldanvil-proxy.onrender.com as its service. A live unauthenticated read returned HTTP 401 requiring x-auth-token. DRIFTMARK reuses this service through the private driftmark-worldanvil Edge Function.
 
@@ -75,7 +75,9 @@ Run: `node --test driftmark/tests/*.test.cjs driftmark/tests/*.test.mjs`
 
 The 44 tests cover authored-text preservation, planning imports, exports, source serialization, verified JWT/MFA handling, origin restrictions, conflicts, content-only PATCH and read-back, pagination, restoring saved connections, sanitized storage errors, forgetting credentials, sign-out during requests, and uncertain writes. The GitHub workflow also checks all frontend and backend source syntax.
 
-Apply `supabase/functions/driftmark-worldanvil/connection.sql` through the managed migration tool using the name `persist_driftmark_worldanvil_connection`, verify Vault round-trip and rotation inside a rolled-back test transaction, and check role privileges and security advisors before deploying the four Edge Function modules and frontend. The storage migration was interrupted and is not yet applied. The existing writing table and migration remain in use.
+Storage migration `20261014192310_persist_driftmark_worldanvil_connection` was applied from `supabase/functions/driftmark-worldanvil/connection.sql`. A rolled-back database test verified credential round-trip, rotation, encrypted storage, wrong-owner rejection, input validation, and removal of both the mapping and Vault secret. Catalog checks confirmed RLS, service-only RPC permissions, browser-role denial of the private schema and decrypted Vault view, and SECURITY INVOKER public wrappers. The existing writing table remains in use.
+
+The private mapping intentionally has no browser RLS policies, which denies direct row access. The [Supabase linter's informational no-policy notice](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy) reflects this design; credential operations use only the protected service functions.
 
 Authenticated end-to-end reads and saves need the owner's existing World Anvil token; those are not claimed as verified without it. Visual browser QA was unavailable in this environment. AI planning remains a copy-and-paste handoff to the existing GPT and cannot insert article prose.
 
