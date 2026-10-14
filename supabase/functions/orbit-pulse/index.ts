@@ -149,7 +149,11 @@ Deno.serve(async req=>{
   if(body?.action==="subscribe"){
    const s=body.subscription;
    const problem=subscriptionError(s);
-   if(problem)return reply({error:problem},400);
+   if(problem){
+    // Diagnostic category only: never log push endpoint URLs or encryption keys.
+    console.warn("PULSE push registration rejected:",problem);
+    return reply({error:problem},400);
+   }
    const {error}=await db.from("pulse_push_subscriptions").upsert({owner_id:user.id,endpoint:s.endpoint,p256dh:s.keys.p256dh,auth_secret:s.keys.auth,device_label:String(body.label||"Device").slice(0,70),updated_at:new Date().toISOString()},{onConflict:"endpoint"});
    if(error)throw error;
    return reply({connected:true});
