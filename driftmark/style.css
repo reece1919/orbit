@@ -79,3 +79,5 @@ button:focus-visible,a:focus-visible,summary:focus-visible,.import:focus-visible
 @media(max-width:1000px){.wa-panel{align-items:flex-start;flex-direction:column}.wa-actions{flex-shrink:1}}
 @media(max-width:650px){.wa-compare{grid-template-columns:1fr}.wa-compare textarea{min-height:260px}.wa-panel{padding:16px}.wa-actions{width:100%}.wa-actions button{flex:1 1 auto}}
 
+
+.wa-linked details{margin-top:10px}.wa-linked textarea{min-height:180px;max-height:400px;font-size:13px}.source-note{color:var(--gold)!important;margin-top:6px}#wa-sync-status{color:#d9c6a6}

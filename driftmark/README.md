@@ -10,7 +10,7 @@ The AI plans; the author writes. By default, creative assistance supplies short 
 
 The interface preserves the distinction between an author decision that remains open and uncertainty that belongs within the fictional world. Canon status is separate from writing status.
 
-## Writing workflow (v0.4)
+## Writing workflow (v0.5)
 
 1. Open or create an entry. Add the article's purpose, audience, and relevant atlas references.
 2. Choose **Prepare AI planning brief**, then copy the instructions into the existing Driftbound GPT or creative chat.
@@ -35,7 +35,7 @@ The built-in starter outline is clearly labeled. It is generic planning guidance
 
 All earlier entry fields and original working text are preserved. Original text remains under **Existing text and working notes**; the author can copy prose into the appropriate draft section.
 
-Workspace/backup version 4 adds category-page field drafts and explicit source kinds. Versions 1, 2, and 3 remain readable. Category drafts and per-field update choices survive cloud saves and JSON exports. Older clients reject version 4 rather than silently stripping its fields. JSON backups include plans, original text, section drafts, decisions, source snapshots, and any unsaved editor changes. Credentials are excluded by explicit field serialization. Backup restoration remains an explicit replacement action with confirmation and rejects unsupported versions and duplicate entry IDs.
+Workspace/backup version 5 adds article-index links and reconciliation status alongside the existing category-page drafts and explicit source kinds. Versions 1–4 remain readable. Plans, original notes, section drafts, decisions, source snapshots, and update choices survive cloud saves and JSON exports. Older clients reject version 5 rather than silently stripping its fields. Backup imports accept up to 100 MB and 110,000 entries and still require explicit replacement confirmation. JSON backups include plans, original text, section drafts, decisions, source snapshots, and any unsaved editor changes. Credentials are excluded by explicit field serialization. Backup restoration remains an explicit replacement action with confirmation and rejects unsupported versions and duplicate entry IDs.
 
 ## Private storage and login
 
@@ -63,7 +63,7 @@ The supplied Driftbound GPT Action schema identifies https://worldanvil-proxy.on
 - The backend checks the latest source fingerprint before PATCH, sends content only, and reads the article back to verify the text and unchanged title, category, parent, privacy, draft, and WIP metadata. Missing privacy or edit permission blocks the update. Read counters are excluded from the fingerprint.
 - Changed sources return a conflict. Every write attempt consumes its review, including a lost response. Read the current destination in a new review before retrying an uncertain update.
 - Successful saves update the private source snapshot and attempt to save the writing workspace. A cloud failure keeps the editor and asks the author to save.
-- Version 4 stores article and category source snapshots and remains compatible with backups 1, 2, and 3. Credentials are excluded by explicit field serialization.
+- Version 5 stores article and category source snapshots plus article-index links and remains compatible with backups 1–4. Credentials are excluded by explicit field serialization.
 
 This version reads and updates existing articles and category-page text. Create a destination article or category in World Anvil first. Specialized article template fields, category hierarchy, page layout, and publication settings are not edited. There is no delete operation.
 
@@ -83,15 +83,27 @@ The official [World Anvil Boromir schema](https://www.worldanvil.com/api/externa
 
 Privacy, subscriber groups, parent, covers, redirects, display flags, ordering, CSS classes, and layout metadata are never included in the update body. The backend verifies that they and untouched text fields remain unchanged on read-back. No new database migration or credential-store change is required.
 
+## Automatic article reconciliation (v0.5)
+
+After verified ORBIT sign-in, DRIFTMARK opens the saved cloud workspace first, restores the existing World Anvil account connection, and automatically loads the entire available Driftbound article index. Saving a connection also starts this process. The index is saved before loading main reference text, so titles appear before all article reads finish. Reference text is loaded sequentially and checkpointed every ten results. **Reconcile articles** repeats the check; **Stop loading** retains completed checkpoints.
+
+Reconciliation matches the immutable World Anvil article ID, never the title. New IDs receive new entries with empty author drafts. Existing IDs refresh only their source snapshot and reconciliation metadata. The author's title, category, tags, URL, writing status, original notes, purpose, section plans, drafts, decisions, reviews, creation date, and last author-edit date remain untouched. A remote rename is retained as the source title without replacing a custom dashboard title. Locally duplicated drafts are retained rather than collapsed. Unlinked local work and category-page entries are left intact.
+
+Only a completed index scan may mark linked entries **Not returned by World Anvil · kept locally**. This does not assert deletion; access, filtering, or upstream changes may explain absence. A partial or interrupted scan adds confirmed rows without marking other entries missing. Failed content reads retain the previous cached source and all local work; a new title without readable main text remains an indexed entry. Reconciliation never publishes, deletes, or changes World Anvil content.
+
+Automatic cloud saves use the existing owner/MFA policies and revision compare-and-swap. A cloud failure or conflict stops further import and reports that reconciliation is incomplete. Checkpoint saves preserve the active editor and its dirty flag; they do not reopen the editor or replace its drafts. Source updates refresh its attached reference only when the link still matches. JSON export includes unsaved editor work. Refresh with unsaved writing rechecks references without asking to discard that editor. An account change prevents late reads from reaching a new checkpoint.
+
+The complete imported source is available under **World Anvil reference text**, separate from author drafts. Local-only entries, unavailable source text, changed sources, and unreturned entries carry explicit status labels. Automatic startup article loading requires the existing connection to be saved. It uses the existing protected article-list and article-read endpoints and needs no backend or database migration. Specialized article template fields and category-page content are outside this automatic article scan.
+
 ## Validation
 
 Run: `node --test driftmark/tests/*.test.cjs driftmark/tests/*.test.mjs`
 
-The 72 tests cover authored-text preservation, planning imports, exports, source serialization, verified JWT/MFA handling, origin restrictions, conflicts, content-only PATCH and read-back, pagination, restoring saved connections, sanitized storage errors, forgetting credentials, sign-out during requests, and uncertain writes. Category tests also cover all seven text fields, partial PATCH, reviewed empty-field clears, unchanged fields and metadata, fixed planning IDs, selected-field drafts, and reload preservation. The GitHub workflow also checks all frontend and backend source syntax.
+The 93 tests cover authored-text preservation, planning imports, exports, source serialization, verified JWT/MFA handling, origin restrictions, conflicts, content-only PATCH and read-back, pagination, restoring saved connections, sanitized storage errors, forgetting credentials, sign-out during requests, and uncertain writes. Category tests also cover all seven text fields, partial PATCH, reviewed empty-field clears, unchanged fields and metadata, fixed planning IDs, selected-field drafts, and reload preservation. Reconciliation tests cover complete and partial pagination, stable-ID deduplication, remote renames, missing articles, cached failures, reference-only updates, owner changes, stopping, rate limits, cloud revision conflicts, automatic login loading, and preserving a dirty active editor in both its backup and later save. The GitHub workflow also checks all frontend and backend source syntax.
 
 Storage migration `20261014192310_persist_driftmark_worldanvil_connection` was applied from `supabase/functions/driftmark-worldanvil/connection.sql`. A rolled-back database test verified credential round-trip, rotation, encrypted storage, wrong-owner rejection, input validation, and removal of both the mapping and Vault secret. Catalog checks confirmed RLS, service-only RPC permissions, browser-role denial of the private schema and decrypted Vault view, and SECURITY INVOKER public wrappers. The existing writing table remains in use.
 
 The private mapping intentionally has no browser RLS policies, which denies direct row access. The [Supabase linter's informational no-policy notice](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy) reflects this design; credential operations use only the protected service functions.
 
-The category release was tested with a simulated upstream service and verified source contracts; authenticated end-to-end category reads and saves require the owner's saved connection. At release preparation, the credential mapping was absent. Live category forwarding and writes are not claimed as verified without that connection. Visual browser QA was unavailable in this environment. AI planning remains a copy-and-paste handoff to the existing GPT and cannot insert article prose.
+The category and reconciliation releases were tested with simulated upstream services and verified source contracts; authenticated end-to-end category reads and saves require the owner's saved connection. At release preparation, the credential mapping was absent. Live category forwarding and writes are not claimed as verified without that connection. Visual browser QA was unavailable in this environment. AI planning remains a copy-and-paste handoff to the existing GPT and cannot insert article prose.
 
