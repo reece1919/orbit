@@ -77,24 +77,72 @@
   function prettyDate(date){ if(!date) return ''; const d=/^\d{4}-\d{2}-\d{2}$/.test(date) ? new Date(date+'T12:00:00') : new Date(date); return Number.isNaN(d.valueOf())?date:d.toLocaleDateString(undefined,{month:'short',day:'numeric'}); }
   function safeTaskLink(id){ return 'https://app.todoist.com/app/task/'+encodeURIComponent(String(id)); }
   const SIDEQUEST_LABEL='sidequest';
-  function isSideQuest(t){return Array.isArray(t?.labels)&&t.labels.some(l=>String(l).replace(/^@/,'').trim().toLowerCase()===SIDEQUEST_LABEL);}
-  function isToday(t){ const due=dayOf(t); return !!due && due<=TODAY() && !isSideQuest(t); }
+  function isSideQuest(t){
+    const labeled=x=>Array.isArray(x?.labels)&&x.labels.some(l=>String(l).replace(/^@/,'').trim().toLowerCase()===SIDEQUEST_LABEL);
+    return labeled(t)||ancestorsOf(t).some(labeled);
+  }
+  function isToday(t){ const due=t._groupDay||dayOf(t); return !!due && due<=TODAY() && !isSideQuest(t); }
   function selectTasks(kind){
     const today=TODAY();
     const upper=new Date(today+'T12:00:00');upper.setDate(upper.getDate()+14);
     const upperDay=`${upper.getFullYear()}-${String(upper.getMonth()+1).padStart(2,'0')}-${String(upper.getDate()).padStart(2,'0')}`;
-    return tasks.filter(t=>kind==='all'||(kind==='today'&&isToday(t))||(kind==='upcoming'&&!isSideQuest(t)&&dayOf(t)>today&&dayOf(t)<=upperDay));
+    // Filter whole parent groups together, not individual children, or their order gets scrambled.
+    return ordered(tasks).filter(t=>kind==='all'||(kind==='today'&&isToday(t))||(kind==='upcoming'&&!isSideQuest(t)&&t._groupDay>today&&t._groupDay<=upperDay));
   }
-  function ordered(records){return [...records].sort((a,b)=>{
-    const da=dayOf(a)||'9999-12-31', db=dayOf(b)||'9999-12-31';
-    if(da!==db)return da.localeCompare(db);
-    if(a.priority!==b.priority)return Number(b.priority||1)-Number(a.priority||1);
-    return String(a.content||'').localeCompare(String(b.content||''));
-  });}
-  function taskMarkup(t){
+ function hierarchy(records,dayOf,today) {
+ const source=Array.isArray(records)?records:[];
+ const index=new Map(source.map((t,i)=>[String(t.id),i]));
+ const nodes=new Map(source.map(t=>[String(t.id),{task:t,children:[]}]));
+ const roots=[];
+ const compareSibling=(a,b)=>{
+  const sameScope=String(a.project_id||"")===String(b.project_id||"")&&String(a.section_id||"")===String(b.section_id||"")&&String(a.parent_id||"")===String(b.parent_id||"");
+  if(sameScope){
+   if(typeof a.order_key==="string"&&a.order_key&&typeof b.order_key==="string"&&b.order_key&&a.order_key!==b.order_key)return a.order_key<b.order_key?-1:1;
+   const ao=a.child_order,bo=b.child_order;
+   if(Number.isFinite(ao)&&Number.isFinite(bo)&&ao!==bo)return ao-bo;
+  }
+  return (index.get(String(a.id))??0)-(index.get(String(b.id))??0);
+ };
+ for(const node of nodes.values()){
+  const t=node.task,parent=nodes.get(String(t.parent_id));
+  let safe=!!parent&&parent!==node;
+  if(safe){
+   const seen=new Set([String(t.id)]);let p=String(t.parent_id);
+   while(nodes.has(p)){
+    if(seen.has(p)){safe=false;break}
+    seen.add(p);p=String(nodes.get(p).task.parent_id);
+   }
+  }
+  if(safe)parent.children.push(node);
+  else roots.push(node);
+ }
+ const sortChildren=node=>{node.children.sort((a,b)=>compareSibling(a.task,b.task));node.children.forEach(sortChildren)};
+ roots.forEach(sortChildren);
+ const groupDate=node=>{
+  const direct=dayOf(node.task);
+  if(direct)return direct;
+  const dates=node.children.map(groupDate).filter(Boolean);
+  return dates.length?dates.sort()[0]:"";
+ };
+ roots.sort((a,b)=>{
+  const da=groupDate(a)||"9999-12-31",db=groupDate(b)||"9999-12-31";
+  if(da!==db)return da.localeCompare(db);
+  if(da===today&&Number.isFinite(a.task.day_order)&&Number.isFinite(b.task.day_order)&&a.task.day_order!==b.task.day_order)return a.task.day_order-b.task.day_order;
+  return compareSibling(a.task,b.task);
+ });
+ const out=[];
+ const visit=(node,depth,date)=>{
+  out.push({...node.task,_treeDepth:depth,_groupDay:date});
+  for(const child of node.children)visit(child,depth+1,date);
+ };
+ for(const root of roots)visit(root,0,groupDate(root));
+ return out;
+}
+  function ordered(records){return hierarchy(records,dayOf,TODAY());}
+    function taskMarkup(t){
     const due=dayOf(t),overdue=due && due<TODAY();
     const detail=[due?(overdue?'Overdue · ':'Due ')+prettyDate(due):'No due date', Number(t.priority||1)>=3?'High priority':''].filter(Boolean).join(' · ');
-    return `<article class="live-task${overdue?' is-overdue':''}"${t.parent_id?' style="margin-left:1.15rem;border-left:2px solid currentColor"':''}><input type="checkbox" data-todoist-done="${esc(t.id)}" aria-label="Complete ${esc(t.content)}"><div class="live-task-body"><strong>${t.parent_id?'↳ ':''}${esc(t.content)}</strong><small>${esc(detail)}</small><a href="${esc(safeTaskLink(t.id))}" target="_blank" rel="noopener noreferrer">Open in Todoist ↗</a></div></article>`;
+    return `<article class="live-task${overdue?' is-overdue':''}"${t._treeDepth?' style="margin-left:'+Math.min(t._treeDepth,5)*1.15+'rem;border-left:2px solid currentColor"':''}><input type="checkbox" data-todoist-done="${esc(t.id)}" aria-label="Complete ${esc(t.content)}"><div class="live-task-body"><strong>${t._treeDepth?'↳ ':''}${esc(t.content)}</strong><small>${esc(detail)}</small><a href="${esc(safeTaskLink(t.id))}" target="_blank" rel="noopener noreferrer">Open in Todoist ↗</a></div></article>`;
   }
   const HOME_SYSTEMS=['gaia','echo','rune','fuel','pulse'];
   function homeTaskSystem(t){
@@ -104,14 +152,15 @@
   function homeTaskMarkup(t){
     const system=homeTaskSystem(t);
     const icon=system==='general'?'':`<img class="agenda-system-icon" src="assets/systems/${system}.svg" alt="" width="20" height="20">`;
-    return `<article class="agenda-row"><input type="checkbox" data-todoist-done="${esc(t.id)}" aria-label="Complete ${esc(t.content)}"><span class="agenda-system-label">${icon}${esc(system==='general'?'GENERAL':system.toUpperCase())}</span><a href="${esc(safeTaskLink(t.id))}" target="_blank" rel="noopener noreferrer" class="agenda-task-title">${t.parent_id?'↳ ':''}${esc(t.content)}</a></article>`;
+    return `<article class="agenda-row"><input type="checkbox" data-todoist-done="${esc(t.id)}" aria-label="Complete ${esc(t.content)}"><span class="agenda-system-label">${icon}${esc(system==='general'?'GENERAL':system.toUpperCase())}</span><a href="${esc(safeTaskLink(t.id))}" target="_blank" rel="noopener noreferrer" class="agenda-task-title"${t._treeDepth?' style="padding-left:'+Math.min(t._treeDepth,5)*0.7+'rem"':''}>${t._treeDepth?'↳ ':''}${esc(t.content)}</a></article>`;
   }
   function homeAgenda(){
     const today=TODAY(),future=new Date(today+'T12:00:00');
     future.setDate(future.getDate()+1);
     const tomorrow=`${future.getFullYear()}-${String(future.getMonth()+1).padStart(2,'0')}-${String(future.getDate()).padStart(2,'0')}`;
-    const fresh=ordered(tasks.filter(t=>!isSideQuest(t)&&dayOf(t)===today));
-    const next=ordered(tasks.filter(t=>!isSideQuest(t)&&dayOf(t)===tomorrow));
+    const organized=ordered(tasks);
+    const fresh=organized.filter(t=>!isSideQuest(t)&&t._groupDay===today);
+    const next=organized.filter(t=>!isSideQuest(t)&&t._groupDay===tomorrow);
     const group=(name,list,limit)=>{
       if(!list.length)return `<section class="agenda-day"><h4>${name} <span class="agenda-count">0</span></h4><p class="agenda-empty">Nothing scheduled</p></section>`;
       return `<section class="agenda-day"><h4>${name} <span class="agenda-count">${list.length}</span></h4>${list.map(homeTaskMarkup).join('')}</section>`;
@@ -120,7 +169,7 @@
   }
   function sideQuestMarkup(t){
     const due=dayOf(t);
-    return `<article class="sidequest-row"><input type="checkbox" data-todoist-done="${esc(t.id)}" aria-label="Complete side quest: ${esc(t.content)}"><div class="sidequest-row-body"><strong class="sidequest-row-title">${esc(t.content)}</strong><small class="sidequest-row-sub">${esc(due?'Optional · '+prettyDate(due):'No deadline · just for fun')}</small></div><a href="${esc(safeTaskLink(t.id))}" target="_blank" rel="noopener noreferrer" aria-label="Open ${esc(t.content)} in Todoist">↗</a></article>`;
+    return `<article class="sidequest-row"><input type="checkbox" data-todoist-done="${esc(t.id)}" aria-label="Complete side quest: ${esc(t.content)}"><div class="sidequest-row-body"><strong class="sidequest-row-title">${t._treeDepth?'↳ ':''}${esc(t.content)}</strong><small class="sidequest-row-sub">${esc(due?'Optional · '+prettyDate(due):'No deadline · just for fun')}</small></div><a href="${esc(safeTaskLink(t.id))}" target="_blank" rel="noopener noreferrer" aria-label="Open ${esc(t.content)} in Todoist">↗</a></article>`;
   }
   function renderTodoist(){
     const active=Boolean(token||serverConnected); const total=tasks.length; const due=selectTasks('today');
@@ -138,7 +187,7 @@
     note('#todoist-home-note',!active?'':todoistError?todoistError:todoistSyncTime?'Updated '+todoistSyncTime:'');
     note('#todoist-status',todoistLoading?'Refreshing Todoist…':todoistError?'Could not refresh: '+todoistError:todoistSyncTime?`${total}${todoistPartial?'+':''} open tasks · last refreshed ${todoistSyncTime}`:'Ready to sync');
     $$('[data-todoist-filter]').forEach(el=>el.classList.toggle('selected',el.dataset.todoistFilter===todoistFilter));
-    const selected=ordered(selectTasks(todoistFilter));
+    const selected=selectTasks(todoistFilter);
     $('#todoist-task-list').innerHTML=!active?'<p class="watch-detail">Connect Todoist to manage your actual tasks here.</p>':
       todoistLoading&&!todoistSyncTime?'<p class="watch-detail">Loading your Todoist tasks…</p>':
       selected.length?selected.map(taskMarkup).join(''):
