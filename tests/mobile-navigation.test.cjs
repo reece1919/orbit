@@ -90,3 +90,24 @@ test("Systems opens, closes, and yields correctly to More",()=>{
  assert.match(app,/view=next;\s*closeSystemsMenu\(\)/);
  assert.match(app,/if\(e.key==='Escape'\).*closeSystemsMenu\(true\)/);
 });
+
+
+test("Home system shortcuts omit duplicate VITA and Inbox destinations",()=>{
+ const row=within(html,'<section class="system-launch-bar"','</section>');
+ const entries=[...row.matchAll(/class="system-launch"/g)];
+ assert.equal(entries.length,4);
+ const expected=["GAIA","ECHO","RUNE","DRIFTMARK"];
+ let prev=-1;
+ for(const label of expected){
+  const index=row.indexOf(">"+label+"</span>");
+  assert.ok(index>prev,"Expected specialist shortcut in order: "+label);
+  prev=index;
+ }
+ assert.doesNotMatch(row,/>VITA<|>INBOX<|data-view="vita"|data-view="inbox"/);
+ assert.match(css,/\.system-launch-items\{display:grid;grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/);
+ assert.doesNotMatch(css,/\.system-launch-items[^\n]*repeat\(6,minmax\(0,1fr\)\)/);
+ // Direct VITA navigation and Inbox on Home remain available.
+ const nav=within(html,'<nav class="mobile-nav"','</nav>');
+ assert.match(nav,/data-view="vita"/);
+ assert.match(html,/class="subtle-link" type="button" data-view="inbox"|type="button" class="subtle-link" data-view="inbox"/);
+});
