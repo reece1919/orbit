@@ -100,22 +100,37 @@ export function createHandler(deps) {
       "Access-Control-Allow-Headers": "authorization, apikey, x-client-info, content-type",
       "Access-Control-Max-Age": "600", "Vary": "Origin" } });
     if (req.method !== "POST") return reply({ error: "Method not allowed." }, 405);
-    let mayHaveWritten = false;
+    let mayHaveWritten = false, hasSavedConnection = false;
     try {
       const auth = await deps.authorize(req.headers.get("Authorization") || "");
       if (!auth || auth.id !== OWNER || auth.aal !== "aal2") throw new Failure("Sign in to ORBIT and complete authenticator verification.", 403, "authentication_required");
       const text = await limitedText(new Response(req.body), 300000);
       let input; try { input = JSON.parse(text); } catch (_) { throw new Failure("Send a valid connection request."); }
       if (!object(input)) throw new Failure("Send a valid connection request.");
-      const fields = { status: ["action", "token"], configure: ["action", "token"],
+      const fields = { status: ["action", "token"], configure: ["action", "token"], forget: ["action"],
         articles: ["action", "token", "offset", "category_id"], categories: ["action", "token"],
         article: ["action", "token", "article_id"], update: ["action", "token", "article_id", "expected_hash", "content", "reviewed"] }[input.action];
       if (!Array.isArray(fields) || Object.keys(input).some(key => !fields.includes(key))) throw new Failure("Unsupported connection operation.");
-      const token = input.token;
-      if (input.action === "status" && !token) return reply({ connected: false, needs_token: true });
+      if (input.action === "forget") {
+        await deps.connections.remove(auth.id);
+        return reply({ connected: false, saved: false });
+      }
+      // Older open tabs may still send their session credential. New clients
+      // send it only when saving a connection; all other calls use the Vault.
+      let token = input.token;
+      if (input.action !== "configure" && token === undefined) {
+        token = await deps.connections.read(auth.id); hasSavedConnection = !!token;
+      }
+      if (input.action === "status" && !token) return reply({ connected: false, saved: false, needs_token: true });
       if (typeof token !== "string" || !token.length || token.length > 500 || /[\s\u0000-\u001f\u007f]/.test(token))
         throw new Failure("Enter the World Anvil user token used by your GPT.", 409, "setup_required");
-      if (input.action === "configure" || input.action === "status") return reply({ connected: true, ...await identity(token) });
+      if (input.action === "configure") {
+        const verified = await identity(token);
+        // Preserve the previous saved connection if verification or storage fails.
+        await deps.connections.write(auth.id, token); hasSavedConnection = true;
+        return reply({ connected: true, saved: true, ...verified });
+      }
+      if (input.action === "status") return reply({ connected: true, saved: hasSavedConnection, ...await identity(token) });
       if (input.action === "categories") {
         const raw = await upstream(token, "/world/categories", "POST", { id: WORLD }, { limit: "100", offset: "0" });
         return reply({ categories: listing(raw, "categories").filter(c => uuid(c.id)).map(c => ({ id: c.id, title: String(c.title || c.name || "Untitled category").slice(0, 200) })) });
@@ -149,7 +164,7 @@ export function createHandler(deps) {
       return reply({ verified: true, article: saved });
     } catch (error) {
       const e = error instanceof Failure ? error : new Failure("The private connection could not complete this request.", 503, "connection_error");
-      return reply({ error: e.message, code: e.code, may_have_written: mayHaveWritten }, e.status);
+      return reply({ error: e.message, code: e.code, may_have_written: mayHaveWritten, has_saved_connection: hasSavedConnection }, e.status);
     }
   };
 }

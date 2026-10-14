@@ -136,7 +136,7 @@ async function loadCloud(){
  }
  if(!data||!Array.isArray(data.payload?.entries)||![1,2,3].includes(data.payload.version))throw Error("Unexpected cloud workspace format; no data changed.");
  revision=Number(data.revision);entries=data.payload.entries.map(normalize).filter(Boolean);
- connected=true;$("#workspace").hidden=false;wa.accountChanged(uid);resetEditor();renderList();
+ connected=true;$("#workspace").hidden=false;wa.accountChanged(uid);resetEditor();renderList();void wa.restore();
  $("#last-sync").textContent="Synced "+new Date(data.updated_at).toLocaleString();
  setStatus("Connected to your shared ORBIT account · private cloud sync active");
 }

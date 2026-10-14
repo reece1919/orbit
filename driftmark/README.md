@@ -45,13 +45,17 @@ Workspace/backup version 3 adds World Anvil source snapshots. Versions 1 and 2 r
 - Private entries and drafts are never committed to the public repository.
 - An unsuccessful save or revision conflict leaves the editor intact. Save before leaving; an exported backup can preserve pending changes.
 
-## World Anvil connection (v0.3)
+## World Anvil connection (v0.3.1)
+
+Deployment of the saved connection is pending the private storage migration below. The live v0.3 dashboard still uses a token for the current tab only.
 
 The supplied Driftbound GPT Action schema identifies https://worldanvil-proxy.onrender.com as its service. A live unauthenticated read returned HTTP 401 requiring x-auth-token. DRIFTMARK reuses this service through the private driftmark-worldanvil Edge Function.
 
 - Open Connect World Anvil and enter the existing World Anvil user token used by the GPT.
-- The token stays in memory for this tab. It is never stored in browser storage, workspace payloads, JSON backups, source code, logs written by this integration, or response bodies. Reconnect after reload; disconnect or sign-out clears it. Pending connection responses cannot restore a token after sign-out or cancellation.
-- The Edge Function requires a valid Supabase user JWT, the existing owner's identity, and AAL2/MFA. CORS is restricted to the existing GitHub Pages origin. It uses no admin credential or new database tables.
+- Connect validates the existing user token and saves it encrypted in Supabase Vault. Later requests and new page loads use this saved account connection without returning the token to the browser. It is excluded from browser storage, workspace payloads, JSON backups, source code, and application logs.
+- Sign-out clears this tab's connection state while the encrypted account connection remains available after the next verified login. **Forget saved connection** deletes its private mapping and Vault secret. Private writing is preserved.
+- The Edge Function requires a valid Supabase user JWT, the existing owner's identity, and AAL2/MFA before any private storage access. CORS is restricted to the existing GitHub Pages origin. A separate service client uses the built-in server environment credential exclusively for the connection RPCs; this key never reaches frontend code.
+- The mapping table and privileged functions live in the unexposed `driftmark_private` schema with RLS enabled and browser-role access revoked. Public RPC wrappers are SECURITY INVOKER and service-only. Private functions also enforce the trusted service-role claim and the fixed owner ID. Writes and deletion use a per-owner transaction lock. Deleting an account mapping cleans up its Vault secret.
 - Connect verifies the World Anvil identity and permission to the Driftbound world. Browse lists articles in pages of 50.
 - Read current main article text; add a private cached reference or attach it to the current entry. Imported source text does not fill section drafts.
 - AI planning briefs receive the attached or selected source snapshots and their read dates. AI assistance remains the existing copy-and-paste handoff.
@@ -69,9 +73,9 @@ World Anvil exposes no atomic conditional update in the supplied schema. Recheck
 
 Run: `node --test driftmark/tests/*.test.cjs driftmark/tests/*.test.mjs`
 
-The 32 tests cover authored-text preservation, planning imports, exports, source serialization, verified JWT/MFA handling, origin restrictions, conflicts, content-only PATCH and read-back, pagination, token clearing, cancelled connections, and uncertain writes. The GitHub workflow also checks all frontend and backend source syntax.
+The 44 tests cover authored-text preservation, planning imports, exports, source serialization, verified JWT/MFA handling, origin restrictions, conflicts, content-only PATCH and read-back, pagination, restoring saved connections, sanitized storage errors, forgetting credentials, sign-out during requests, and uncertain writes. The GitHub workflow also checks all frontend and backend source syntax.
 
-The existing JSONB table, owner/MFA policies, and workspace migration were inspected. The interrupted credential-storage migration did not run. This integration needs no database migration or admin key.
+Apply `supabase/functions/driftmark-worldanvil/connection.sql` through the managed migration tool using the name `persist_driftmark_worldanvil_connection`, verify Vault round-trip and rotation inside a rolled-back test transaction, and check role privileges and security advisors before deploying the four Edge Function modules and frontend. The storage migration was interrupted and is not yet applied. The existing writing table and migration remain in use.
 
 Authenticated end-to-end reads and saves need the owner's existing World Anvil token; those are not claimed as verified without it. Visual browser QA was unavailable in this environment. AI planning remains a copy-and-paste handoff to the existing GPT and cannot insert article prose.
 

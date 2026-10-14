@@ -1,4 +1,4 @@
-/* The World Anvil credential lives only in this tab's closure. */
+/* Tokens are submitted once to private storage and never returned to this UI. */
 (function () {
   "use strict";
   const $ = q => document.querySelector(q), W = window.DriftmarkWriting;
@@ -17,7 +17,7 @@
   window.DriftmarkWorldAnvil = {
     normalizeSource,
     init(options) {
-      let token = "", owner = "", busy = false, rows = [], offset = 0, more = false, reader = null, review = null;
+      let connected = false, saved = false, owner = "", busy = false, rows = [], offset = 0, more = false, reader = null, review = null;
       let generation = 0, connecting = false;
       const connectionStatus = message => { $("#wa-status").textContent = message; };
       function recordChanged() {
@@ -25,10 +25,11 @@
         $("#wa-linked").hidden = !s;
         $("#wa-review").hidden = !s;
         $("#wa-linked-title").textContent = s ? "World Anvil: " + s.title + " · " + s.state + (s.isWip ? " · WIP" : "") : "";
-        $("#wa-review").disabled = !token || busy;
+        $("#wa-review").disabled = !connected || busy;
         $("#wa-connect").disabled = busy || !options.getOwner();
-        $("#wa-browse").disabled = !token || busy;
-        $("#wa-disconnect").hidden = !token;
+        $("#wa-browse").disabled = !connected || busy;
+        $("#wa-disconnect").hidden = !saved;
+        $("#wa-disconnect").disabled = busy;
       }
       function setBusy(value) {
         busy = value;
@@ -36,16 +37,18 @@
         recordChanged();
         $("#wa-page-previous").disabled = value || offset === 0;
         $("#wa-page-next").disabled = value || !more;
-        $("#wa-save-update").disabled = value || !review || !$("#wa-review-ack").checked || !review.source.isEditable || review.sent;
+        $("#wa-save-update").disabled = value || !connected || !review || !$("#wa-review-ack").checked || !review.source.isEditable || review.sent;
       }
-      async function call(action, body = {}, credential = token) {
+      async function call(action, body = {}) {
         const client = options.getClient();
         const requestOwner = options.getOwner(), requestGeneration = generation;
-        if (!client || !credential || !requestOwner) throw Error("Sign in to ORBIT and connect your World Anvil user token first.");
+        if (!client || !requestOwner || (!["configure", "status", "forget"].includes(action) && !connected))
+          throw Error("Sign in to ORBIT and connect your World Anvil user token first.");
         let result;
-        try { result = await client.functions.invoke("driftmark-worldanvil", { body: { action, token: credential, ...body } }); }
+        try { result = await client.functions.invoke("driftmark-worldanvil", { body: { action, ...body } }); }
         catch (_) {
-          const failure = Error("The connection response was lost. Read the destination again before retrying.");
+          const failure = Error(action === "update" ? "The connection response was lost. Read the destination again before retrying." :
+            "The connection response was lost. Refresh to check your saved connection.");
           failure.mayHaveWritten = action === "update"; throw failure;
         }
         if (generation !== requestGeneration || options.getOwner() !== requestOwner) {
@@ -58,6 +61,7 @@
           try { if (error.context?.clone) detail = await error.context.clone().json(); } catch (_) {}
           const failure = Error(detail?.error || "The private World Anvil connection could not complete this request. Check your ORBIT sign-in and authenticator verification.");
           failure.code = detail?.code;
+          failure.hasSavedConnection = !!detail?.has_saved_connection;
           failure.mayHaveWritten = typeof detail?.may_have_written === "boolean" ? detail.may_have_written : action === "update";
           throw failure;
         }
@@ -65,7 +69,7 @@
         return data;
       }
       function clear() {
-        generation++; connecting = false; token = ""; rows = []; offset = 0; more = false; review = null; reader = null;
+        generation++; connecting = false; connected = false; saved = false; rows = []; offset = 0; more = false; review = null; reader = null;
         ["#wa-token", "#wa-reader-content", "#wa-before", "#wa-after", "#wa-search"].forEach(q => $(q).value = "");
         $("#wa-review-ack").checked = false; $("#wa-save-update").disabled = true;
         $("#wa-articles").textContent = "";
@@ -74,6 +78,19 @@
         connectionStatus("Connect your existing World Anvil user token to browse and update articles."); recordChanged();
       }
       function show(q) { $(q).showModal(); }
+      async function restore() {
+        if (busy || !options.getOwner()) return;
+        const attempt = generation;
+        setBusy(true); connectionStatus("Checking your saved World Anvil connection…");
+        try {
+          const data = await call("status"); saved = data?.saved === true; connected = data?.connected === true && saved;
+          connectionStatus(connected ? "Connected to " + (data.world?.title || "Driftbound") + " · saved with your ORBIT account" :
+            "Connect your existing World Anvil user token once to save it with your account.");
+        } catch (error) {
+          if (generation !== attempt) return;
+          connected = false; saved = !!error.hasSavedConnection; connectionStatus(error.message);
+        } finally { setBusy(false); }
+      }
       function drawRows() {
         const term = $("#wa-search").value.toLowerCase().trim();
         const filtered = rows.filter(r => r.title.toLowerCase().includes(term));
@@ -119,17 +136,24 @@
         if (!candidate) return;
         connecting = true; setBusy(true); $("#wa-connect-feedback").textContent = "Checking your existing World Anvil access…";
         try {
-          const data = await call("configure", {}, candidate);
-          if (!data?.connected) throw Error("World Anvil did not confirm the connection.");
-          connecting = false; token = candidate; owner = options.getOwner();
-          connectionStatus("Connected to " + (data.world?.title || "Driftbound") + " for this tab · reconnect after reloading");
+          const data = await call("configure", { token: candidate });
+          if (!data?.connected || data.saved !== true) throw Error("World Anvil did not confirm a saved connection.");
+          connecting = false; connected = true; saved = true; owner = options.getOwner();
+          connectionStatus("Connected to " + (data.world?.title || "Driftbound") + " · saved with your ORBIT account");
           $("#wa-connect-dialog").close(); recordChanged();
         } catch (error) { $("#wa-connect-feedback").textContent = error.message; }
         finally { connecting = false; setBusy(false); }
       });
       $("#wa-connect-dialog").addEventListener("close", () => { $("#wa-token").value = ""; if (connecting) { generation++; connecting = false; } });
       document.querySelectorAll("[data-wa-close]").forEach(b => b.addEventListener("click", () => document.getElementById(b.dataset.waClose).close()));
-      $("#wa-disconnect").addEventListener("click", clear);
+      $("#wa-disconnect").addEventListener("click", async () => {
+        if (busy || !saved) return;
+        setBusy(true);
+        try {
+          await call("forget"); clear(); connectionStatus("Saved connection removed. Your private writing is preserved.");
+        } catch (error) { connectionStatus(error.message); }
+        finally { setBusy(false); }
+      });
       $("#wa-browse").addEventListener("click", () => { show("#wa-browser-dialog"); void loadRows(); });
       $("#wa-load-page").addEventListener("click", () => void loadRows());
       $("#wa-search").addEventListener("input", drawRows);
@@ -193,7 +217,7 @@
       });
       recordChanged();
       return {
-        recordChanged,
+        recordChanged, restore,
         accountChanged(id) {
           if (owner !== id) clear();
           owner = id; recordChanged();

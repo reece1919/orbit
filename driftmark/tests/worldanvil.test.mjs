@@ -9,8 +9,8 @@ const ARTICLE="aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",USER="11111111-2222-3333-44
 const fingerprint=async raw=>(await articleDTO(raw)).version_hash;
 const source=()=>({id:ARTICLE,title:"Test article",world:{id:WORLD},content:"Original source.",isEditable:true,state:"private",isDraft:true,isWip:true});
 function setup(overrides={}){
- let article=source();const calls=[];
- const handle=createHandler({authorize:async()=>({id:OWNER,aal:"aal2"}),fetcher:async(url,options)=>{
+ let article=source(),savedToken=null;const calls=[];
+ const handle=createHandler({authorize:async()=>({id:OWNER,aal:"aal2"}),connections:{read:async()=>savedToken,write:async(_owner,token)=>{savedToken=token;},remove:async()=>{savedToken=null;}},fetcher:async(url,options)=>{
   calls.push({url,options});const parsed=new URL(url);assert.equal(parsed.origin,SERVICE);assert.equal(options.headers["x-auth-token"],TOKEN);
   if(parsed.pathname==="/identity")return Response.json({id:USER});
   if(parsed.pathname==="/user/worlds")return Response.json({worlds:[{id:WORLD,title:"Test world"}]});
