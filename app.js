@@ -215,17 +215,17 @@
     view=next;
     // Only top-level workspace panels are switched here. The three nested
     // specialist panels are managed by VITA below, preserving their data hooks.
-    $('#main-content > [data-panel]').forEach(x=>x.hidden=x.dataset.panel!==view);
+    document.querySelectorAll('#main-content > [data-panel]').forEach(x=>x.hidden=x.dataset.panel!==view);
     const activeVita=view==='vita';
     const summary=$('#vita-overview');
     if(summary)summary.hidden=!activeVita||vitaSection!=='overview';
-    $('#vita-dashboard > section[data-panel]').forEach(x=>x.hidden=!activeVita||x.dataset.panel!==vitaSection);
-    $('#vita-tabs [data-view]').forEach(x=>{
+    document.querySelectorAll('#vita-dashboard > section[data-panel]').forEach(x=>x.hidden=!activeVita||x.dataset.panel!==vitaSection);
+    document.querySelectorAll('#vita-tabs [data-view]').forEach(x=>{
       const selected=activeVita && x.dataset.view===(vitaSection==='overview'?'vita':vitaSection);
       x.classList.toggle('active',selected);
       if(selected)x.setAttribute('aria-current','page');else x.removeAttribute('aria-current');
     });
-    $('.main-nav [data-view], .mobile-nav [data-view]').forEach(x=>{x.classList.toggle('active',x.dataset.view===view);if(x.dataset.view===view)x.setAttribute('aria-current','page');else x.removeAttribute('aria-current')});
+    document.querySelectorAll('.main-nav [data-view], .mobile-nav [data-view]').forEach(x=>{x.classList.toggle('active',x.dataset.view===view);if(x.dataset.view===view)x.setAttribute('aria-current','page');else x.removeAttribute('aria-current')});
     const more=$('#mobile-more');
     more.classList.toggle('active',!['home','focus','projects','inbox','vita'].includes(view));
     $('#current-crumb').textContent=({home:'OVERVIEW',projects:'PROJECTS',focus:'TASKS',gaia:'GAIA',vita:'VITA',inbox:'INBOX',automations:'AUTOMATIONS',routines:'ROUTINES',settings:'SETTINGS'})[view];
