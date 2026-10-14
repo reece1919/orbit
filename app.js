@@ -188,6 +188,27 @@
   }
   function renderTheme(){document.body.dataset.theme=state.theme;$$('[data-theme-choice]').forEach(b=>{b.classList.toggle('selected',b.dataset.themeChoice===state.theme);b.setAttribute('aria-pressed',String(b.dataset.themeChoice===state.theme));});}
   function render(){renderProjects();renderTasks();renderLinks();renderRoutines();renderAttention();renderTheme();$('#scratchpad').value=state.scratchpad;window.ORBITConnectedTodoist?.render();}
+  function closeSystemsMenu(restoreFocus=false){
+    const sheet=$('#mobile-system-sheet');
+    if(sheet.hidden)return;
+    sheet.hidden=true;
+    $('#mobile-systems-backdrop').hidden=true;
+    const trigger=$('#mobile-systems');
+    trigger.setAttribute('aria-expanded','false');
+    trigger.classList.remove('active');
+    if(restoreFocus)trigger.focus();
+  }
+  function toggleSystemsMenu(){
+    const sheet=$('#mobile-system-sheet');
+    if(!sheet.hidden){closeSystemsMenu(true);return;}
+    closeNavigation();
+    sheet.hidden=false;
+    $('#mobile-systems-backdrop').hidden=false;
+    const trigger=$('#mobile-systems');
+    trigger.setAttribute('aria-expanded','true');
+    trigger.classList.add('active');
+    sheet.querySelector('.mobile-system-link')?.focus();
+  }
   function closeNavigation(){
     $('#sidebar').classList.remove('open');
     $('#nav-backdrop').hidden=true;
@@ -195,6 +216,7 @@
     $('#mobile-more').setAttribute('aria-expanded','false');
   }
   function toggleNavigation(){
+    closeSystemsMenu();
     const show=!$('#sidebar').classList.contains('open');
     $('#sidebar').classList.toggle('open',show);
     $('#nav-backdrop').hidden=!show;
@@ -213,6 +235,7 @@
     }
     if(!['home','projects','focus','gaia','vita','inbox','automations','routines','settings'].includes(next))return;
     view=next;
+    closeSystemsMenu();
     // Only top-level workspace panels are switched here. The three nested
     // specialist panels are managed by VITA below, preserving their data hooks.
     document.querySelectorAll('#main-content > [data-panel]').forEach(x=>x.hidden=x.dataset.panel!==view);
@@ -227,7 +250,7 @@
     });
     document.querySelectorAll('.main-nav [data-view], .mobile-nav [data-view]').forEach(x=>{x.classList.toggle('active',x.dataset.view===view);if(x.dataset.view===view)x.setAttribute('aria-current','page');else x.removeAttribute('aria-current')});
     const more=$('#mobile-more');
-    more.classList.toggle('active',!['home','focus','projects','inbox','vita'].includes(view));
+    more.classList.toggle('active',!['home','vita'].includes(view));
     $('#current-crumb').textContent=({home:'OVERVIEW',projects:'PROJECTS',focus:'TASKS',gaia:'GAIA',vita:'VITA',inbox:'INBOX',automations:'AUTOMATIONS',routines:'ROUTINES',settings:'SETTINGS'})[view];
     closeNavigation();window.scrollTo({top:0,behavior:'instant'});
   }
@@ -338,9 +361,13 @@
     $('#reset-data').addEventListener('click',()=>{if(confirm('Reset this ORBIT workspace? If cloud sync is enabled, the reset will also sync to other devices. Export a backup and pause cloud sync first if you want to retain your cloud data.')){state=defaultState();persist();render();setView('home');toast('Workspace reset.');}});
     $('#menu-button').addEventListener('click',toggleNavigation);
     $('#mobile-more').addEventListener('click',toggleNavigation);
+    $('#mobile-systems').addEventListener('click',toggleSystemsMenu);
+    $('#mobile-systems-backdrop').addEventListener('click',()=>closeSystemsMenu());
+    $('#mobile-systems-close').addEventListener('click',()=>closeSystemsMenu(true));
+    document.querySelectorAll('#mobile-system-sheet a').forEach(link=>link.addEventListener('click',()=>closeSystemsMenu()));
     $('#nav-backdrop').addEventListener('click',closeNavigation);
-    window.addEventListener('resize',()=>{if(window.innerWidth>980)closeNavigation();});
-    document.addEventListener('keydown',e=>{if(e.key==='Escape')closeNavigation();});
+    window.addEventListener('resize',()=>{if(window.innerWidth>980){closeNavigation();closeSystemsMenu();}});
+    document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('#mobile-system-sheet').hidden){closeSystemsMenu(true);return;}closeNavigation();}});
     window.addEventListener('storage',e=>{if(e.key===currentKey()&&currentKey()){state=load();render();toast('Updated from another tab.');}});
     $('#orbit-import-legacy').addEventListener('click',()=>{
       if(!accountId)return;

@@ -19,8 +19,8 @@ jobs:
             [ -f "$file" ] || continue
             node --check "$file"
           done
-      - name: Test PULSE Web Push registration
-        run: node --test tests/pulse-push.test.cjs
+      - name: Test ORBIT interface and Web Push
+        run: node --test tests/*.test.cjs
       - name: Reject obvious embedded secrets
         run: |
           if git grep -nE 'sb_secret_[A-Za-z0-9_-]{10,}|-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----' -- '*.js' '*.ts' '*.html' '*.json' ':!*.md'; then

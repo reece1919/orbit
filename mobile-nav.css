@@ -1,0 +1,109 @@
+/* ORBIT mobile navigation: Home / Systems / VITA / More.
+   Desktop/sidebar navigation and dashboard modules are unchanged. */
+@media (max-width: 980px) {
+  .topbar .menu-button { display: none !important; }
+  .mobile-nav {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .mobile-nav-item {
+    min-height: 55px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .mobile-nav-item img {
+    width: 23px;
+    height: 23px;
+    object-fit: contain;
+  }
+  .mobile-systems-backdrop:not([hidden]) {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 94;
+    border: 0;
+    background: rgba(4, 9, 16, .53);
+  }
+  .mobile-system-sheet:not([hidden]) {
+    display: block;
+    position: fixed;
+    z-index: 99;
+    bottom: calc(78px + env(safe-area-inset-bottom, 0px));
+    left: max(12px, env(safe-area-inset-left, 0px));
+    right: max(12px, env(safe-area-inset-right, 0px));
+    width: min(460px, calc(100% - 24px));
+    max-width: 460px;
+    max-height: min(66dvh, 480px);
+    margin-inline: auto;
+    overflow-y: auto;
+    padding: 18px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: var(--panel);
+    color: var(--text);
+    box-shadow: 0 -12px 55px rgba(0, 0, 0, .38);
+  }
+  .mobile-system-sheet-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+  .mobile-system-sheet-head h2 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 760;
+    letter-spacing: -.02em;
+  }
+  #mobile-systems-close {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    flex: 0 0 38px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--surface);
+    color: var(--text);
+  }
+  #mobile-systems-close svg { width: 17px; height: 17px; }
+  .mobile-system-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .mobile-system-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    min-width: 0;
+    min-height: 90px;
+    padding: 11px 5px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface);
+    color: var(--text);
+    text-decoration: none;
+    font: inherit;
+    font-size: 10px;
+    font-weight: 750;
+    letter-spacing: .04em;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .mobile-system-link:hover,
+  .mobile-system-link:focus-visible {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+  }
+  .mobile-system-link img { width: 34px; height: 34px; object-fit: contain; }
+}
+@media (max-width: 360px) {
+  .mobile-system-sheet:not([hidden]) { padding: 13px; }
+  .mobile-system-grid { gap: 7px; }
+  .mobile-system-link { min-height: 80px; font-size: 9px; }
+}
+@media (min-width: 981px) {
+  .mobile-systems-backdrop,
+  .mobile-system-sheet { display: none !important; }
+}
