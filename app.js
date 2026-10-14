@@ -146,10 +146,6 @@
     const side=$('.sidebar-links');const pinned=`<a href="${esc(fuelProject.url)}" target="_blank" rel="noopener noreferrer">${icon('heart-pulse')} Ask FUEL ${icon('arrow-up-right')}</a>`;side.innerHTML=`<div class="nav-label">QUICK ACCESS</div>`+pinned+state.links.filter(l=>l.id!=='fuel'&&!l.url.includes('g-p-6acd6e86e82081919497cb8e044c60bd')).slice(0,5).map(l=>`<a href="${esc(l.url)}" target="_blank" rel="noopener noreferrer">${icon(l.name.toLowerCase().includes('github')?'github':l.name.toLowerCase().includes('todoist')?'list-check':'link')} ${esc(l.name)} ${icon('arrow-up-right')}</a>`).join('');
     side.querySelectorAll('a').forEach(a=>a.lastElementChild.classList.add('right-icon'));
   }
-  function renderCount(){
-    $('#nav-project-count').textContent=String(effectiveProjects().length).padStart(2,'0');
-  }
-
   function localDay(d=new Date()){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
   const moneyFmt=n=>new Intl.NumberFormat(undefined,{style:'currency',currency:'USD'}).format(n);
   function weekMonday(){const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()-(d.getDay()+6)%7);return localDay(d);}
@@ -191,7 +187,7 @@
     $('#attention-items').innerHTML=notices.length?notices.slice(0,5).map(n=>`<button class="attention-row" type="button" data-view="${n.view}"><span class="attention-tag">${n.kind}</span><span>${n.text}</span>${icon('arrow-right')}</button>`).join(''):`<p class="watch-detail">Everything you have configured is on track. This doesn't include unconnected external services.</p>`;
   }
   function renderTheme(){document.body.dataset.theme=state.theme;$$('[data-theme-choice]').forEach(b=>{b.classList.toggle('selected',b.dataset.themeChoice===state.theme);b.setAttribute('aria-pressed',String(b.dataset.themeChoice===state.theme));});}
-  function render(){renderProjects();renderTasks();renderLinks();renderCount();renderRoutines();renderAttention();renderTheme();$('#scratchpad').value=state.scratchpad;window.ORBITConnectedTodoist?.render();}
+  function render(){renderProjects();renderTasks();renderLinks();renderRoutines();renderAttention();renderTheme();$('#scratchpad').value=state.scratchpad;window.ORBITConnectedTodoist?.render();}
   function closeNavigation(){
     $('#sidebar').classList.remove('open');
     $('#nav-backdrop').hidden=true;
