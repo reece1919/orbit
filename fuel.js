@@ -47,7 +47,7 @@
       put('#nav-fuel-count','—');
     }
     if(!rows.length){
-      $('#fuel-entry-list').innerHTML='<div class="empty-state"><div><strong>No food entries for this date.</strong><p>Use Ask FUEL, or add an entry manually below after the ChatGPT connection is configured.</p><a class="quiet-pill" href="'+FUEL_URL+'" target="_blank" rel="noopener noreferrer">Ask FUEL ↗</a></div></div>';
+      $('#fuel-entry-list').innerHTML='<div class="empty-state"><div><strong>No food entries for this date.</strong><p>Describe a meal in the VITA Food Inbox above; ChatGPT will estimate its nutrition during the hourly sync. You can also use the manual entry form below.</p><a class="quiet-pill" href="'+FUEL_URL+'" target="_blank" rel="noopener noreferrer">Ask FUEL ↗</a></div></div>';
     } else {
       $('#fuel-entry-list').innerHTML=rows.map(row=>{
         const time=new Date(row.consumed_at).toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});
@@ -154,7 +154,7 @@
       'Date/time should be in America/Los_Angeles unless the user specifies otherwise. Ask for confirmation before inserting or changing any entry. Mark estimates clearly and do not pretend estimates are lab-verified nutrition data.',
       'When reading, correcting, or deleting entries, ALWAYS filter by the exact owner_id above. Never access or modify another user\'s records. Use an entry UUID to select one meal for edits. Do not duplicate an entry if the user asks for clarification or a summary.',
       'Confirm saved or modified only after the database write returns success. If the Supabase app or a suitable write tool is unavailable, say the meal is NOT saved to ORBIT and provide the proposed entry instead.',
-      'ORBIT reads this table using the user\'s signed-in GAIA account. Apple Health synchronization is not yet configured: do not claim that recording a meal here updates Apple Health.',
+      'ORBIT reads this table using the user\'s signed-in GAIA account. Apple Health summaries in VITA Body are separate; food entries do not automatically write to Apple Health.',
       'Keep the rest of the FUEL Project instructions about useful conversational nutrition logging, moderation, and nonjudgmental feedback.'
     ].join('\n\n');
     try {
