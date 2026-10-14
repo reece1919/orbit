@@ -1,0 +1,36 @@
+/* VITA food inbox — freeform capture and async ChatGPT nutrition estimates */
+.fuel-inbox-module{border:1px solid #a1795e!important;border-top:3px solid #d2a276!important;background:linear-gradient(135deg,#2b2e2c,#242a2d)!important;border-radius:12px!important;margin-bottom:16px}
+.fuel-inbox-module .module-head h3{color:#f5d9b9}
+.fuel-inbox-form{display:grid;grid-template-columns:minmax(0,1fr) minmax(120px,180px);gap:12px;margin:14px 0 11px}
+.fuel-inbox-form label{display:flex;flex-direction:column;gap:6px;min-width:0;color:#e6d0b8;font-size:11px;font-weight:700}
+.fuel-inbox-form textarea,.fuel-inbox-form select,.fuel-inbox-form input{background:#1b2424;color:#f5ede0;border:1px solid #85694f;border-radius:8px;padding:10px 11px;min-height:42px;width:100%;font:inherit;font-size:13px}
+.fuel-inbox-form textarea{resize:vertical;min-height:92px;line-height:1.5}
+.fuel-inbox-form textarea:focus-visible,.fuel-inbox-form select:focus-visible,.fuel-inbox-form input:focus-visible{outline:2px solid #e8b68a;outline-offset:2px}
+.fuel-inbox-description-field{grid-column:1 / -1}
+.fuel-inbox-footer{grid-column:1 / -1;display:flex;align-items:center;flex-wrap:wrap;justify-content:space-between;gap:12px}
+.fuel-inbox-helper{color:#c8b4a2;font-size:11px;max-width:420px;line-height:1.5}
+#fuel-inbox-status{font-size:11px;min-height:18px;color:#d8bca1}
+.fuel-inbox-history{margin-top:14px;border-top:1px solid #816b5244;padding-top:15px}
+.fuel-inbox-history-header{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px}
+.fuel-inbox-history-header h4{font-family:Georgia,serif;font-size:17px;margin:0;color:#f0d4b7}
+.fuel-inbox-list{display:grid;gap:8px}
+.fuel-inbox-row{background:#20282a;border:1px solid #5c5346;border-radius:8px;padding:12px;display:flex;align-items:flex-start;flex-direction:column;gap:7px}
+.fuel-inbox-row-head{display:flex;align-items:center;flex-wrap:wrap;gap:10px}
+.fuel-inbox-row-head small{color:#b5aaa0;font-size:10px}
+.fuel-inbox-state{font-size:10px;font-weight:800;letter-spacing:.035em;border-radius:5px;padding:4px 7px;background:#55452c;color:#f4d6a2}
+.fuel-inbox-state.state-processed{background:#2f5443;color:#c4efce}
+.fuel-inbox-state.state-needs_details{background:#633b34;color:#f5bca8}
+.fuel-inbox-description{margin:0;color:#f0e4d4;font-size:12px;line-height:1.55;overflow-wrap:anywhere;white-space:pre-wrap}
+.fuel-inbox-row .watch-detail{margin:0;font-size:11px;color:#cab7a4;white-space:pre-wrap;overflow-wrap:anywhere}
+.fuel-inbox-row .quiet-pill{font-size:10px}
+.vita-dashboard [data-panel="fuel"]>.fuel-setup{display:block}
+.vita-dashboard [data-panel="fuel"] .fuel-setup summary{cursor:pointer;color:#e3c19c}
+body[data-theme="light"] .fuel-inbox-module{background:linear-gradient(125deg,#fffaf0,#f8f1e6)!important;border-color:#dbc09b!important}
+body[data-theme="light"] .fuel-inbox-module .module-head h3,body[data-theme="light"] .fuel-inbox-history-header h4{color:#614527}
+body[data-theme="light"] .fuel-inbox-form label{color:#624d36}
+body[data-theme="light"] .fuel-inbox-form textarea,body[data-theme="light"] .fuel-inbox-form select,body[data-theme="light"] .fuel-inbox-form input{color:#293a31;background:#fff;border-color:#d4b991}
+body[data-theme="light"] .fuel-inbox-helper,body[data-theme="light"] #fuel-inbox-status{color:#75614a}
+body[data-theme="light"] .fuel-inbox-row{background:#fffbf4;border-color:#e5d3b9}
+body[data-theme="light"] .fuel-inbox-description{color:#3f362c}
+body[data-theme="light"] .fuel-inbox-row-head small,body[data-theme="light"] .fuel-inbox-row .watch-detail{color:#6d5d4b}
+@media(max-width:610px){.fuel-inbox-form{grid-template-columns:1fr}.fuel-inbox-description-field,.fuel-inbox-footer{grid-column:1}.fuel-inbox-footer .primary-button{width:100%;min-height:43px}.fuel-inbox-helper{max-width:none}}
