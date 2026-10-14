@@ -100,3 +100,29 @@ test("Browser uses valid JSON endpoint only when the raw Push API property is co
  const payload=browserCode.subscriptionPayload(browserSub);
  assert.equal(payload.endpoint,"https://web.push.apple.com/safe-device-token");
 });
+
+test("Full browser and server modules do not shadow the native URL constructor",()=>{
+ assert.match(browser,/^const PULSE_API_URL=/m);
+ assert.match(server,/^const SUPABASE_PROJECT_URL=/m);
+ assert.doesNotMatch(browser,/^const URL=/m);
+ assert.doesNotMatch(server,/^const URL=/m);
+ // Inject the exact lexical shadowing bug from the original app. The URL
+ // validators must still use the native URL constructor, even in this scope.
+ const browserWithShadow=vm.runInNewContext(
+  'const URL="https://not-a-constructor.example";\n'+browserHelpers+
+  '\n({validPushAddress,subscriptionPayload})',
+  {URL,Uint8Array,Array,Error,btoa:(value)=>Buffer.from(value,"binary").toString("base64")}
+ );
+ const serverWithShadow=vm.runInNewContext(
+  'const URL="https://not-a-constructor.example";\n'+serverHelpers+
+  '\n({subscriptionError,safePushHost})',
+  {URL,atob:(value)=>Buffer.from(value,"base64").toString("binary")}
+ );
+ const apple=validBrowserSubscription("https://web.push.apple.com/valid-device-token");
+ assert.equal(browserWithShadow.validPushAddress(apple.endpoint),true);
+ const payload=browserWithShadow.subscriptionPayload(apple);
+ assert.equal(serverWithShadow.subscriptionError(payload),null);
+ assert.equal(serverWithShadow.safePushHost(payload.endpoint),"web.push.apple.com");
+ assert.equal(browserWithShadow.validPushAddress("https://evil.example/secret"),true);
+ assert.match(serverWithShadow.subscriptionError({...payload,endpoint:"https://evil.example/secret"}),/Unsupported/);
+});
