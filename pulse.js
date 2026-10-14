@@ -326,7 +326,7 @@ void window.ORBITAuth.ready.then(()=>{
  handleAccount(window.ORBITAuth.user||null);
  const p=new URLSearchParams(location.search);
  if(p.get("view")==="pulse"){
-  document.querySelector(".main-nav [data-view=pulse]")?.click();
+  (document.querySelector("#vita-tabs [data-view=pulse]")||document.querySelector(".main-nav [data-view=pulse]"))?.click();
   const clean=new URL(location.href);clean.searchParams.delete("view");
   history.replaceState(null,"",clean.pathname+clean.search+clean.hash);
  }
