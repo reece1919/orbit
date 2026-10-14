@@ -17,7 +17,7 @@ class Control {
   focus() {} click() {} remove() {} reportValidity() { return true; }
 }
 const drain = async () => { for (let i = 0; i < 6; i++) await new Promise(setImmediate); };
-async function fixture({ broker, saved = true, conflict = false } = {}) {
+async function fixture({ broker, saved = true, conflict = false, initialAuth = true, initialAal = "aal2" } = {}) {
   const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
   const controls = new Map([...html.matchAll(/id="([\w-]+)"/g)].map(m => ["#" + m[1], new Control()]));
   controls.set(".article-details", new Control()); controls.set("label[for=import]", new Control());
@@ -26,7 +26,7 @@ async function fixture({ broker, saved = true, conflict = false } = {}) {
   $("#filter").value = "all";
   $("#entry-form").querySelector = selector => { const name = selector.match(/name="([^"]+)"/)[1]; return fields.get(name); };
   $("#entry-form").reset = () => { for (const f of fields.values()) f.value = ""; fields.get("category").value = "Locations"; fields.get("status").value = "Seed"; };
-  let deskArticle, exported, authCallback, owner = OWNER, waOptions, restorePromise;
+  let deskArticle, exported, authCallback, owner = initialAuth ? OWNER : "", waOptions, restorePromise, aal = initialAal;
   const calls = [], writes = [], windowListeners = new Map();
   const source = { ...await articleDTO(raw()), kind: "article" };
   const article = W.starter("Locations"); article.sections[0].draft = "My saved prose.\n"; article.sections[0].decisions = "My saved decision"; article.sections[0].reviewed = true;
@@ -50,7 +50,7 @@ async function fixture({ broker, saved = true, conflict = false } = {}) {
     return q;
   }
   const client = { from: () => query(), auth: { getUser: async () => ({ data: { user: owner ? { id: owner } : null } }),
-    onAuthStateChange: fn => { authCallback = fn; }, mfa: { getAuthenticatorAssuranceLevel: async () => ({ data: { currentLevel: "aal2" } }) } },
+    onAuthStateChange: fn => { authCallback = fn; }, mfa: { getAuthenticatorAssuranceLevel: async () => ({ data: { currentLevel: aal } }) } },
     functions: { invoke: async (_name, { body }) => {
       calls.push(clone(body));
       if (broker) return broker(body);
@@ -80,7 +80,10 @@ async function fixture({ broker, saved = true, conflict = false } = {}) {
     open: async id => $("#list").emit("click", { closest: () => ({ dataset: { entry: id } }) }),
     backup: async () => { await $("#export").emit("click"); return JSON.parse(exported); },
     dirty: () => { let prevented = false; windowListeners.get("beforeunload")({ preventDefault() { prevented = true; } }); return prevented; },
-    logout() { owner = ""; authCallback("SIGNED_OUT", null); } };
+    logout() { owner = ""; authCallback("SIGNED_OUT", null); },
+    login() { owner = OWNER; authCallback("SIGNED_IN", { user: { id: OWNER } }); },
+    verifyMFA() { aal = "aal2"; authCallback("MFA_CHALLENGE_VERIFIED", { user: { id: OWNER } }); },
+    async settled() { await drain(); await restorePromise; } };
 }
 test("verified login automatically lists and imports all references while preserving saved writing", async () => {
   const f = await fixture();
@@ -136,4 +139,17 @@ test("sign-out during a source read stops further writes and clears visible refe
   finish(await articleDTO(raw(ID, "Late remote text"))); await drain();
   assert.equal(f.writes.length, checkpoints); assert.equal(f.$("#workspace").hidden, true);
   assert.equal(f.$("#wa-linked-content").value, ""); assert.equal(f.$("#wa-reconcile").disabled, true);
+});
+
+test("signing in through ORBIT starts reconciliation in an already open dashboard", async () => {
+  const f = await fixture({ initialAuth: false }); assert.equal(f.calls.length, 0);
+  f.login(); await f.settled();
+  assert.equal(f.$("#workspace").hidden, false); assert.ok(f.calls.some(c => c.action === "articles"));
+  assert.equal(f.cloud().payload.entries.length, 3); assert.match(f.$("#wa-sync-status").textContent, /Reconciled/);
+});
+test("automatic sign-in waits for MFA before loading the private atlas and references", async () => {
+  const f = await fixture({ initialAuth: false, initialAal: "aal1" }); f.login(); await f.settled();
+  assert.equal(f.calls.length, 0); assert.equal(f.$("#workspace").hidden, true);
+  f.verifyMFA(); await f.settled();
+  assert.equal(f.$("#workspace").hidden, false); assert.ok(f.calls.some(c => c.action === "articles"));
 });

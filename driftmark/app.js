@@ -13,6 +13,7 @@ const safeUrl=v=>{try{const u=new window.URL(String(v||""));return u.protocol===
 const form=$("#entry-form"), search=$("#search"),filter=$("#filter");
 const field=name=>form.querySelector('[name="'+name+'"]');
 let client=null,uid="",revision=0,entries=[],selected="",dirty=false,connected=false,saving=false,pendingId="",linkedSource=null,linkedLink=null,editorOwner="";
+let checkingIdentity=false,authReconnectRequested=false;
 const setStatus=(msg,issue=false)=>{const el=$("#status");el.textContent=msg;el.style.background=issue?"#573a3d":"#2b3b46"};
 function download(text,name,type){
  const blob=new Blob([text],{type});const objectURL=window.URL.createObjectURL(blob),a=document.createElement("a");
@@ -174,6 +175,8 @@ async function loadCloud(){
  setStatus("Connected to your shared ORBIT account · private cloud sync active");
 }
 async function connect(){
+ if(checkingIdentity)return;
+ checkingIdentity=true;
  $("#sync").disabled=true;setStatus("Checking your shared ORBIT identity…");
  try{
   if(!window.supabase?.createClient)throw Error("Supabase library unavailable. Check your connection.");
@@ -183,6 +186,10 @@ async function connect(){
     if(event==="SIGNED_OUT"||(uid&&session?.user?.id!==uid)){
      uid="";connected=false;wa.accountChanged("");$("#workspace").hidden=true;
      setStatus("Your ORBIT session ended. Sign in and verify your authenticator before reconnecting.",true);
+    }
+    if(session?.user?.id&&!connected&&["SIGNED_IN","MFA_CHALLENGE_VERIFIED","TOKEN_REFRESHED"].includes(event)){
+     authReconnectRequested=true;
+     if(!checkingIdentity){authReconnectRequested=false;setTimeout(()=>void connect(),0)}
     }
    });
   }
@@ -199,7 +206,10 @@ async function connect(){
   }
   await loadCloud();
  }catch(e){connected=false;setStatus("Could not open private atlas: "+(e.message||"Unknown error")+". No data was modified.",true)}
- finally{$("#sync").disabled=false}
+ finally{
+  checkingIdentity=false;$("#sync").disabled=false;
+  if(authReconnectRequested){authReconnectRequested=false;setTimeout(()=>void connect(),0)}
+ }
 }
 form.addEventListener("submit",async ev=>{
  ev.preventDefault();const old=entries.find(e=>e.id===selected);
