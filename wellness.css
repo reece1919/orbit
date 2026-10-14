@@ -1,0 +1,38 @@
+/* ORBIT WELLNESS — private Apple Health daily summaries; no inline medical data. */
+.wellness-view{--wellness-accent:#8fdac5}
+.wellness-view .page-head{padding:21px 24px;background:linear-gradient(120deg,#14302f,#13202c);border:1px solid #355951;border-radius:10px;margin-bottom:15px}
+.wellness-heading{display:flex;align-items:center;gap:15px;min-width:0}
+.wellness-heading img{width:58px;height:58px;object-fit:contain;flex:0 0 58px}
+.wellness-heading h1{color:#d9f5e9;font-family:Georgia,serif}
+.wellness-heading p{color:#a3c5bb;margin-top:5px}
+.wellness-view .wellness-module{margin:0 0 16px;border:1px solid #31534b;background:linear-gradient(140deg,#132522,#111d28);border-radius:10px;padding:20px}
+.wellness-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:12px}
+.wellness-metric{background:#17302e;border:1px solid #345e54;padding:16px 12px;border-radius:9px;min-width:0}
+.wellness-metric span{font-size:10px;color:#a3cec0;letter-spacing:.06em;text-transform:uppercase;display:block}
+.wellness-metric strong{font-size:clamp(19px,2.7vw,29px);color:#e8fcf2;line-height:1.6;display:block;font-variant-numeric:tabular-nums;white-space:nowrap}
+.wellness-metric small{font-size:10px;color:#a1bcb4;display:block}
+.wellness-meta{color:#a5b5b4;font-size:11px;line-height:1.55;margin:0 0 16px}
+.wellness-view .module-head h2{color:#d4f0e4}
+.wellness-steps-bars{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));align-items:end;gap:7px;min-height:175px;margin:10px 0}
+.wellness-step-col{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0;text-align:center}
+.wellness-step-bar-wrap{height:124px;width:min(100%,34px);display:flex;align-items:end;background:#25403b;border-radius:6px 6px 2px 2px;overflow:hidden}
+.wellness-step-bar{width:100%;background:linear-gradient(180deg,#b0e4ce,#498e79);border-radius:6px 6px 0 0;min-height:2px}
+.wellness-step-col small{color:#a4b9b3;font-size:9px;white-space:nowrap}
+.wellness-step-col span{color:#cde1d9;font-size:10px;font-variant-numeric:tabular-nums}
+.wellness-footnote{color:#a4bcb4;font-size:11px;line-height:1.6;margin-top:14px}
+.wellness-empty{padding:20px 0;color:#bbd1c9}
+.wellness-view .wellness-list{display:grid;gap:7px}
+.wellness-history-row{display:grid;grid-template-columns:115px repeat(4,minmax(0,1fr));gap:9px;padding:9px 12px;border:1px solid #34554b;border-radius:6px;font-size:11px;color:#cfe6da}
+.wellness-history-row span:not(:first-child){text-align:right}
+.wellness-history-row span:first-child{color:#c2d3cb;font-weight:650}
+body[data-theme="light"] .wellness-view .page-head{background:linear-gradient(120deg,#d5ebe0,#e0eae9);border-color:#9abeb0}
+body[data-theme="light"] .wellness-heading h1{color:#235448}
+body[data-theme="light"] .wellness-heading p{color:#386959}
+body[data-theme="light"] .wellness-view .wellness-module,body[data-theme="light"] .wellness-module{background:#fff;border-color:#c4dcd1}
+body[data-theme="light"] .wellness-metric{background:#edf6f1;border-color:#c2d9cb}
+body[data-theme="light"] .wellness-metric strong,body[data-theme="light"] .wellness-view .module-head h2{color:#1d5241}
+body[data-theme="light"] .wellness-metric span,body[data-theme="light"] .wellness-metric small,body[data-theme="light"] .wellness-meta{color:#48665a}
+body[data-theme="light"] .wellness-history-row{background:#f4faf6;border-color:#d4e4d9;color:#235247}
+body[data-theme="light"] .wellness-history-row span:first-child{color:#244d3e}
+@media(max-width:1100px){.wellness-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:620px){.wellness-view .page-head{padding:14px}.wellness-heading img{width:44px;height:44px;flex-basis:44px}.wellness-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.wellness-steps-bars{gap:3px}.wellness-step-col small{font-size:8px}.wellness-history-row{grid-template-columns:90px 1fr 1fr;gap:5px}.wellness-history-row span:nth-child(4),.wellness-history-row span:nth-child(5){display:none}}
