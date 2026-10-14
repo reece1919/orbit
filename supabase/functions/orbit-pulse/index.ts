@@ -5,7 +5,7 @@ import { sendPushNotification, deserializeVapidKeys } from "npm:web-push-browser
 const ORIGIN="https://reece1919.github.io";
 const LINK=ORIGIN+"/orbit/";
 const PROJECT="zdurujqwhxqrwbhwzzxg";
-const URL=Deno.env.get("SUPABASE_URL")||"https://"+PROJECT+".supabase.co";
+const SUPABASE_PROJECT_URL=Deno.env.get("SUPABASE_URL")||"https://"+PROJECT+".supabase.co";
 const HEADERS={"Access-Control-Allow-Origin":ORIGIN,"Access-Control-Allow-Headers":"authorization,apikey,content-type,x-pulse-cron-auth","Access-Control-Allow-Methods":"POST,OPTIONS","Content-Type":"application/json","Vary":"Origin","Cache-Control":"no-store"};
 const reply=(body,status=200)=>new Response(JSON.stringify(body),{status,headers:HEADERS});
 function key(){
@@ -14,7 +14,7 @@ function key(){
  try{const cfg=JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS")||"{}");const k=cfg.default||Object.values(cfg)[0];return typeof k==="string"?k:(k?.key||k?.value||k?.api_key||"")}catch{return ""}
 }
 const adminKey=key();
-const db=adminKey?createClient(URL,adminKey,{auth:{persistSession:false,autoRefreshToken:false}}):null;
+const db=adminKey?createClient(SUPABASE_PROJECT_URL,adminKey,{auth:{persistSession:false,autoRefreshToken:false}}):null;
 const cached={};
 async function setting(name){
  if(cached[name])return cached[name];
@@ -42,7 +42,7 @@ async function me(req){
 function validEndpoint(endpoint){
  if(typeof endpoint!=="string"||endpoint.length>2000)return false;
  try{
-  const u=new URL(endpoint);
+  const u=new globalThis.URL(endpoint);
   const h=u.hostname.toLowerCase();
   return u.protocol==="https:"&&!u.username&&!u.password&&!u.port&&
    (["fcm.googleapis.com","fcmregistrations.googleapis.com","updates.push.services.mozilla.com","push.apple.com"].includes(h)
@@ -62,7 +62,7 @@ function safePushHost(endpoint){
  // Hosts identify push services; endpoint paths identify devices and MUST never be logged.
  if(typeof endpoint!=="string")return "(not provided)";
  try{
-  const url=new URL(endpoint);
+  const url=new globalThis.URL(endpoint);
   return url.hostname.slice(0,128)||"(no hostname)";
  }catch{return "(unparseable)"}
 }
