@@ -71,3 +71,12 @@ test("Notification controls show inline actionable feedback even without a regis
  assert.match(browser,/if\(e.target.closest\("#pulse-check-push"\)\)/);
  assert.match(browser,/logPush\("Checking whether the push provider accepts a test/);
 });
+
+test("Rejected providers reveal hostname only, never subscription tokens",()=>{
+ const s="https://unrecognized.push-provider.example/private-secret-token?key=do-not-log";
+ const sample=browserCode.subscriptionPayload(validBrowserSubscription(s));
+ const error=serverCode.subscriptionError(sample);
+ assert.match(error,/unrecognized\.push-provider\.example/);
+ assert.doesNotMatch(error,/private-secret-token|do-not-log/);
+ assert.equal(serverCode.subscriptionError(browserCode.subscriptionPayload(validBrowserSubscription("https://web.push.apple.com/device"))),null);
+});
