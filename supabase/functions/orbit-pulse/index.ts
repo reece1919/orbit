@@ -44,15 +44,26 @@ function validEndpoint(endpoint){
  try{
   const u=new URL(endpoint);
   const h=u.hostname.toLowerCase();
-  return u.protocol==="https:"&&!u.username&&!u.password&&
-   (["fcm.googleapis.com","fcmregistrations.googleapis.com","updates.push.services.mozilla.com","web.push.apple.com"].includes(h)
+  return u.protocol==="https:"&&!u.username&&!u.password&&!u.port&&
+   (["fcm.googleapis.com","fcmregistrations.googleapis.com","updates.push.services.mozilla.com","push.apple.com"].includes(h)
     ||h.endsWith(".push.apple.com")||h.endsWith(".notify.windows.com"));
  }catch{return false}
 }
-function validSub(s){
- return s&&validEndpoint(s.endpoint)&&s.keys&&
- /^[A-Za-z0-9_-]{70,120}$/.test(s.keys.p256dh||"")&&
- /^[A-Za-z0-9_-]{18,50}$/.test(s.keys.auth||"");
+function validKey(value,expectedBytes){
+ // Web Push encryption keys are base64url-encoded without padding (Push API).
+ // Decode and validate exact byte lengths, not approximate encoded string lengths.
+ if(typeof value!=="string"||!/(?=.{18,120}$)^[A-Za-z0-9_-]+$/.test(value))return false;
+ try{
+  const base64=value.replace(/-/g,"+").replace(/_/g,"/");
+  return atob(base64+"=".repeat((4-base64.length%4)%4)).length===expectedBytes;
+ }catch{return false}
+}
+function subscriptionError(s){
+ if(!s||typeof s!=="object")return "Browser push subscription is missing.";
+ if(!validEndpoint(s.endpoint))return "Unsupported push service address. Please report this device/browser to ORBIT support.";
+ if(!s.keys||!s.keys.p256dh||!s.keys.auth)return "Browser push encryption keys are missing.";
+ if(!validKey(s.keys.p256dh,65)||!validKey(s.keys.auth,16))return "Browser push encryption keys have an invalid format.";
+ return null;
 }
 async function configuredKeys(){
  return deserializeVapidKeys({publicKey:await setting("vapid_public"),privateKey:await setting("vapid_private")});
@@ -129,7 +140,7 @@ Deno.serve(async req=>{
   if(req.headers.get("Origin")!==ORIGIN)return reply({error:"Origin blocked"},403);
   const user=await me(req);
   if(!user)return reply({error:"Sign into ORBIT first"},401);
-  if(!hasVerifiedMfa(req))return reply({error:"MFA_REQUIRED: Verify an authenticator in ORBIT and retry."},403);  if(!user)return reply({error:"Sign into ORBIT first"},401);
+  if(!hasVerifiedMfa(req))return reply({error:"MFA_REQUIRED: Verify an authenticator in ORBIT and retry."},403);
   if(body?.action==="status"){
    const {count,error}=await db.from("pulse_push_subscriptions").select("id",{count:"exact",head:true}).eq("owner_id",user.id);
    if(error)throw error;
@@ -137,7 +148,8 @@ Deno.serve(async req=>{
   }
   if(body?.action==="subscribe"){
    const s=body.subscription;
-   if(!validSub(s))return reply({error:"Invalid browser push subscription"},400);
+   const problem=subscriptionError(s);
+   if(problem)return reply({error:problem},400);
    const {error}=await db.from("pulse_push_subscriptions").upsert({owner_id:user.id,endpoint:s.endpoint,p256dh:s.keys.p256dh,auth_secret:s.keys.auth,device_label:String(body.label||"Device").slice(0,70),updated_at:new Date().toISOString()},{onConflict:"endpoint"});
    if(error)throw error;
    return reply({connected:true});
