@@ -176,6 +176,7 @@
     if(remove){void deleteEntry(remove.dataset.fuelDelete);return;}
     if(event.target.closest('[data-view="fuel"]'))void refresh(true);
   });
+  document.addEventListener('fuel:inbox-processed',()=>{lastSync=0;void refresh(true);});
   document.addEventListener('orbit:auth-changed',()=>{lastSync=0;void refresh(true);});
   window.addEventListener('focus',()=>{if(window.ORBITAuth?.user && Date.now()-lastSync>30000)void refresh(true);});
   window.ORBITAuth?.ready.then(()=>void refresh(true));
