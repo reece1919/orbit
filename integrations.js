@@ -17,7 +17,7 @@
   const gaiaCatalog=gaiaRoot+'plants.json';
   // GAIA now shares ORBITAuth's single authenticated Supabase client.
   const TODOIST_API='https://api.todoist.com/api/v1';
-  let sessionKey='';let token='';let activeAccount='';let serverConnected=false;let oauthChecking=false;
+  let sessionKey='';let token='';let activeAccount='';let serverConnected=false;let oauthChecking=false;let todoistReconnectNeeded=false;
   const BRIDGE='https://zdurujqwhxqrwbhwzzxg.supabase.co/functions/v1/orbit-todoist';
   async function oauthRequest(action,extra={}){
     const auth=window.ORBITAuth;
@@ -38,6 +38,8 @@
       const status=await oauthRequest('status');
       if(activeAccount!==owner)return;
       serverConnected=!!status.connected;
+      todoistReconnectNeeded=!!status.reconnect_required;
+      if(todoistReconnectNeeded)todoistError='Todoist authorization expired. Select Reconnect Todoist to restore your tasks.';
       const oauthResult=new URLSearchParams(window.location.search).get('todoist');
       if(oauthResult){
         const clean=new URL(window.location.href);clean.searchParams.delete('todoist');
@@ -63,7 +65,7 @@
       const url=new URL(result.authorization_url);
       if(url.origin!=='https://app.todoist.com'||url.pathname!=='/oauth/authorize')throw new Error('Unexpected Todoist approval URL.');
       window.location.assign(url.href);
-    }catch(err){toast('Could not start secure Todoist connection: '+err.message);button.disabled=false;button.textContent='Connect with Todoist';}
+    }catch(err){toast('Could not start secure Todoist connection: '+err.message);button.disabled=false;button.textContent=todoistReconnectNeeded?'Reconnect Todoist ↗':'Connect with Todoist ↗';}
   }
   // Retire the older unscoped browser-tab token so it cannot cross ORBIT accounts.
   try{sessionStorage.removeItem('helm-todoist-token-v03');}catch(_){}
@@ -174,6 +176,10 @@
   function renderTodoist(){
     const active=Boolean(token||serverConnected); const total=tasks.length; const due=selectTasks('today');
     const sidequests=ordered(tasks.filter(isSideQuest));
+    const reconnectButton=$('#todoist-oauth-connect');
+    if(reconnectButton && !reconnectButton.disabled)reconnectButton.textContent=todoistReconnectNeeded?'Reconnect Todoist ↗':'Connect with Todoist ↗';
+    const connectorHeading=$('#todoist-connect strong');
+    if(connectorHeading)connectorHeading.textContent=todoistReconnectNeeded?'Your Todoist authorization expired':'Connect Todoist across all your devices';
     const mode=$('#todoist-connection-mode');
     if(mode)mode.textContent=serverConnected?'Secure connection · available across devices':token?'Temporary browser-tab connection':'';
     const check=$('#todoist-oauth-checking');
@@ -184,15 +190,15 @@
     if(addQuest)addQuest.disabled=!active||todoistLoading;
     if(questInput)questInput.disabled=!active||todoistLoading;
     $('#nav-task-count').textContent=active && todoistSyncTime?String(due.length):'—';
-    note('#todoist-home-note',!active?'':todoistError?todoistError:todoistSyncTime?'Updated '+todoistSyncTime:'');
+    note('#todoist-home-note',todoistError?todoistError:!active?'':todoistSyncTime?'Updated '+todoistSyncTime:'');
     note('#todoist-status',todoistLoading?'Refreshing Todoist…':todoistError?'Could not refresh: '+todoistError:todoistSyncTime?`${total}${todoistPartial?'+':''} open tasks · last refreshed ${todoistSyncTime}`:'Ready to sync');
     $$('[data-todoist-filter]').forEach(el=>el.classList.toggle('selected',el.dataset.todoistFilter===todoistFilter));
     const selected=selectTasks(todoistFilter);
-    $('#todoist-task-list').innerHTML=!active?'<p class="watch-detail">Connect Todoist to manage your actual tasks here.</p>':
+    $('#todoist-task-list').innerHTML=!active?(todoistReconnectNeeded?'<p class="watch-detail">Your Todoist authorization expired. Use the Reconnect Todoist button above to restore your tasks.</p>':'<p class="watch-detail">Connect Todoist to manage your actual tasks here.</p>'):
       todoistLoading&&!todoistSyncTime?'<p class="watch-detail">Loading your Todoist tasks…</p>':
       selected.length?selected.map(taskMarkup).join(''):
       `<p class="watch-detail">${esc(todoistError||'No tasks in this view.')}</p>`;
-    $('#todoist-home-list').innerHTML=!active?'<p class="watch-detail">Connect Todoist to see your agenda.</p>':
+    $('#todoist-home-list').innerHTML=!active?(todoistReconnectNeeded?'<p class="watch-detail">Todoist authorization expired. <button type="button" data-view="focus" class="subtle-link">Open Tasks to reconnect ↗</button></p>':'<p class="watch-detail">Connect Todoist to see your agenda.</p>'):
       todoistLoading&&!todoistSyncTime?'<p class="watch-detail">Loading…</p>':homeAgenda();
     const sideQuestList=$('#sidequest-list');
     if(sideQuestList)sideQuestList.innerHTML=!active?'<p class="watch-detail">Connect Todoist to view and add side quests.</p>':
@@ -364,7 +370,7 @@
     // and are removed only by explicit Todoist Disconnect (or tab closure).
     activeAccount=next;
     sessionKey=next?'orbit-todoist-v04-'+next:'';
-    token='';serverConnected=false;oauthChecking=false;tasks=[];todoistError='';todoistSyncTime='';todoistPartial=false;todoistLoading=false;
+    token='';serverConnected=false;oauthChecking=false;todoistReconnectNeeded=false;tasks=[];todoistError='';todoistSyncTime='';todoistPartial=false;todoistLoading=false;
     if(next){try{token=sessionStorage.getItem(sessionKey)||'';}catch(_){}}
     gaiaClient=window.ORBITAuth?.client||gaiaClient;gaiaUser=user||null;gaiaPrivateTasks=[];gaiaPrivateError='';
     renderTodoist();renderGaiaPrivate();
