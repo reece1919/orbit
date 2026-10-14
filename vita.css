@@ -1,0 +1,48 @@
+/* VITA consolidates the existing FUEL, PULSE, and Apple Health screens without changing their persistence. */
+.vita-dashboard{--vita-sage:#a4c8aa;--vita-cream:#ede3ce;--vita-copper:#d7a27c;--vita-violet:#c8b3d6}
+.vita-hero{display:flex;align-items:center;gap:20px;padding:24px 27px;border:1px solid #607862;border-radius:18px 7px 18px 7px;background:linear-gradient(110deg,#23382f,#23343c 54%,#3f302d);box-shadow:inset 0 1px #d3b99b25;margin-bottom:14px}
+.vita-hero-mark{width:78px;height:78px;flex:none;filter:drop-shadow(0 6px 9px #0004);object-fit:contain}
+.vita-hero-copy{min-width:0;flex:1}
+.vita-kicker{display:block;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#c3d7c3;font-weight:700}
+.vita-hero h1{font-size:clamp(30px,4vw,47px);font-family:Georgia,serif;line-height:1.1;font-weight:500;color:#f5ebd7;margin:2px 0 6px;letter-spacing:.025em}
+.vita-hero p{margin:0;font-size:12px;color:#d5d6c7}
+.vita-nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:0 0 17px;padding:6px;background:#213029;border:1px solid #536755;border-radius:11px}
+.vita-tab{display:flex;align-items:center;justify-content:center;gap:9px;min-height:46px;min-width:0;padding:8px 10px;border:1px solid transparent;background:transparent;color:#ced9cd;font-size:12px;font-weight:700;cursor:pointer;border-radius:7px}
+.vita-tab img{width:25px;height:25px;object-fit:contain}
+.vita-tab:hover{background:#42605161}
+.vita-tab.active{color:#20362f;background:linear-gradient(120deg,#e8e5d3,#bddac2);border-color:#e5e3c9}
+.vita-tab:focus-visible{outline:2px solid #a6d5ac;outline-offset:2px}
+.vita-overview-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.vita-overview-card{border:1px solid #617367;border-radius:11px;padding:19px 19px 16px;background:linear-gradient(145deg,#243831,#1c2d30);min-width:0;display:flex;flex-direction:column;gap:8px}
+.vita-overview-card[data-kind="nutrition"]{border-top:3px solid #dda67b}
+.vita-overview-card[data-kind="mind"]{border-top:3px solid #c5aed8}
+.vita-overview-card[data-kind="body"]{border-top:3px solid #91cba9}
+.vita-card-top{display:flex;align-items:center;gap:10px;color:#d2d7cc;font-size:11px;letter-spacing:.09em;font-weight:750;text-transform:uppercase}
+.vita-card-top img{width:41px;height:41px;object-fit:contain}
+.vita-card-figure{font-size:clamp(22px,3vw,32px);line-height:1.25;font-variant-numeric:tabular-nums;font-weight:750;color:#f5eee0;overflow-wrap:anywhere}
+.vita-card-detail{font-size:11px;line-height:1.55;color:#bacdc0;margin:0;flex:1;overflow-wrap:anywhere}
+.vita-card-action{border:0;border-top:1px solid #ffffff25;background:none;color:#dbe7d5;text-align:left;padding:11px 0 0;cursor:pointer;font:inherit;font-size:11px;font-weight:700;align-self:stretch}
+.vita-card-action:hover{text-decoration:underline}
+.vita-privacy-note{margin-top:16px;padding:11px 14px;border:1px solid #556b5b;border-radius:8px;background:#263b333d;color:#b9cdc1;font-size:11px;line-height:1.5}
+.vita-dashboard > section[data-panel]{margin-top:14px}
+.vita-dashboard > section[data-panel] > .eyebrow{display:none}
+.vita-dashboard > section[data-panel] > .page-head{margin-bottom:15px}
+.vita-dashboard > section[data-panel] .specialist-logo,.vita-dashboard > section[data-panel] .wellness-heading img{width:45px;height:45px;flex-basis:45px}
+.home-mini-vita{border-top:2px solid #9cbc9d}
+.home-mini-vita .home-mini-top .eyebrow{color:#b9d8ae!important}
+.home-mini-vita .vita-home-metrics{display:flex;gap:10px;flex-wrap:wrap;align-items:baseline}
+.home-mini-vita .vita-home-metrics strong{font-size:20px;color:var(--text);font-variant-numeric:tabular-nums}
+.home-mini-vita .vita-home-metrics small{color:var(--muted);font-size:11px}
+body[data-theme="light"] .vita-hero{border-color:#bdd2bd;background:linear-gradient(120deg,#e0ebe0,#f0e6d6)}
+body[data-theme="light"] .vita-hero h1{color:#29493a}
+body[data-theme="light"] .vita-hero p,body[data-theme="light"] .vita-kicker{color:#496556}
+body[data-theme="light"] .vita-nav{background:#eaf0e8;border-color:#ccdccc}
+body[data-theme="light"] .vita-tab{color:#3d5849}
+body[data-theme="light"] .vita-tab.active{background:#30684c;color:#fff;border-color:#397c5f}
+body[data-theme="light"] .vita-overview-card{background:#f8faf4;border-color:#c5d6c8}
+body[data-theme="light"] .vita-card-top,body[data-theme="light"] .vita-card-figure,body[data-theme="light"] .vita-card-action{color:#274c39}
+body[data-theme="light"] .vita-card-detail,body[data-theme="light"] .vita-privacy-note{color:#597366}
+body[data-theme="light"] .vita-card-action{border-top-color:#d5e3d6}
+body[data-theme="light"] .vita-privacy-note{background:#f6f9f2;border-color:#c8dacb}
+@media(max-width:800px){.vita-overview-grid{grid-template-columns:1fr 1fr}.vita-overview-card[data-kind="body"]{grid-column:1/-1}}
+@media(max-width:600px){.vita-hero{padding:16px 17px;gap:12px}.vita-hero-mark{width:58px;height:58px}.vita-hero p{font-size:11px}.vita-nav{gap:3px;padding:4px}.vita-tab{flex-direction:column;gap:2px;padding:7px 2px;font-size:10px;min-height:63px}.vita-tab img{width:26px;height:26px}.vita-overview-grid{grid-template-columns:1fr;gap:10px}.vita-overview-card[data-kind="body"]{grid-column:auto}.vita-overview-card{padding:15px;gap:6px}.vita-card-figure{font-size:27px}}
