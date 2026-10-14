@@ -32,7 +32,7 @@ const PROMPTS=[
 const localDay=()=>{const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-")};
 const promptIndex=day=>((Math.floor((Date.parse(day+"T00:00:00Z")-Date.UTC(2026,0,1))/86400000)%PROMPTS.length)+PROMPTS.length)%PROMPTS.length;
 const defaults=()=>({time_zone:Intl.DateTimeFormat().resolvedOptions().timeZone||"America/Los_Angeles",mood_times:["09:00","14:00","20:00"],journal_time:"20:30",notifications_enabled:false});
-let user=null,client=null,settings=defaults(),moods=[],journals=[],isLoading=false,saving=false,deviceSubscribed=false,pushPublicKey="",pushRegistration=null,pushExisting=null,pushSetupReady=false,pushError="";
+let user=null,client=null,settings=defaults(),moods=[],journals=[],isLoading=false,saving=false,deviceSubscribed=false,pushPublicKey="",pushRegistration=null,pushExisting=null,pushSetupReady=false,pushError="",pushRepairRequired=false;
 const log=(m)=>{const el=$("#pulse-status");if(el)el.textContent=m;};
 const logPush=(m)=>{const el=$("#pulse-push-feedback");if(el)el.textContent=m;log(m);};
 const on=(node,type,handler)=>node?.addEventListener(type,handler);
@@ -103,6 +103,7 @@ function renderSchedule(){
  if(enable){enable.hidden=!!deviceSubscribed;enable.disabled=false;enable.textContent=pushSetupReady?"Enable notifications":"Set up notifications"}
  if(disable)disable.hidden=!deviceSubscribed;
  if(test)test.disabled=false;
+ const repair=$("#pulse-repair-push");if(repair)repair.hidden=!pushRepairRequired;
 }
 function render(){renderMoods();renderJournal();renderHistory();writeHome();renderSchedule()}
 async function withAccount(){
@@ -204,17 +205,34 @@ function base64url(buffer){
  const value=Array.from(new Uint8Array(buffer),b=>String.fromCharCode(b)).join("");
  return btoa(value).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
 }
+function validPushAddress(value){
+ if(typeof value!=="string"||value.length>2000)return false;
+ try{
+  const u=new URL(value);
+  return u.protocol==="https:"&&!!u.hostname&&!u.username&&!u.password&&!u.port;
+ }catch{return false}
+}
+function subscriptionEndpoint(sub){
+ // Some Push API implementations provide both a property and JSON serialization.
+ // Trust only a syntactically valid secure URL; do not guess, concatenate, or repair
+ // an invalid endpoint because the token component is a private capability URL.
+ const raw=sub?.endpoint;
+ if(validPushAddress(raw))return raw;
+ const serialized=typeof sub?.toJSON==="function"?sub.toJSON()?.endpoint:null;
+ if(validPushAddress(serialized))return serialized;
+ throw Error("This device has an invalid push subscription address. Use Repair device subscription.");
+}
 function subscriptionPayload(sub){
- // Use the browser's raw encryption key bytes; Safari's JSON serialization is not
- // relied upon for registration. Never put these keys in logs or error messages.
+ const endpoint=subscriptionEndpoint(sub);
+ // Read encryption keys from raw bytes instead of relying on Safari's serialization.
  const p256dh=sub.getKey("p256dh"),auth=sub.getKey("auth");
  if(!p256dh||!auth||p256dh.byteLength!==65||auth.byteLength!==16)throw Error("Browser returned incomplete push encryption keys.");
- return {endpoint:sub.endpoint,keys:{p256dh:base64url(p256dh),auth:base64url(auth)}};
+ return {endpoint,keys:{p256dh:base64url(p256dh),auth:base64url(auth)}};
 }
 async function checkDevice(){
  if(!user||!("serviceWorker" in navigator)||!("PushManager" in window)||!("Notification" in window)){renderSchedule();return}
  const owner=user.id;
- pushSetupReady=false;pushError="";deviceSubscribed=false;renderSchedule();
+ pushSetupReady=false;pushError="";pushRepairRequired=false;deviceSubscribed=false;renderSchedule();
  try{
   // Prepare the service worker and public VAPID key before the user's click.
   // iOS requires subscribe() to follow the actual permission gesture without a network fetch.
@@ -227,14 +245,16 @@ async function checkDevice(){
   pushExisting=await reg.pushManager.getSubscription();
   pushSetupReady=true;
   if(pushExisting&&Notification.permission==="granted"){
-   // Only display Connected after the server confirms this device has been stored.
-   await api("subscribe",{subscription:subscriptionPayload(pushExisting),label:navigator.platform||"Browser"});
+   // Detect unusable local subscriptions before sending to the server.
+   const payload=subscriptionPayload(pushExisting);
+   await api("subscribe",{subscription:payload,label:navigator.platform||"Browser"});
    if(user?.id!==owner)return;
    deviceSubscribed=true;
   }
  }catch(e){
   if(user?.id!==owner)return;
-  pushError="Device registration needs attention: "+(e.message||"Unknown error")+". Tap Check connection to retry.";
+  pushRepairRequired=!!pushExisting&&/invalid push subscription address/i.test(String(e.message||""));
+  pushError="Device registration needs attention: "+(e.message||"Unknown error")+(pushRepairRequired?"":" Tap Check connection to retry.");
   logPush(pushError);
   console.warn("PULSE registration needs attention:",e.message);
  }
@@ -260,13 +280,15 @@ async function enablePush(){
   let sub=pushExisting;
   if(!sub)sub=await pushRegistration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:bytes(pushPublicKey)});
   pushExisting=sub;
+  const payload=subscriptionPayload(sub);
   logPush("Permission granted. Registering this device with ORBIT…");
-  await api("subscribe",{subscription:subscriptionPayload(sub),label:navigator.platform||"Browser"});
+  await api("subscribe",{subscription:payload,label:navigator.platform||"Browser"});
   await saveSettings({notifications_enabled:true});
-  deviceSubscribed=true;pushError="";renderSchedule();
+  deviceSubscribed=true;pushRepairRequired=false;pushError="";renderSchedule();
   logPush("Device registered successfully. Tap Send test to confirm delivery.");
  }catch(e){
   deviceSubscribed=false;
+  pushRepairRequired=!!pushExisting&&/invalid push subscription address/i.test(String(e.message||""));
   pushError="Device registration failed: "+(e.message||"Unknown error");
   renderSchedule();logPush(pushError);
  }
@@ -280,12 +302,39 @@ async function checkPushConnection(){
  else if(!pushSetupReady)logPush("Notification setup is unavailable here. Check whether you opened the installed Home Screen app.");
  else logPush("No registered notification device was found. Tap Enable notifications to register.");
 }
+async function repairPush(){
+ if(!user){logPush("Sign into ORBIT before repairing notifications.");return}
+ if(!pushRegistration||!pushSetupReady){logPush("Tap Check connection first, then try Repair device subscription.");return}
+ if(Notification.permission!=="granted"){logPush("Allow notifications in iPhone Settings first, then retry.");return}
+ if(!pushExisting){logPush("There is no saved subscription to repair. Tap Enable notifications instead.");return}
+ const button=$("#pulse-repair-push");
+ if(button)button.disabled=true;
+ try{
+  logPush("Replacing this device's invalid push subscription…");
+  // Only remove the local browser subscription after an explicit repair tap.
+  // Other devices and saved PULSE settings remain unchanged.
+  const removed=await pushExisting.unsubscribe();
+  if(!removed)throw Error("iPhone did not release the previous push subscription.");
+  pushExisting=null;
+  const next=await pushRegistration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:bytes(pushPublicKey)});
+  pushExisting=next;
+  const payload=subscriptionPayload(next);
+  await api("subscribe",{subscription:payload,label:navigator.platform||"Browser"});
+  await saveSettings({notifications_enabled:true});
+  deviceSubscribed=true;pushRepairRequired=false;pushError="";renderSchedule();
+  logPush("Push subscription repaired and registered. Tap Send test.");
+ }catch(e){
+  deviceSubscribed=false;pushRepairRequired=!!pushExisting;
+  pushError="Repair unsuccessful: "+(e.message||"Unknown error");
+  renderSchedule();logPush(pushError);
+ }finally{if(button)button.disabled=false}
+}
 async function disablePush(){
  try{
   const reg=await navigator.serviceWorker.getRegistration("/orbit/");
   const sub=reg?await reg.pushManager.getSubscription():null;
   if(sub){await api("unsubscribe",{endpoint:sub.endpoint});await sub.unsubscribe()}
-  deviceSubscribed=false;pushExisting=null;pushError="";
+  deviceSubscribed=false;pushExisting=null;pushRepairRequired=false;pushError="";
   const state=await api("status");
   if(!state.device_count)await saveSettings({notifications_enabled:false});
   renderSchedule();logPush("Notifications disabled on this device.");
@@ -298,12 +347,12 @@ async function testPush(){
   const reg=await navigator.serviceWorker.getRegistration("/orbit/");
   const sub=reg?await reg.pushManager.getSubscription():null;
   if(!sub)throw Error("Enable notifications first.");
-  await api("test",{endpoint:sub.endpoint});logPush("Push provider accepted the test. Check device notifications and Focus settings.");
+  await api("test",{endpoint:subscriptionEndpoint(sub)});logPush("Push provider accepted the test. Check device notifications and Focus settings.");
  }catch(e){logPush("Couldn't send test: "+e.message)}
 }
 function handleAccount(u){
  user=u||null;client=window.ORBITAuth?.client||null;
- moods=[];journals=[];settings=defaults();deviceSubscribed=false;pushSetupReady=false;pushRegistration=null;pushExisting=null;pushError="";render();
+ moods=[];journals=[];settings=defaults();deviceSubscribed=false;pushSetupReady=false;pushRegistration=null;pushExisting=null;pushRepairRequired=false;pushError="";render();
  if(user&&client)void refresh();
  else log("Sign into ORBIT to use your private PULSE journal.");
 }
@@ -317,6 +366,7 @@ on(document,"click",e=>{
  if(e.target.closest("#pulse-disable-push")){void disablePush();return}
  if(e.target.closest("#pulse-test-push")){void testPush();return}
  if(e.target.closest("#pulse-check-push")){void checkPushConnection();return}
+ if(e.target.closest("#pulse-repair-push")){void repairPush();return}
  if(e.target.closest("#pulse-refresh")){void refresh();return}
 });
 on($("#pulse-schedule-form"),"submit",saveSchedule);

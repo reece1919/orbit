@@ -17,8 +17,8 @@ function excerpt(text,from,to){
 const browserHelpers=excerpt(browser,"function base64url(buffer){","async function checkDevice(){");
 const serverHelpers=excerpt(server,"function validEndpoint(endpoint){","async function configuredKeys(){");
 const browserCode=vm.runInNewContext(
- browserHelpers+"\n({base64url,subscriptionPayload})",
- {Uint8Array,Array,Error,btoa:(value)=>Buffer.from(value,"binary").toString("base64")}
+ browserHelpers+"\n({base64url,subscriptionPayload,validPushAddress,subscriptionEndpoint})",
+ {URL,Uint8Array,Array,Error,btoa:(value)=>Buffer.from(value,"binary").toString("base64")}
 );
 const serverCode=vm.runInNewContext(
  serverHelpers+"\n({subscriptionError})",
@@ -52,11 +52,11 @@ test("Server rejects SSRF endpoints and malformed keys",()=>{
 });
 
 test("Registration reports errors instead of claiming the device is subscribed",()=>{
- assert.ok(browser.includes('await api("subscribe",{subscription:subscriptionPayload(pushExisting)'));
+ assert.ok(browser.includes('const payload=subscriptionPayload(pushExisting)'));
  const block=excerpt(browser,"async function checkDevice(){","async function enablePush(){");
  assert.ok(block.indexOf('await api("subscribe"')<block.indexOf("deviceSubscribed=true"));
  assert.ok(browser.includes("pushRegistration.pushManager.subscribe"));
- assert.ok(!browser.includes("sub.toJSON()"));
+ assert.ok(!browser.includes("subscription:sub.toJSON()"));
 });
 
 
@@ -79,4 +79,24 @@ test("Rejected providers reveal hostname only, never subscription tokens",()=>{
  assert.match(error,/unrecognized\.push-provider\.example/);
  assert.doesNotMatch(error,/private-secret-token|do-not-log/);
  assert.equal(serverCode.subscriptionError(browserCode.subscriptionPayload(validBrowserSubscription("https://web.push.apple.com/device"))),null);
+});
+
+test("Invalid browser addresses cannot reach the server and trigger repair",()=>{
+ const malformed=validBrowserSubscription("bad-endpoint-token");
+ assert.equal(browserCode.validPushAddress(malformed.endpoint),false);
+ assert.throws(()=>browserCode.subscriptionPayload(malformed),/invalid push subscription address/);
+ assert.equal(browserCode.validPushAddress("http://web.push.apple.com/token"),false);
+ assert.equal(browserCode.validPushAddress("https://web.push.apple.com/token"),true);
+ assert.match(browser,/pushRepairRequired=!!pushExisting/);
+ assert.match(browser,/async function repairPush\(\)/);
+ assert.match(browser,/pushExisting\.unsubscribe\(\)/);
+ assert.match(browser,/pushRegistration\.pushManager\.subscribe/);
+ const html=fs.readFileSync(path.join(root,"index.html"),"utf8");
+ assert.match(html,/id="pulse-repair-push"/);
+});
+test("Browser uses valid JSON endpoint only when the raw Push API property is corrupt",()=>{
+ const browserSub=validBrowserSubscription("invalid-locally");
+ browserSub.toJSON=()=>({endpoint:"https://web.push.apple.com/safe-device-token"});
+ const payload=browserCode.subscriptionPayload(browserSub);
+ assert.equal(payload.endpoint,"https://web.push.apple.com/safe-device-token");
 });
