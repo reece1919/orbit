@@ -72,6 +72,10 @@ button:focus-visible,a:focus-visible,summary:focus-visible,.import:focus-visible
 #wa-connect-form{padding:0}#wa-articles{max-height:45vh;overflow-y:auto;border:1px solid var(--border);border-radius:9px;padding:7px}
 .wa-review-dialog{width:1100px;max-width:min(1100px,96vw)}.wa-compare{display:grid;grid-template-columns:1fr 1fr;gap:18px}.wa-compare textarea{min-height:350px;font:14px/1.7 Georgia,serif}#wa-after{background:var(--paper);color:var(--paper-ink)}
 #wa-connect-feedback,#wa-browser-feedback,#wa-reader-feedback,#wa-review-feedback{color:var(--gold);font-size:13px;line-height:1.7}
+.category-field-controls{border:1px solid var(--border);border-radius:8px;padding:13px;margin-bottom:16px;background:#1b2931}
+.category-field-controls details{margin-bottom:14px}.category-field-controls summary{font-size:12px}
+.category-field-controls textarea{min-height:140px;max-height:300px;font-size:13px}
+.category-field-controls button{font-size:12px;margin-top:8px}.category-field-controls .check-line{font-size:12px;margin-bottom:4px}
 @media(max-width:1000px){.wa-panel{align-items:flex-start;flex-direction:column}.wa-actions{flex-shrink:1}}
 @media(max-width:650px){.wa-compare{grid-template-columns:1fr}.wa-compare textarea{min-height:260px}.wa-panel{padding:16px}.wa-actions{width:100%}.wa-actions button{flex:1 1 auto}}
 

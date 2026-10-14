@@ -1,4 +1,4 @@
-/* DRIFTMARK 0.3 — owner-private writing and reviewed World Anvil updates. */
+/* DRIFTMARK 0.4 — owner-private article and category-page writing. */
 (()=>{"use strict";
 const URL="https://zdurujqwhxqrwbhwzzxg.supabase.co";
 const KEY="sb_publishable_Xa0DTx_PbvtynbiQN6_xNQ_l1D55vzK"; // publishable, never a service-role key
@@ -23,6 +23,7 @@ const desk=window.DriftmarkWorkbench.init({getEntries:()=>entries,getSelected:()
 const wa=window.DriftmarkWorldAnvil.init({getClient:()=>client,getOwner:()=>uid,
  getSource:()=>linkedSource,hasEntry:()=>!form.hidden,isSaving:()=>saving,status:setStatus,
  getArticleText:()=>W.articleContent(desk.collect()),
+ getCategoryChanges:()=>W.categoryChanges(desk.collect()),
  attach:source=>{
   if(saving||form.hidden)return;
   linkedSource=window.DriftmarkWorldAnvil.normalizeSource(source);
@@ -32,17 +33,17 @@ const wa=window.DriftmarkWorldAnvil.init({getClient:()=>client,getOwner:()=>uid,
  },
  addReference:async source=>{
   if(saving||dirty)return false;
-  const existing=entries.find(e=>e.world_anvil?.id===source.id),now=new Date().toISOString();
+  const existing=entries.find(e=>e.world_anvil?.id===source.id&&(e.world_anvil.kind||"article")===source.kind),now=new Date().toISOString();
   const rec=normalize(existing?{...existing,world_anvil:source,url:existing.url||source.url,updated_at:now}:
    {id:"mark-"+Date.now()+"-"+Math.random().toString(36).slice(2,7),title:source.title,category:"Lore",
-    status:source.isDraft?"Drafting":"Researching",body:"",url:source.url,article:W.starter("Lore"),
+    status:source.isDraft?"Drafting":"Researching",body:"",url:source.url,article:source.kind==="category"?W.normalizeCategoryArticle():W.starter("Lore"),
     world_anvil:source,created_at:now,updated_at:now});
   const next=existing?entries.map(e=>e.id===rec.id?rec:e):[...entries,rec];
   if(!await saveCloud(next))return false;
   openEntry(rec.id);return true;
  },
  afterWrite:async source=>{
-  if(!linkedSource||linkedSource.id!==source.id)return false;
+  if(!linkedSource||linkedSource.id!==source.id||linkedSource.kind!==source.kind)return false;
   linkedSource=window.DriftmarkWorldAnvil.normalizeSource(source);
   dirty=true;$("#editor-state").textContent="Unsaved changes";
   if(saving||!form.reportValidity())return false;
@@ -67,10 +68,11 @@ const validDate=v=>!Number.isNaN(Date.parse(v))?v:new Date().toISOString();
 function normalize(e){
  if(!e||typeof e!=="object")return null;
  const title=String(e.title||"").trim().slice(0,150);if(!title)return null;
+ const source=window.DriftmarkWorldAnvil.normalizeSource(e.world_anvil);
  return {id:String(e.id||"").slice(0,100)||("mark-"+Date.now()+"-"+Math.random().toString(36).slice(2,8)),
  title,category:CATS.includes(e.category)?e.category:"Ideas",status:STATES.includes(e.status)?e.status:"Seed",
- tags:String(e.tags||"").slice(0,300),url:safeUrl(e.url),body:String(e.body||"").slice(0,80000),article:W.normalizeArticle(e.article),
- world_anvil:window.DriftmarkWorldAnvil.normalizeSource(e.world_anvil),
+ tags:String(e.tags||"").slice(0,300),url:safeUrl(e.url),body:String(e.body||"").slice(0,80000),article:source?.kind==="category"?W.normalizeCategoryArticle(e.article):W.normalizeArticle(e.article),
+ world_anvil:source,
  created_at:validDate(e.created_at),updated_at:validDate(e.updated_at)};
 }
 function resetEditor(){desk.reset();selected="";pendingId="";linkedSource=null;dirty=false;form.reset();form.hidden=true;$("#editor-empty").hidden=false;$("#editor-head").textContent="Select an entry";$("#editor-state").textContent="Ready to write";renderList();wa.recordChanged()}
@@ -94,20 +96,20 @@ function newEntry(){
 function renderList(){
  const term=search.value.trim().toLowerCase(),category=filter.value;
  const filtered=entries.filter(e=>(category==="all"||e.category===category)&&
- [e.title,e.tags,e.category,e.status,e.body,e.world_anvil?.content,e.article?.purpose,...(e.article?.sections||[]).map(s=>[s.title,s.draft,s.prompt,...s.points.map(p=>p.text)].join(" "))].some(v=>String(v||"").toLowerCase().includes(term)))
+ [e.title,e.tags,e.category,e.status,e.body,e.world_anvil?.content,...Object.values(e.world_anvil?.fields||{}),e.article?.purpose,...(e.article?.sections||[]).map(s=>[s.title,s.draft,s.prompt,...s.points.map(p=>p.text)].join(" "))].some(v=>String(v||"").toLowerCase().includes(term)))
  .sort((a,b)=>String(b.updated_at).localeCompare(String(a.updated_at)));
  $("#total").textContent=String(entries.length);
  $("#results").textContent=String(filtered.length)+" "+(filtered.length===1?"entry":"entries");
  $("#list").innerHTML=filtered.length?filtered.map(e=>
  '<button type="button" class="item'+(e.id===selected?' active':'')+'" data-entry="'+escapeHtml(e.id)+'">'+
  '<span class="eyebrow">'+escapeHtml(e.category)+" / "+escapeHtml(e.status)+'</span><strong>'+escapeHtml(e.title)+'</strong><small>'+
- escapeHtml(e.tags||"Uncategorized notes")+'</small></button>').join(""):
+ escapeHtml((e.world_anvil?.kind==="category"?"Category page · ":"")+(e.tags||"Uncategorized notes"))+'</small></button>').join(""):
  '<div class="empty-catalog">No matching entries. Create the first mark or adjust your filters.</div>';
 }
 async function saveCloud(next){
  if(saving)return false;
  if(!connected||!client||!uid){setStatus("Sign in through ORBIT and verify MFA before saving.",true);return false}
- const payload={version:3,world:"Eilmark",entries:next},savingOwner=uid;
+ const payload={version:4,world:"Eilmark",entries:next},savingOwner=uid;
  saving=true;
  const controls=[...document.querySelectorAll("#entry-form input,#entry-form select,#entry-form textarea,#entry-form button,#new,#sync,#export,#import")].map(el=>({el,disabled:el.disabled}));
  controls.forEach(({el})=>el.disabled=true);$("#save").textContent="Saving…";
@@ -129,12 +131,12 @@ async function loadCloud(){
  let {data,error}=await client.from(TABLE).select("revision,payload,updated_at").eq("owner_id",uid).maybeSingle();
  if(error)throw error;
  if(!data){
-  const inserted=await client.from(TABLE).insert({owner_id:uid,payload:{version:3,world:"Eilmark",entries:[]}})
+  const inserted=await client.from(TABLE).insert({owner_id:uid,payload:{version:4,world:"Eilmark",entries:[]}})
    .select("revision,payload,updated_at").single();
   if(inserted.error)throw inserted.error;
   data=inserted.data;
  }
- if(!data||!Array.isArray(data.payload?.entries)||![1,2,3].includes(data.payload.version))throw Error("Unexpected cloud workspace format; no data changed.");
+ if(!data||!Array.isArray(data.payload?.entries)||![1,2,3,4].includes(data.payload.version))throw Error("Unexpected cloud workspace format; no data changed.");
  revision=Number(data.revision);entries=data.payload.entries.map(normalize).filter(Boolean);
  connected=true;$("#workspace").hidden=false;wa.accountChanged(uid);resetEditor();renderList();void wa.restore();
  $("#last-sync").textContent="Synced "+new Date(data.updated_at).toLocaleString();
@@ -188,7 +190,7 @@ $("#delete").addEventListener("click",async()=>{
 search.addEventListener("input",renderList);filter.addEventListener("change",renderList);
 $("#sync").addEventListener("click",()=>void connect());
 $("#export").addEventListener("click",()=>{
- download(JSON.stringify({app:"DRIFTMARK",version:3,world:"Eilmark",exported_at:new Date().toISOString(),includes_unsaved_editor:dirty,entries:snapshot()},null,2),
+ download(JSON.stringify({app:"DRIFTMARK",version:4,world:"Eilmark",exported_at:new Date().toISOString(),includes_unsaved_editor:dirty,entries:snapshot()},null,2),
  "driftmark-atlas-"+new Date().toISOString().slice(0,10)+".json","application/json");
 });
 $("#import").addEventListener("change",async e=>{
@@ -197,7 +199,7 @@ $("#import").addEventListener("change",async e=>{
   if(file.size>12000000)throw Error("Backup is too large (maximum 12 MB).");
   const raw=JSON.parse(await file.text());
   if(raw.app!=="DRIFTMARK"||!Array.isArray(raw.entries)||raw.entries.length>1000)throw Error("Not a valid DRIFTMARK backup (maximum 1,000 entries).");
-  if(![1,2,3].includes(raw.version))throw Error("Unsupported backup version. No records changed.");
+  if(![1,2,3,4].includes(raw.version))throw Error("Unsupported backup version. No records changed.");
   const next=raw.entries.map(normalize).filter(Boolean);
   if(next.length!==raw.entries.length)throw Error("Backup contains invalid records.");
   if(new Set(next.map(entry=>entry.id)).size!==next.length)throw Error("Backup contains duplicate entry IDs.");

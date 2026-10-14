@@ -2,6 +2,7 @@ export const ORIGIN = "https://reece1919.github.io";
 export const SERVICE = "https://worldanvil-proxy.onrender.com";
 export const WORLD = "3449e76f-83f2-4aa4-b1ec-40b2b0a8397b";
 export const OWNER = "48c2d998-89ca-48bc-ac6f-0a45d8f25b5a";
+export const CATEGORY_FIELDS = ["description", "excerpt", "custom1", "custom2", "custom3", "custom4", "custom5"];
 const uuid = value => typeof value === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 const object = value => !!value && typeof value === "object" && !Array.isArray(value);
 export class Failure extends Error {
@@ -37,6 +38,42 @@ function protectedFields(article) {
     state: article.state, isDraft: article.isDraft, isWip: article.isWip,
     category: referenceId(article.category), articleParent: referenceId(article.articleParent),
     templateType: article.templateType };
+}
+function sourceURL(value) {
+  try { const parsed = new URL(value || "");
+    if (parsed.protocol === "https:" && /(^|\.)worldanvil\.com$/i.test(parsed.hostname) && !parsed.username && !parsed.password) return parsed.href;
+  } catch (_) { /* Private pages may have no public URL. */ }
+  return "";
+}
+function categoryProtected(c) {
+  const ref = value => typeof value === "string" || typeof value === "number" ? value : value?.id ?? null;
+  const groups = Array.isArray(c.subscribergroups) ? c.subscribergroups.map(ref).sort() : c.subscribergroups;
+  return { id: c.id, world: articleWorld(c), title: c.title, slug: c.slug, state: c.state,
+    subscribergroups: groups, parent: ref(c.parent), articleRedirect: ref(c.articleRedirect),
+    pagecover: ref(c.pagecover), bookcover: ref(c.bookcover), defaultarticlecover: ref(c.defaultarticlecover),
+    icon: c.icon, isBook: c.isBook, displayBookTitle: c.displayBookTitle, isCollapsed: c.isCollapsed,
+    position: c.position, cssClasses: c.cssClasses, systemMeta: c.systemMeta,
+    folderId: c.folderId, tags: c.tags, isDraft: c.isDraft, isWip: c.isWip, isEditable: c.isEditable };
+}
+export async function categoryDTO(raw, expectedId) {
+  const c = entity(raw, "category");
+  if (!uuid(c.id) || (expectedId && c.id !== expectedId) || articleWorld(c) !== WORLD)
+    throw new Failure("This category is not confirmed as part of Driftbound.", 403, "wrong_world");
+  const fields = {};
+  for (const key of CATEGORY_FIELDS) {
+    if (!Object.hasOwn(c, key)) continue;
+    if (c[key] !== null && typeof c[key] !== "string") throw new Failure("The category returned an unexpected text field.", 502, "unexpected_response");
+    fields[key] = c[key] ?? "";
+  }
+  if (!Object.hasOwn(fields, "description")) throw new Failure("This category's description was not returned.", 502, "missing_content");
+  const state = ["public", "private"].includes(c.state) ? c.state : "unknown";
+  const groupsConfirmed = Object.hasOwn(c, "subscribergroups") && (c.subscribergroups === null ||
+    (Array.isArray(c.subscribergroups) && c.subscribergroups.every(g => uuid(typeof g === "string" ? g : g?.id))));
+  return { kind: "category", id: c.id, world_id: WORLD, title: String(c.title || "Untitled category").slice(0, 150),
+    fields, url: sourceURL(c.url), state, isEditable: c.isEditable === true,
+    metadata_confirmed: state !== "unknown" && groupsConfirmed,
+    version_hash: await digest({ ...categoryProtected(c), fields, updateDate: c.updateDate, isEditable: c.isEditable }),
+    read_at: new Date().toISOString() };
 }
 export async function articleDTO(raw, expectedId) {
   const a = entity(raw, "article");
@@ -75,9 +112,9 @@ export function createHandler(deps) {
     for (const [key, value] of Object.entries(params)) url.searchParams.set(key, String(value));
     let response;
     try { response = await deps.fetcher(url.href, { method, headers: { "x-auth-token": token,
-      "Content-Type": "application/json", "Accept": "application/json", "User-Agent": "DRIFTMARK (https://reece1919.github.io/orbit/driftmark/, 0.3)" },
+      "Content-Type": "application/json", "Accept": "application/json", "User-Agent": "DRIFTMARK (https://reece1919.github.io/orbit/driftmark/, 0.4)" },
       body: body === undefined ? undefined : JSON.stringify(body), redirect: "error", signal: AbortSignal.timeout(40000) }); }
-    catch (_) { throw new Failure("The World Anvil connection did not respond. Try reading the article again.", 502, "upstream_unavailable"); }
+    catch (_) { throw new Failure("The World Anvil connection did not respond. Try reading the destination again.", 502, "upstream_unavailable"); }
     if ([401, 403].includes(response.status)) throw new Failure("World Anvil did not accept this token or its permissions. Check the token used by your GPT.", 401, "token_rejected");
     if (response.status === 429) throw new Failure("World Anvil is temporarily limiting requests. Wait before trying again.", 429, "rate_limited");
     if (!response.ok) throw new Failure("The World Anvil connection returned an error (" + response.status + ").", 502, "upstream_error");
@@ -108,7 +145,8 @@ export function createHandler(deps) {
       let input; try { input = JSON.parse(text); } catch (_) { throw new Failure("Send a valid connection request."); }
       if (!object(input)) throw new Failure("Send a valid connection request.");
       const fields = { status: ["action", "token"], configure: ["action", "token"], forget: ["action"],
-        articles: ["action", "token", "offset", "category_id"], categories: ["action", "token"],
+        articles: ["action", "token", "offset", "category_id"], categories: ["action", "token", "offset"],
+        category: ["action", "category_id"], update_category: ["action", "category_id", "expected_hash", "changes", "reviewed"],
         article: ["action", "token", "article_id"], update: ["action", "token", "article_id", "expected_hash", "content", "reviewed"] }[input.action];
       if (!Array.isArray(fields) || Object.keys(input).some(key => !fields.includes(key))) throw new Failure("Unsupported connection operation.");
       if (input.action === "forget") {
@@ -132,8 +170,11 @@ export function createHandler(deps) {
       }
       if (input.action === "status") return reply({ connected: true, saved: hasSavedConnection, ...await identity(token) });
       if (input.action === "categories") {
-        const raw = await upstream(token, "/world/categories", "POST", { id: WORLD }, { limit: "100", offset: "0" });
-        return reply({ categories: listing(raw, "categories").filter(c => uuid(c.id)).map(c => ({ id: c.id, title: String(c.title || c.name || "Untitled category").slice(0, 200) })) });
+        const offset = input.offset ?? 0;
+        if (!Number.isInteger(offset) || offset < 0 || offset > 100000) throw new Failure("Invalid page.");
+        const raw = await upstream(token, "/world/categories", "POST", { id: WORLD }, { limit: "100", offset: String(offset) });
+        const list = listing(raw, "categories").filter(c => uuid(c.id));
+        return reply({ categories: list.map(c => ({ id: c.id, title: String(c.title || c.name || "Untitled category").slice(0, 200) })), offset, has_more: list.length >= 100 });
       }
       if (input.action === "articles") {
         const offset = input.offset ?? 0;
@@ -143,6 +184,35 @@ export function createHandler(deps) {
         const raw = await upstream(token, "/world/articles", "POST", { id: WORLD }, body);
         const list = listing(raw, "articles").filter(a => uuid(a.id));
         return reply({ articles: list.map(a => ({ id: a.id, title: String(a.title || a.name || "Untitled article").slice(0, 200) })), offset, has_more: list.length >= 50 });
+      }
+      if (["category", "update_category"].includes(input.action)) {
+        if (!uuid(input.category_id)) throw new Failure("Choose a valid World Anvil category.");
+        if (input.action === "update_category" && (input.reviewed !== true || !object(input.changes) ||
+          !Object.keys(input.changes).length || Object.keys(input.changes).some(key => !CATEGORY_FIELDS.includes(key) ||
+            typeof input.changes[key] !== "string" || input.changes[key].length > 80000) ||
+          typeof input.expected_hash !== "string" || !/^[a-f0-9]{64}$/.test(input.expected_hash)))
+          throw new Failure("Review the selected category text fields before saving. Each field is limited to 80,000 characters.");
+        const raw = await upstream(token, "/category", "GET", { id: input.category_id, granularity: 2 });
+        const current = await categoryDTO(raw, input.category_id);
+        if (input.action === "category") return reply({ category: current });
+        if (!current.isEditable) throw new Failure("World Anvil did not confirm permission to edit this category.", 403, "not_editable");
+        if (!current.metadata_confirmed) throw new Failure("World Anvil did not confirm the category's privacy settings. No update was sent.", 409, "metadata_unconfirmed");
+        if (current.version_hash !== input.expected_hash) throw new Failure("The World Anvil category changed after your review. Read the latest fields and review again.", 409, "source_changed");
+        const changes = {};
+        for (const [key, value] of Object.entries(input.changes)) {
+          if (!Object.hasOwn(current.fields, key)) throw new Failure("World Anvil did not return this category field. No update was sent.", 409, "field_unavailable");
+          if (value !== current.fields[key]) changes[key] = value;
+        }
+        if (!Object.keys(changes).length) throw new Failure("The selected category fields already match your draft.", 409, "no_changes");
+        // Send only reviewed text fields. Blank values are explicit, reviewed clears.
+        mayHaveWritten = true;
+        await upstream(token, "/category", "PATCH", { id: input.category_id }, changes);
+        const savedRaw = await upstream(token, "/category", "GET", { id: input.category_id, granularity: 2 });
+        const saved = await categoryDTO(savedRaw, input.category_id);
+        if (await digest(saved.fields) !== await digest({ ...current.fields, ...changes }) ||
+          await digest(categoryProtected(entity(raw, "category"))) !== await digest(categoryProtected(entity(savedRaw, "category"))))
+          throw new Failure("The category update was submitted but read-back did not match. Read the destination before sending another update.", 502, "verification_uncertain");
+        return reply({ verified: true, category: saved });
       }
       if (!uuid(input.article_id)) throw new Failure("Choose a valid World Anvil article.");
       const raw = await upstream(token, "/article", "GET", { id: input.article_id, granularity: 2 });

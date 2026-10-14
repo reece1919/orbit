@@ -17,6 +17,7 @@
         const s = section();
         if (s) {
           s.draft = $("#section-draft").value;
+          if (article.kind === "category") s.include = $("#category-field-include").checked;
           s.decisions = $("#section-decisions").value;
           s.reviewed = $("#section-reviewed").checked && !!s.draft.trim();
         }
@@ -26,7 +27,8 @@
         $("#section-nav").innerHTML = article.sections.map((s, i) =>
           '<button type="button" data-section="' + esc(s.id) + '" class="section-tab' + (s.id === active ? " active" : "") +
           '" aria-current="' + (s.id === active ? "step" : "false") + '"><span>' + (i + 1) + ". " + esc(s.title) +
-          '</span><small>' + (s.reviewed ? "Reviewed" : s.draft.trim() ? "Draft written" : "To write") + "</small></button>").join("");
+          '</span><small>' + (article.kind === "category" && s.include ? (s.draft ? "Included in update" : "Selected to clear") :
+            s.reviewed ? "Reviewed" : s.draft.trim() ? "Draft written" : "To write") + "</small></button>").join("");
         const drafted = article.sections.filter(s => s.draft.trim()).length;
         const reviewed = article.sections.filter(s => s.reviewed && s.draft.trim()).length;
         $("#writing-progress").textContent = drafted + "/" + article.sections.length + " drafted · " + reviewed + " reviewed";
@@ -72,10 +74,23 @@
         $("#section-draft").value = s.draft;
         $("#section-decisions").value = s.decisions;
         $("#section-reviewed").checked = s.reviewed;
+        const category = article.kind === "category", source = options.getRecord().world_anvil;
+        const available = category && Object.hasOwn(source?.fields || {}, s.id);
+        $("#category-field-controls").hidden = !category;
+        $("#category-field-source").value = available ? source.fields[s.id] : "This field was not returned by World Anvil.";
+        $("#category-field-use-current").disabled = !available || source.fields[s.id].length > 80000;
+        $("#category-field-include").checked = s.include;
+        $("#category-field-include").disabled = !available;
+        $("#category-field-note").textContent = available ?
+          "Only included fields are sent. An included empty draft clears this field after your review. BBCode is kept as written." :
+          "You can keep a private draft, but this field cannot be sent until World Anvil returns its current text.";
         counts();
       }
       function render() {
         if (!article) return;
+        $("#add-section").hidden = article.kind === "category";
+        $("#sections-heading").textContent = article.kind === "category" ? "Category page fields" : "Article sections";
+        $("#export-article").textContent = article.kind === "category" ? "Export page drafts" : "Export your article";
         $("#article-purpose").value = article.purpose;
         $("#article-audience").value = article.audience;
         $("#article-canon").value = article.canon_status;
@@ -90,6 +105,7 @@
       function editPlan() {
         flush(); const s = section(); if (!s) return;
         $("#plan-title").value = s.title; $("#plan-points").value = s.points.map(p => p.text).join("\n");
+        $("#plan-title").disabled = article.kind === "category";
         $("#plan-questions").value = s.questions.join("\n"); $("#plan-prompt").value = s.prompt;
         $("#plan-feedback").textContent = ""; openDialog("#section-dialog");
       }
@@ -111,7 +127,17 @@
         flush(); active = button.dataset.section; renderSection();
       });
       $("#section-draft").addEventListener("input", () => {
+        if (article?.kind === "category" && !$("#category-field-include").disabled) $("#category-field-include").checked = true;
         $("#section-reviewed").checked = false; flush(); mark(); counts();
+      });
+      $("#category-field-include").addEventListener("change", () => { flush(); mark(); counts(); });
+      $("#category-field-use-current").addEventListener("click", () => {
+        if (article?.kind !== "category" || $("#category-field-use-current").disabled) return;
+        flush(); const s = section(), text = options.getRecord().world_anvil?.fields[s.id];
+        if (typeof text !== "string" || text.length > 80000) return;
+        if (s.draft && s.draft !== text && !confirm("Replace this field's draft with the current World Anvil text?")) return;
+        $("#section-draft").value = text; $("#section-reviewed").checked = false; $("#category-field-include").checked = true;
+        flush(); mark(); counts(); $("#section-draft").focus();
       });
       $("#section-decisions").addEventListener("input", () => { flush(); mark(); });
       $("#section-reviewed").addEventListener("change", () => { flush(); mark(); counts(); });
@@ -135,6 +161,7 @@
       }));
       $("#add-section").addEventListener("click", () => {
         flush();
+        if (article?.kind === "category") return;
         if (article.sections.length >= 30) { options.status("The outline already has 30 sections. Your retained drafts are preserved.", true); return; }
         const s = W.normalizeSection({ id: W.id(), title: "New section", prompt: "What do you want the reader to understand in this section? Write it in your own words." });
         article.sections.push(s); article.origin = "manual"; active = s.id; render(); mark(); editPlan();
@@ -147,7 +174,7 @@
         if (!title || points.length > 30 || questions.length > 20 || [...points, ...questions].some(t => t.length > 2000)) {
           $("#plan-feedback").textContent = "Use a title, at most 30 short points and 20 questions (2,000 characters each)."; return;
         }
-        s.title = title;
+        if (article.kind !== "category") s.title = title;
         s.points = points.map(text => s.points.find(p => p.text === text) || { text, status: "needs_checking", source: "" });
         s.questions = questions; s.prompt = $("#plan-prompt").value; s.checked = []; s.reviewed = false; article.origin = "manual";
         mark(); render(); $("#section-dialog").close();
@@ -205,7 +232,7 @@
         $("#article-export-text").value, (options.getRecord().title || "driftbound-article").replace(/[^a-z0-9_-]+/gi, "-").slice(0, 80) + ".txt", "text/plain"));
       return {
         open(entry) {
-          article = W.normalizeArticle(entry.article) || W.starter(entry.category);
+          article = entry.world_anvil?.kind === "category" ? W.normalizeCategoryArticle(entry.article) : W.normalizeArticle(entry.article) || W.starter(entry.category);
           if (!article.sections.length) article.sections = W.starter(entry.category).sections;
           active = article.sections.some(s => s.id === article.last_section_id) ? article.last_section_id : article.sections[0].id;
           render();
@@ -213,6 +240,7 @@
         collect() { flush(); return W.normalizeArticle(article); },
         changeCategory(category) {
           flush();
+          if (article?.kind === "category") return;
           if (article?.origin !== "starter" || article.sections.some(s => s.draft.trim() || s.decisions.trim() || s.checked.length)) return;
           const fresh = W.starter(category);
           fresh.purpose = article.purpose; fresh.audience = article.audience; fresh.canon_status = article.canon_status;

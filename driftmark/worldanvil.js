@@ -6,38 +6,55 @@
   const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   function normalizeSource(s) {
     if (!s || typeof s !== "object" || typeof s.id !== "string" || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s.id) ||
-      s.world_id !== WORLD || typeof s.content !== "string" || s.content.length > 2000000 ||
+      s.world_id !== WORLD ||
       typeof s.version_hash !== "string" || !/^[a-f0-9]{64}$/.test(s.version_hash)) return null;
-    return { id: s.id, world_id: WORLD, title: String(s.title || "Untitled article").slice(0, 150),
-      content: s.content, url: W.url(s.url), version_hash: s.version_hash,
+    const common = { id: s.id, world_id: WORLD, title: String(s.title || "Untitled page").slice(0, 150),
+      url: W.url(s.url), version_hash: s.version_hash,
       state: ["private", "public"].includes(s.state) ? s.state : "unknown",
-      isDraft: typeof s.isDraft === "boolean" ? s.isDraft : null, isWip: typeof s.isWip === "boolean" ? s.isWip : null,
       isEditable: s.isEditable === true, read_at: String(s.read_at || "").slice(0, 100) };
+    if (s.kind === "category") {
+      if (!s.fields || typeof s.fields !== "object" || Array.isArray(s.fields)) return null;
+      const fields = {}; let size = 0;
+      for (const key of Object.keys(W.CATEGORY_FIELDS)) {
+        if (!Object.hasOwn(s.fields, key)) continue;
+        if (typeof s.fields[key] !== "string") return null;
+        size += s.fields[key].length; fields[key] = s.fields[key];
+      }
+      if (size > 2000000 || !Object.hasOwn(fields, "description")) return null;
+      return { ...common, kind: "category", fields, metadata_confirmed: s.metadata_confirmed === true };
+    }
+    if ((s.kind && s.kind !== "article") || typeof s.content !== "string" || s.content.length > 2000000) return null;
+    return { ...common, kind: "article", content: s.content,
+      isDraft: typeof s.isDraft === "boolean" ? s.isDraft : null, isWip: typeof s.isWip === "boolean" ? s.isWip : null };
   }
+  const categoryText = fields => Object.entries(fields).map(([key, text]) => W.CATEGORY_FIELDS[key] + "\n" + (text || "[Empty field]")).join("\n\n────────────────\n\n");
+  const editable = s => s?.isEditable && (s.kind !== "category" || s.metadata_confirmed);
   window.DriftmarkWorldAnvil = {
     normalizeSource,
     init(options) {
       let connected = false, saved = false, owner = "", busy = false, rows = [], offset = 0, more = false, reader = null, review = null;
       let generation = 0, connecting = false;
+      let browseKind = "articles";
       const connectionStatus = message => { $("#wa-status").textContent = message; };
       function recordChanged() {
         const s = options.getSource();
         $("#wa-linked").hidden = !s;
         $("#wa-review").hidden = !s;
-        $("#wa-linked-title").textContent = s ? "World Anvil: " + s.title + " · " + s.state + (s.isWip ? " · WIP" : "") : "";
+        $("#wa-linked-title").textContent = s ? "World Anvil " + (s.kind === "category" ? "category" : "article") + ": " + s.title + " · " + s.state + (s.isWip ? " · WIP" : "") : "";
         $("#wa-review").disabled = !connected || busy;
         $("#wa-connect").disabled = busy || !options.getOwner();
         $("#wa-browse").disabled = !connected || busy;
+        $("#wa-browse-categories").disabled = !connected || busy;
         $("#wa-disconnect").hidden = !saved;
         $("#wa-disconnect").disabled = busy;
       }
       function setBusy(value) {
         busy = value;
-        ["#wa-connect-submit", "#wa-page-previous", "#wa-page-next", "#wa-load-page", "#wa-add-reference", "#wa-attach", "#wa-save-update"].forEach(q => $(q).disabled = value);
+        ["#wa-connect-submit", "#wa-page-previous", "#wa-page-next", "#wa-load-page", "#wa-browser-kind", "#wa-add-reference", "#wa-attach", "#wa-save-update"].forEach(q => $(q).disabled = value);
         recordChanged();
         $("#wa-page-previous").disabled = value || offset === 0;
         $("#wa-page-next").disabled = value || !more;
-        $("#wa-save-update").disabled = value || !connected || !review || !$("#wa-review-ack").checked || !review.source.isEditable || review.sent;
+        $("#wa-save-update").disabled = value || !connected || !review || !$("#wa-review-ack").checked || !editable(review.source) || review.sent;
       }
       async function call(action, body = {}) {
         const client = options.getClient();
@@ -45,15 +62,16 @@
         if (!client || !requestOwner || (!["configure", "status", "forget"].includes(action) && !connected))
           throw Error("Sign in to ORBIT and connect your World Anvil user token first.");
         let result;
+        const writing = ["update", "update_category"].includes(action);
         try { result = await client.functions.invoke("driftmark-worldanvil", { body: { action, ...body } }); }
         catch (_) {
-          const failure = Error(action === "update" ? "The connection response was lost. Read the destination again before retrying." :
+          const failure = Error(writing ? "The connection response was lost. Read the destination again before retrying." :
             "The connection response was lost. Refresh to check your saved connection.");
-          failure.mayHaveWritten = action === "update"; throw failure;
+          failure.mayHaveWritten = writing; throw failure;
         }
         if (generation !== requestGeneration || options.getOwner() !== requestOwner) {
           const failure = Error("Your connection changed while this request was running.");
-          failure.mayHaveWritten = action === "update"; throw failure;
+          failure.mayHaveWritten = writing; throw failure;
         }
         const { data, error } = result;
         if (error) {
@@ -62,7 +80,7 @@
           const failure = Error(detail?.error || "The private World Anvil connection could not complete this request. Check your ORBIT sign-in and authenticator verification.");
           failure.code = detail?.code;
           failure.hasSavedConnection = !!detail?.has_saved_connection;
-          failure.mayHaveWritten = typeof detail?.may_have_written === "boolean" ? detail.may_have_written : action === "update";
+          failure.mayHaveWritten = typeof detail?.may_have_written === "boolean" ? detail.may_have_written : writing;
           throw failure;
         }
         if (data?.error) { const failure = Error(data.error); failure.mayHaveWritten = !!data.may_have_written; throw failure; }
@@ -75,7 +93,7 @@
         $("#wa-articles").textContent = "";
         ["#wa-reader-meta", "#wa-review-meta", "#wa-page-label"].forEach(q => $(q).textContent = "");
         ["#wa-connect-dialog", "#wa-browser-dialog", "#wa-reader-dialog", "#wa-review-dialog"].forEach(q => $(q).close());
-        connectionStatus("Connect your existing World Anvil user token to browse and update articles."); recordChanged();
+        connectionStatus("Connect your existing World Anvil user token to browse articles and category pages."); recordChanged();
       }
       function show(q) { $(q).showModal(); }
       async function restore() {
@@ -95,34 +113,39 @@
         const term = $("#wa-search").value.toLowerCase().trim();
         const filtered = rows.filter(r => r.title.toLowerCase().includes(term));
         $("#wa-articles").innerHTML = filtered.length ? filtered.map(r => '<button type="button" class="item" data-wa-article="' +
-          esc(r.id) + '"><strong>' + esc(r.title) + '</strong><small>Read the current World Anvil article</small></button>').join("") :
-          '<p class="hint">No matching articles on this page.</p>';
-        $("#wa-page-label").textContent = rows.length ? "Articles " + (offset + 1) + "–" + (offset + rows.length) : "No articles on this page";
+          esc(r.id) + '"><strong>' + esc(r.title) + '</strong><small>Read the current World Anvil ' + (browseKind === "categories" ? "category page" : "article") + '</small></button>').join("") :
+          '<p class="hint">No matching ' + browseKind + ' on this page.</p>';
+        $("#wa-browser-title").textContent = "Driftbound " + (browseKind === "categories" ? "category pages" : "articles");
+        $("#wa-page-label").textContent = rows.length ? (browseKind === "categories" ? "Categories " : "Articles ") + (offset + 1) + "–" + (offset + rows.length) : "No " + browseKind + " on this page";
       }
       async function loadRows() {
         if (busy) return;
-        setBusy(true); $("#wa-browser-feedback").textContent = "Loading World Anvil articles…";
+        setBusy(true); $("#wa-browser-feedback").textContent = "Loading World Anvil " + browseKind + "…";
         try {
-          const data = await call("articles", { offset });
-          rows = Array.isArray(data.articles) ? data.articles : []; more = !!data.has_more;
-          drawRows(); $("#wa-browser-feedback").textContent = "Search this page or choose an article.";
+          const data = await call(browseKind, { offset });
+          rows = Array.isArray(data[browseKind]) ? data[browseKind] : []; more = !!data.has_more;
+          drawRows(); $("#wa-browser-feedback").textContent = "Search this page or choose a " + (browseKind === "categories" ? "category" : "article") + ".";
         } catch (error) { $("#wa-browser-feedback").textContent = error.message; }
         finally { setBusy(false); }
       }
       function fillReader(s) {
         reader = s;
         $("#wa-reader-title").textContent = s.title;
-        $("#wa-reader-meta").textContent = s.state + (s.isDraft ? " · Draft" : "") + (s.isWip ? " · WIP" : "") + " · Read " + new Date(s.read_at).toLocaleString();
-        $("#wa-reader-content").value = s.content;
-        $("#wa-attach").hidden = !options.hasEntry();
-        $("#wa-reader-feedback").textContent = "Add this as a reference, or attach it to the article you are writing.";
+        $("#wa-reader-meta").textContent = (s.kind === "category" ? "Category · " : "") + s.state + (s.isDraft ? " · Draft" : "") + (s.isWip ? " · WIP" : "") + " · Read " + new Date(s.read_at).toLocaleString();
+        $("#wa-reader-content").value = s.kind === "category" ? categoryText(s.fields) : s.content;
+        $("#wa-reader-label").textContent = s.kind === "category" ? "Current category fields" : "Current article text";
+        $("#wa-add-reference").textContent = s.kind === "category" ? "Open category writing desk" : "Add to reference atlas";
+        $("#wa-attach").hidden = !options.hasEntry() || s.kind === "category" || options.getSource()?.kind === "category";
+        $("#wa-reader-feedback").textContent = s.kind === "category" ? "Open a private writing desk for this category. Its current text stays as a reference until you choose a starting draft." :
+          "Add this as a reference, or attach it to the article you are writing.";
       }
       async function readArticle(id) {
         if (busy) return;
-        setBusy(true); $("#wa-browser-feedback").textContent = "Reading the selected article…";
+        setBusy(true); $("#wa-browser-feedback").textContent = "Reading the selected page…";
         try {
-          const data = await call("article", { article_id: id }), s = normalizeSource(data.article);
-          if (!s) throw Error("The article did not include a valid source snapshot.");
+          const category = browseKind === "categories";
+          const data = await call(category ? "category" : "article", category ? { category_id: id } : { article_id: id }), s = normalizeSource(category ? data.category : data.article);
+          if (!s) throw Error("The page did not include a valid source snapshot.");
           fillReader(s); $("#wa-browser-dialog").close(); show("#wa-reader-dialog");
         } catch (error) { $("#wa-browser-feedback").textContent = error.message; }
         finally { setBusy(false); }
@@ -154,12 +177,24 @@
         } catch (error) { connectionStatus(error.message); }
         finally { setBusy(false); }
       });
-      $("#wa-browse").addEventListener("click", () => { show("#wa-browser-dialog"); void loadRows(); });
+      function openBrowser(kind) {
+        if (busy || !connected) return;
+        browseKind = kind; offset = 0; rows = []; more = false;
+        $("#wa-browser-kind").value = kind; $("#wa-search").value = ""; drawRows();
+        show("#wa-browser-dialog"); void loadRows();
+      }
+      $("#wa-browse").addEventListener("click", () => openBrowser("articles"));
+      $("#wa-browse-categories").addEventListener("click", () => openBrowser("categories"));
+      $("#wa-browser-kind").addEventListener("change", () => {
+        if (busy) return;
+        browseKind = $("#wa-browser-kind").value === "categories" ? "categories" : "articles";
+        offset = 0; rows = []; more = false; drawRows(); void loadRows();
+      });
       $("#wa-load-page").addEventListener("click", () => void loadRows());
       $("#wa-search").addEventListener("input", drawRows);
       $("#wa-articles").addEventListener("click", e => { const b = e.target.closest("[data-wa-article]"); if (b) void readArticle(b.dataset.waArticle); });
-      $("#wa-page-previous").addEventListener("click", () => { offset = Math.max(0, offset - 50); void loadRows(); });
-      $("#wa-page-next").addEventListener("click", () => { if (more) { offset += 50; void loadRows(); } });
+      $("#wa-page-previous").addEventListener("click", () => { if (busy) return; offset = Math.max(0, offset - (browseKind === "categories" ? 100 : 50)); void loadRows(); });
+      $("#wa-page-next").addEventListener("click", () => { if (more && !busy) { offset += browseKind === "categories" ? 100 : 50; void loadRows(); } });
       $("#wa-add-reference").addEventListener("click", async () => {
         if (!reader || busy) return;
         setBusy(true);
@@ -170,42 +205,60 @@
         finally { setBusy(false); }
       });
       $("#wa-attach").addEventListener("click", () => {
-        if (!reader || busy) return;
+        if (!reader || reader.kind === "category" || options.getSource()?.kind === "category" || busy) return;
         options.attach(reader); recordChanged(); $("#wa-reader-dialog").close();
       });
       $("#wa-review").addEventListener("click", async () => {
         if (busy || options.isSaving()) return;
-        const linked = options.getSource(), content = options.getArticleText();
-        if (!linked || !content.trim()) { options.status("Write a section draft before reviewing a World Anvil update.", true); return; }
+        const linked = options.getSource(), category = linked?.kind === "category";
+        const content = category ? "" : options.getArticleText(), proposed = category ? options.getCategoryChanges() : null;
+        if (!linked || (category ? !Object.keys(proposed).length : !content.trim())) {
+          options.status(category ? "Write or select a category field to include before reviewing its update." : "Write a section draft before reviewing a World Anvil update.", true); return;
+        }
         review = null; $("#wa-review-ack").checked = false; $("#wa-save-update").disabled = true;
         $("#wa-before").value = ""; $("#wa-after").value = content; $("#wa-review-meta").textContent = "";
-        $("#wa-review-feedback").textContent = "Reading the current destination article…";
+        $("#wa-review-feedback").textContent = "Reading the current destination page…";
         show("#wa-review-dialog"); setBusy(true);
         try {
-          const data = await call("article", { article_id: linked.id }), s = normalizeSource(data.article);
-          if (!s) throw Error("The destination article could not be verified.");
-          review = { source: s, content, sent: false };
+          const data = await call(category ? "category" : "article", category ? { category_id: linked.id } : { article_id: linked.id }),
+            s = normalizeSource(category ? data.category : data.article);
+          if (!s || (s.kind === "category") !== category) throw Error("The destination page could not be verified.");
+          if (!$("#wa-review-dialog").open) return;
+          let changes = null;
+          if (category) {
+            if (Object.keys(proposed).some(key => !Object.hasOwn(s.fields, key))) throw Error("A selected field was not returned by World Anvil. Read the category again before updating it.");
+            changes = Object.fromEntries(Object.entries(proposed).filter(([key, value]) => value !== s.fields[key]));
+            if (!Object.keys(changes).length) throw Error("The selected category fields already match your draft. No update is needed.");
+          }
+          review = { source: s, content, changes, sent: false };
           $("#wa-review-title").textContent = "Review update: " + s.title;
-          $("#wa-before").value = s.content;
-          $("#wa-review-meta").textContent = "Destination: " + s.state + (s.isDraft ? " · Draft" : "") + (s.isWip ? " · WIP" : "") + " · Main article text will be replaced.";
-          $("#wa-review-feedback").textContent = !s.isEditable ? "World Anvil did not confirm permission to edit this article." :
+          $("#wa-before").value = category ? categoryText(Object.fromEntries(Object.keys(changes).map(key => [key, s.fields[key]]))) : s.content;
+          $("#wa-after").value = category ? categoryText(changes) : content;
+          $("#wa-review-ack-label").textContent = category ? "I reviewed the current fields and my changes, including any empty fields selected to clear." : "I reviewed the current article and my replacement text.";
+          $("#wa-review-meta").textContent = "Destination: " + s.state + (s.isDraft ? " · Draft" : "") + (s.isWip ? " · WIP" : "") +
+            (category ? " · " + Object.keys(changes).length + " category field(s) will change. Other fields are preserved." : " · Main article text will be replaced.");
+          $("#wa-review-feedback").textContent = !editable(s) ? "World Anvil did not confirm edit permission and privacy settings for this page." :
             s.version_hash !== linked.version_hash ? "World Anvil has changed since your last read. Review its current text carefully before saving." :
+            category ? "Review every included field. Empty proposed fields clear existing text. Privacy, hierarchy, covers, and layout are preserved." :
             "Review both versions. Privacy, WIP status, title, and category are preserved.";
         } catch (error) { $("#wa-review-feedback").textContent = error.message; }
         finally { setBusy(false); }
       });
       $("#wa-review-ack").addEventListener("change", () => setBusy(busy));
       $("#wa-save-update").addEventListener("click", async () => {
-        if (!review || review.sent || !review.source.isEditable || !$("#wa-review-ack").checked || busy) return;
+        if (!review || review.sent || !editable(review.source) || !$("#wa-review-ack").checked || busy) return;
         // Every attempt consumes this review. A new review must read the current
         // destination, even if the write's response is lost after it succeeds.
         const pending = review; pending.sent = true;
         setBusy(true); $("#wa-review-feedback").textContent = "Saving reviewed text and checking World Anvil…";
         try {
-          const data = await call("update", { article_id: pending.source.id, expected_hash: pending.source.version_hash,
-            content: pending.content, reviewed: true });
-          const source = normalizeSource(data?.article);
-          if (!data?.verified || !source) { const failure = Error("The update could not be verified. Check World Anvil before sending it again."); failure.mayHaveWritten = true; throw failure; }
+          const category = pending.source.kind === "category";
+          const data = await call(category ? "update_category" : "update", { expected_hash: pending.source.version_hash, reviewed: true,
+            ...(category ? { category_id: pending.source.id, changes: pending.changes } : { article_id: pending.source.id, content: pending.content }) });
+          const source = normalizeSource(category ? data?.category : data?.article);
+          if (!data?.verified || !source || source.id !== pending.source.id || source.kind !== pending.source.kind) {
+            const failure = Error("The update could not be verified. Check World Anvil before sending it again."); failure.mayHaveWritten = true; throw failure;
+          }
           const cloudSaved = await options.afterWrite(source);
           $("#wa-review-feedback").textContent = cloudSaved ? "Saved to World Anvil and verified. Your private workspace is saved too." :
             "Saved to World Anvil and verified. Save to cloud to keep the updated source link with your draft.";

@@ -10,7 +10,7 @@ The AI plans; the author writes. By default, creative assistance supplies short 
 
 The interface preserves the distinction between an author decision that remains open and uncertainty that belongs within the fictional world. Canon status is separate from writing status.
 
-## Writing workflow (v0.3)
+## Writing workflow (v0.4)
 
 1. Open or create an entry. Add the article's purpose, audience, and relevant atlas references.
 2. Choose **Prepare AI planning brief**, then copy the instructions into the existing Driftbound GPT or creative chat.
@@ -35,7 +35,7 @@ The built-in starter outline is clearly labeled. It is generic planning guidance
 
 All earlier entry fields and original working text are preserved. Original text remains under **Existing text and working notes**; the author can copy prose into the appropriate draft section.
 
-Workspace/backup version 3 adds World Anvil source snapshots. Versions 1 and 2 remain readable. JSON backups include plans, original text, section drafts, decisions, source snapshots, and any unsaved editor changes. Credentials are excluded by explicit field serialization. Backup restoration remains an explicit replacement action with confirmation and rejects unsupported versions and duplicate entry IDs.
+Workspace/backup version 4 adds category-page field drafts and explicit source kinds. Versions 1, 2, and 3 remain readable. Category drafts and per-field update choices survive cloud saves and JSON exports. Older clients reject version 4 rather than silently stripping its fields. JSON backups include plans, original text, section drafts, decisions, source snapshots, and any unsaved editor changes. Credentials are excluded by explicit field serialization. Backup restoration remains an explicit replacement action with confirmation and rejects unsupported versions and duplicate entry IDs.
 
 ## Private storage and login
 
@@ -63,21 +63,35 @@ The supplied Driftbound GPT Action schema identifies https://worldanvil-proxy.on
 - The backend checks the latest source fingerprint before PATCH, sends content only, and reads the article back to verify the text and unchanged title, category, parent, privacy, draft, and WIP metadata. Missing privacy or edit permission blocks the update. Read counters are excluded from the fingerprint.
 - Changed sources return a conflict. Every write attempt consumes its review, including a lost response. Read the current destination in a new review before retrying an uncertain update.
 - Successful saves update the private source snapshot and attempt to save the writing workspace. A cloud failure keeps the editor and asks the author to save.
-- Version 3 stores source snapshots and remains compatible with backups 1 and 2. Credentials are excluded by explicit field serialization.
+- Version 4 stores article and category source snapshots and remains compatible with backups 1, 2, and 3. Credentials are excluded by explicit field serialization.
 
-This version reads and updates existing articles. Create a destination article in World Anvil before attaching a new draft. Specialized template fields, categories, and publication settings are not edited. There is no delete operation.
+This version reads and updates existing articles and category-page text. Create a destination article or category in World Anvil first. Specialized article template fields, category hierarchy, page layout, and publication settings are not edited. There is no delete operation.
 
 World Anvil exposes no atomic conditional update in the supplied schema. Rechecking before PATCH narrows the chance of an intervening edit; it cannot eliminate the gap between the read and write.
+
+## Category-page writing (v0.4)
+
+1. Choose **Browse category pages** using the existing saved connection. Categories are paginated in groups of 100; the browser can switch between categories and articles.
+2. Read the live category, then choose **Open category writing desk**. If a private desk already exists for that category, its plan and drafts are retained and its source is refreshed. Save any current unsaved entry before switching.
+3. The desk has seven fixed fields: **Main description**, **Preview excerpt**, and **Custom content 1–5**. Each has its own planning points, questions, notes, and empty author draft. Custom-block placement follows the current World Anvil layout.
+4. Use **Prepare AI planning brief** and **Import AI brief** as usual. Category plans must keep the fixed IDs `description`, `excerpt`, and `custom1`–`custom5`. AI imports cannot insert drafts, select fields for update, or reroute prose to another field.
+5. Write a field yourself, or explicitly choose **Use current text as my starting draft**. Typing selects that field for update. Uncheck **Include this field in the World Anvil update** to keep a draft private. An included empty draft explicitly clears that field; untouched empty editors are excluded.
+6. **Save to cloud** to preserve private drafts without changing World Anvil. **Review World Anvil update** reads the destination again, shows only selected fields that differ, and requires acknowledgement of any clears.
+7. Saving uses the stored token entirely on the server, checks the source fingerprint, PATCHes only the selected changed text fields, then reads back every returned text field and protected metadata. A mismatch is reported as uncertain; a fresh review is required before retrying.
+
+The official [World Anvil Boromir schema](https://www.worldanvil.com/api/external/boromir/swagger-documentation) includes these fields in `CategoryUpdate` through `CategoryExtended` and `Category`. Category text uses `description`, not the article `content` field. The GPT Action schema's narrower PATCH definition does not limit DRIFTMARK's own broker, but the existing Render service must forward these fields. Missing fields remain readable as private drafts and cannot be sent. Missing edit permission, privacy state, or subscriber-group metadata blocks a write. Category draft/WIP values may be null in the official schema; they are protected without imposing article-specific boolean requirements.
+
+Privacy, subscriber groups, parent, covers, redirects, display flags, ordering, CSS classes, and layout metadata are never included in the update body. The backend verifies that they and untouched text fields remain unchanged on read-back. No new database migration or credential-store change is required.
 
 ## Validation
 
 Run: `node --test driftmark/tests/*.test.cjs driftmark/tests/*.test.mjs`
 
-The 44 tests cover authored-text preservation, planning imports, exports, source serialization, verified JWT/MFA handling, origin restrictions, conflicts, content-only PATCH and read-back, pagination, restoring saved connections, sanitized storage errors, forgetting credentials, sign-out during requests, and uncertain writes. The GitHub workflow also checks all frontend and backend source syntax.
+The 72 tests cover authored-text preservation, planning imports, exports, source serialization, verified JWT/MFA handling, origin restrictions, conflicts, content-only PATCH and read-back, pagination, restoring saved connections, sanitized storage errors, forgetting credentials, sign-out during requests, and uncertain writes. Category tests also cover all seven text fields, partial PATCH, reviewed empty-field clears, unchanged fields and metadata, fixed planning IDs, selected-field drafts, and reload preservation. The GitHub workflow also checks all frontend and backend source syntax.
 
 Storage migration `20261014192310_persist_driftmark_worldanvil_connection` was applied from `supabase/functions/driftmark-worldanvil/connection.sql`. A rolled-back database test verified credential round-trip, rotation, encrypted storage, wrong-owner rejection, input validation, and removal of both the mapping and Vault secret. Catalog checks confirmed RLS, service-only RPC permissions, browser-role denial of the private schema and decrypted Vault view, and SECURITY INVOKER public wrappers. The existing writing table remains in use.
 
 The private mapping intentionally has no browser RLS policies, which denies direct row access. The [Supabase linter's informational no-policy notice](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy) reflects this design; credential operations use only the protected service functions.
 
-Authenticated end-to-end reads and saves need the owner's existing World Anvil token; those are not claimed as verified without it. Visual browser QA was unavailable in this environment. AI planning remains a copy-and-paste handoff to the existing GPT and cannot insert article prose.
+The category release was tested with a simulated upstream service and verified source contracts; authenticated end-to-end category reads and saves require the owner's saved connection. At release preparation, the credential mapping was absent. Live category forwarding and writes are not claimed as verified without that connection. Visual browser QA was unavailable in this environment. AI planning remains a copy-and-paste handoff to the existing GPT and cannot insert article prose.
 

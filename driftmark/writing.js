@@ -5,6 +5,8 @@
   const LABELS = { established: "Established in supplied sources", proposed: "Proposal", undecided: "Author decision needed",
     in_world_uncertainty: "Unknown within the world", needs_checking: "Needs checking" };
   const LIMIT = 30;
+  const CATEGORY_FIELDS = { description: "Main description", excerpt: "Preview excerpt", custom1: "Custom content 1",
+    custom2: "Custom content 2", custom3: "Custom content 3", custom4: "Custom content 4", custom5: "Custom content 5" };
   const str = (value, max) => typeof value === "string" ? value.slice(0, max) : "";
   const id = () => "section-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 9);
   function url(value) {
@@ -23,7 +25,7 @@
       references: Array.isArray(s.references) ? s.references.slice(0, 20).map(r => ({
         label: str(r?.label, 200), url: url(r?.url), excerpt: str(r?.excerpt, 4000)
       })).filter(r => r.label) : [],
-      draft, decisions: str(s.decisions, 6000),
+      draft, include: s.include === true, decisions: str(s.decisions, 6000),
       checked: Array.isArray(s.checked) ? [...new Set(s.checked)].filter(n => Number.isInteger(n) && n >= 0 && n < points.length) : [],
       reviewed: !!s.reviewed && !!draft.trim() };
   }
@@ -34,11 +36,27 @@
       if (used.has(s.id)) s.id = id();
       used.add(s.id); return s;
     });
-    return { version: 1, purpose: str(value.purpose, 3000), audience: str(value.audience, 500),
+    return { version: 1, kind: value.kind === "category" ? "category" : "article", purpose: str(value.purpose, 3000), audience: str(value.audience, 500),
       canon_status: ["To develop", "Working canon", "Approved canon"].includes(value.canon_status) ? value.canon_status : "To develop",
       origin: ["starter", "ai_brief", "manual"].includes(value.origin) ? value.origin : "manual",
       reference_ids: Array.isArray(value.reference_ids) ? [...new Set(value.reference_ids.map(x => str(x, 100)).filter(Boolean))].slice(0, 30) : [],
       last_section_id: str(value.last_section_id, 100), sections };
+  }
+  function normalizeCategoryArticle(value) {
+    const previous = normalizeArticle(value) || normalizeArticle({ sections: [] });
+    const sections = Object.entries(CATEGORY_FIELDS).map(([key, title]) => {
+      const existing = previous.sections.find(s => s.id === key);
+      return normalizeSection({ prompt: key === "description" ? "Introduce what this category contains and guide the reader in your own words." :
+        key === "excerpt" ? "Write a short preview that helps the reader decide where to explore." :
+        "Decide what this content block should help the reader understand, then write it yourself. Its position follows your World Anvil layout.",
+        ...existing, id: key, title });
+    });
+    return normalizeArticle({ ...previous, kind: "category", origin: value ? previous.origin : "starter", sections });
+  }
+  function categoryChanges(article) {
+    const a = normalizeCategoryArticle(article), changes = {};
+    for (const s of a.sections) if (s.include) changes[s.id] = s.draft;
+    return changes;
   }
   function starter(category) {
     const topics = { Locations: ["Orientation", "Life in this place", "Connections and unanswered questions"],
@@ -111,6 +129,18 @@
   }
   function applyBrief(current, brief) {
     const previous = normalizeArticle(current) || starter("Drafts"), matched = new Set();
+    if (previous.kind === "category") {
+      if (brief.sections.some(s => !Object.hasOwn(CATEGORY_FIELDS, s.id)))
+        throw Error("Category plans must keep these field IDs: " + Object.keys(CATEGORY_FIELDS).join(", ") + ". Your writing has not changed.");
+      const a = normalizeCategoryArticle(previous);
+      a.sections = a.sections.map(existing => {
+        const plan = brief.sections.find(s => s.id === existing.id);
+        return plan ? normalizeSection({ ...plan, title: existing.title, draft: existing.draft, include: existing.include,
+          decisions: existing.decisions, checked: [], reviewed: false }) : existing;
+      });
+      return { article: normalizeCategoryArticle({ ...a, purpose: brief.purpose, audience: brief.audience,
+        origin: "ai_brief", last_section_id: brief.sections[0].id }), retained: 0 };
+    }
     const sections = brief.sections.map(plan => {
       const existing = previous.sections.find(s => !matched.has(s.id) && s.id === plan.id) ||
         previous.sections.find(s => !matched.has(s.id) && s.title.trim().toLowerCase() === plan.title.trim().toLowerCase());
@@ -125,6 +155,7 @@
   }
   function wordCount(text) { return String(text || "").trim().match(/\S+/g)?.length || 0; }
   function articleContent(article) {
+    if (article?.kind === "category") return "";
     const sections = normalizeArticle(article)?.sections.filter(s => s.draft.trim()) || [];
     return sections.map(s => "[h2]" + s.title + "[/h2]\n" + s.draft.trim()).join("\n\n");
   }
@@ -139,21 +170,24 @@
     const a = normalizeArticle(article) || starter(entry.category);
     const context = { article_title: entry.title || "Untitled article", category: entry.category, purpose: a.purpose,
       audience: a.audience, canon_status: a.canon_status, author_notes: entry.body || "",
-      world_anvil_source: entry.world_anvil ? { title: entry.world_anvil.title, url: entry.world_anvil.url,
+      world_anvil_source: entry.world_anvil ? { kind: entry.world_anvil.kind || "article", title: entry.world_anvil.title, url: entry.world_anvil.url,
         read_at: entry.world_anvil.read_at, state: entry.world_anvil.state, isWip: entry.world_anvil.isWip,
-        content: entry.world_anvil.content } : null,
+        content: entry.world_anvil.content, fields: entry.world_anvil.kind === "category" ? entry.world_anvil.fields : undefined } : null,
       current_sections: a.sections.map(s => ({ id: s.id, title: s.title, current_plan: s.points, questions: s.questions,
         author_decisions: s.decisions, author_draft_for_reference_only: s.draft })),
       supplied_references: references.map(r => ({ title: r.title, status: r.status, url: r.url, text: r.body,
         world_anvil_source: r.world_anvil ? { title: r.world_anvil.title, url: r.world_anvil.url,
-          read_at: r.world_anvil.read_at, content: r.world_anvil.content } : null,
+          read_at: r.world_anvil.read_at, content: r.world_anvil.content,
+          fields: r.world_anvil.kind === "category" ? r.world_anvil.fields : undefined } : null,
         article_draft_for_reference: r.article ? draftText(r.title, r.article, "text") : "" })) };
     const example = { version: 1, article_title: entry.title || "Untitled article", purpose: "", audience: "",
       sections: [{ id: a.sections[0]?.id || "opening", title: "Section title",
         points: [{ text: "A short note about what the author needs to cover.", status: "needs_checking", source: "" }],
         questions: ["A focused question that helps the author decide what to write."],
         prompt: "Ask the author to write this section in their own words.", references: [] }] };
-    return ["Prepare a DRIFTMARK article planning brief for Driftbound. The author writes the article.",
+    return [a.kind === "category" ? "Prepare a DRIFTMARK category-page planning brief for Driftbound. The author writes every field. Keep the field IDs exactly: " +
+        Object.keys(CATEGORY_FIELDS).join(", ") + ". Include plans for whichever fields need work. Do not add or rename field IDs. Custom block placement is controlled by the existing World Anvil layout." :
+        "Prepare a DRIFTMARK article planning brief for Driftbound. The author writes the article.",
       "Return ONLY JSON in the structure below. Do not write paragraphs, sample sentences, opening quotations, excerpts you invented, draft prose, or a finished article.",
       "Give short key points, relevant supplied references, unresolved questions, and a focused writing prompt for each section. Make the plan specific to this subject.",
       "Use current World Anvil sources if your configured Action is available. Otherwise use only supplied context and mark unverified points needs_checking. Do not claim to have retrieved anything you have not read.",
@@ -162,6 +196,7 @@
       "Keep existing section IDs for the same section. Use no more than 30 sections, 30 points, 20 questions, or 20 references per section. No draft, body, completed, or reviewed fields.",
       "JSON STRUCTURE:", JSON.stringify(example, null, 2), "REFERENCE CONTEXT:", JSON.stringify(context, null, 2)].join("\n\n");
   }
-  const api = { STATUSES, LABELS, id, url, normalizeSection, normalizeArticle, starter, parseBrief, applyBrief, wordCount, articleContent, draftText, planningPrompt };
+  const api = { STATUSES, LABELS, CATEGORY_FIELDS, id, url, normalizeSection, normalizeArticle, normalizeCategoryArticle,
+    categoryChanges, starter, parseBrief, applyBrief, wordCount, articleContent, draftText, planningPrompt };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.DriftmarkWriting = api;
 })(typeof window !== "undefined" ? window : globalThis);
