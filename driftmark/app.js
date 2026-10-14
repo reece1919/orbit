@@ -1,4 +1,4 @@
-/* DRIFTMARK 0.2 — owner-private atlas backed by existing ORBIT Supabase identity. */
+/* DRIFTMARK 0.3 — owner-private writing and reviewed World Anvil updates. */
 (()=>{"use strict";
 const URL="https://zdurujqwhxqrwbhwzzxg.supabase.co";
 const KEY="sb_publishable_Xa0DTx_PbvtynbiQN6_xNQ_l1D55vzK"; // publishable, never a service-role key
@@ -11,21 +11,52 @@ const escapeHtml=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;"
 const safeUrl=v=>{try{const u=new window.URL(String(v||""));return u.protocol==="https:"?u.href:""}catch(_){return ""}};
 const form=$("#entry-form"), search=$("#search"),filter=$("#filter");
 const field=name=>form.querySelector('[name="'+name+'"]');
-let client=null,uid="",revision=0,entries=[],selected="",dirty=false,connected=false,saving=false,pendingId="";
+let client=null,uid="",revision=0,entries=[],selected="",dirty=false,connected=false,saving=false,pendingId="",linkedSource=null;
 const setStatus=(msg,issue=false)=>{const el=$("#status");el.textContent=msg;el.style.background=issue?"#573a3d":"#2b3b46"};
 function download(text,name,type){
  const blob=new Blob([text],{type});const objectURL=window.URL.createObjectURL(blob),a=document.createElement("a");
  a.href=objectURL;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>window.URL.revokeObjectURL(objectURL),500);
 }
 const desk=window.DriftmarkWorkbench.init({getEntries:()=>entries,getSelected:()=>selected,
- getRecord:()=>({title:field("title").value.trim(),category:field("category").value,body:field("body").value}),
+ getRecord:()=>({title:field("title").value.trim(),category:field("category").value,body:field("body").value,world_anvil:linkedSource}),
  markDirty:()=>{dirty=true;$("#editor-state").textContent="Unsaved changes"},status:setStatus,download});
+const wa=window.DriftmarkWorldAnvil.init({getClient:()=>client,getOwner:()=>uid,
+ getSource:()=>linkedSource,hasEntry:()=>!form.hidden,isSaving:()=>saving,status:setStatus,
+ getArticleText:()=>W.articleContent(desk.collect()),
+ attach:source=>{
+  if(saving||form.hidden)return;
+  linkedSource=window.DriftmarkWorldAnvil.normalizeSource(source);
+  if(!field("title").value.trim())field("title").value=source.title;
+  if(!field("url").value.trim()&&source.url)field("url").value=source.url;
+  dirty=true;$("#editor-state").textContent="Unsaved changes";
+ },
+ addReference:async source=>{
+  if(saving||dirty)return false;
+  const existing=entries.find(e=>e.world_anvil?.id===source.id),now=new Date().toISOString();
+  const rec=normalize(existing?{...existing,world_anvil:source,url:existing.url||source.url,updated_at:now}:
+   {id:"mark-"+Date.now()+"-"+Math.random().toString(36).slice(2,7),title:source.title,category:"Lore",
+    status:source.isDraft?"Drafting":"Researching",body:"",url:source.url,article:W.starter("Lore"),
+    world_anvil:source,created_at:now,updated_at:now});
+  const next=existing?entries.map(e=>e.id===rec.id?rec:e):[...entries,rec];
+  if(!await saveCloud(next))return false;
+  openEntry(rec.id);return true;
+ },
+ afterWrite:async source=>{
+  if(!linkedSource||linkedSource.id!==source.id)return false;
+  linkedSource=window.DriftmarkWorldAnvil.normalizeSource(source);
+  dirty=true;$("#editor-state").textContent="Unsaved changes";
+  if(saving||!form.reportValidity())return false;
+  const rec=editorRecord(),old=entries.find(e=>e.id===selected);
+  const next=old?entries.map(e=>e.id===old.id?rec:e):[...entries,rec];
+  if(!await saveCloud(next))return false;
+  openEntry(rec.id);return true;
+ }});
 function editorRecord(forBackup=false){
  const old=entries.find(e=>e.id===selected),now=new Date().toISOString();
  return normalize({id:old?.id||pendingId||("mark-"+Date.now()+"-"+Math.random().toString(36).slice(2,7)),
  title:field("title").value.trim()||(forBackup?"Untitled article":""),category:field("category").value,
  status:field("status").value,tags:field("tags").value,url:field("url").value,body:field("body").value,
- article:desk.collect(),created_at:old?.created_at||now,updated_at:now});
+ article:desk.collect(),world_anvil:linkedSource,created_at:old?.created_at||now,updated_at:now});
 }
 function snapshot(){
  if(!dirty||form.hidden)return entries;
@@ -39,30 +70,31 @@ function normalize(e){
  return {id:String(e.id||"").slice(0,100)||("mark-"+Date.now()+"-"+Math.random().toString(36).slice(2,8)),
  title,category:CATS.includes(e.category)?e.category:"Ideas",status:STATES.includes(e.status)?e.status:"Seed",
  tags:String(e.tags||"").slice(0,300),url:safeUrl(e.url),body:String(e.body||"").slice(0,80000),article:W.normalizeArticle(e.article),
+ world_anvil:window.DriftmarkWorldAnvil.normalizeSource(e.world_anvil),
  created_at:validDate(e.created_at),updated_at:validDate(e.updated_at)};
 }
-function resetEditor(){desk.reset();selected="";pendingId="";dirty=false;form.reset();form.hidden=true;$("#editor-empty").hidden=false;$("#editor-head").textContent="Select an entry";$("#editor-state").textContent="Ready to write";renderList()}
+function resetEditor(){desk.reset();selected="";pendingId="";linkedSource=null;dirty=false;form.reset();form.hidden=true;$("#editor-empty").hidden=false;$("#editor-head").textContent="Select an entry";$("#editor-state").textContent="Ready to write";renderList();wa.recordChanged()}
 function openEntry(id){
  const e=entries.find(x=>x.id===id);
  if(!e)return;
  if(dirty&&!confirm("Discard unsaved edits?"))return;
- selected=e.id;dirty=false;form.hidden=false;$("#editor-empty").hidden=true;
+ selected=e.id;linkedSource=e.world_anvil;dirty=false;form.hidden=false;$("#editor-empty").hidden=true;
  $("#editor-head").textContent=e.title;$("#editor-state").textContent="Cloud-saved version";
  for(const name of ["title","category","status","tags","url","body"])field(name).value=e[name]||"";
- desk.open(e);$("#delete").hidden=false;renderList();
+ desk.open(e);$("#delete").hidden=false;renderList();wa.recordChanged();
  document.querySelector(".article-details").open=false;
 }
 function newEntry(){
  if(dirty&&!confirm("Discard unsaved edits?"))return;
- selected="__new__";pendingId="mark-"+Date.now()+"-"+Math.random().toString(36).slice(2,7);dirty=false;form.reset();form.hidden=false;$("#editor-empty").hidden=true;
+ selected="__new__";pendingId="mark-"+Date.now()+"-"+Math.random().toString(36).slice(2,7);linkedSource=null;dirty=false;form.reset();form.hidden=false;$("#editor-empty").hidden=true;
  $("#editor-head").textContent="New atlas entry";$("#editor-state").textContent="Not saved yet";
- desk.open({category:field("category").value});$("#delete").hidden=true;field("title").focus();renderList();
+ desk.open({category:field("category").value});$("#delete").hidden=true;field("title").focus();renderList();wa.recordChanged();
  document.querySelector(".article-details").open=true;
 }
 function renderList(){
  const term=search.value.trim().toLowerCase(),category=filter.value;
  const filtered=entries.filter(e=>(category==="all"||e.category===category)&&
- [e.title,e.tags,e.category,e.status,e.body,e.article?.purpose,...(e.article?.sections||[]).map(s=>[s.title,s.draft,s.prompt,...s.points.map(p=>p.text)].join(" "))].some(v=>String(v||"").toLowerCase().includes(term)))
+ [e.title,e.tags,e.category,e.status,e.body,e.world_anvil?.content,e.article?.purpose,...(e.article?.sections||[]).map(s=>[s.title,s.draft,s.prompt,...s.points.map(p=>p.text)].join(" "))].some(v=>String(v||"").toLowerCase().includes(term)))
  .sort((a,b)=>String(b.updated_at).localeCompare(String(a.updated_at)));
  $("#total").textContent=String(entries.length);
  $("#results").textContent=String(filtered.length)+" "+(filtered.length===1?"entry":"entries");
@@ -75,7 +107,7 @@ function renderList(){
 async function saveCloud(next){
  if(saving)return false;
  if(!connected||!client||!uid){setStatus("Sign in through ORBIT and verify MFA before saving.",true);return false}
- const payload={version:2,world:"Eilmark",entries:next};
+ const payload={version:3,world:"Eilmark",entries:next},savingOwner=uid;
  saving=true;
  const controls=[...document.querySelectorAll("#entry-form input,#entry-form select,#entry-form textarea,#entry-form button,#new,#sync,#export,#import")].map(el=>({el,disabled:el.disabled}));
  controls.forEach(({el})=>el.disabled=true);$("#save").textContent="Saving…";
@@ -84,26 +116,27 @@ async function saveCloud(next){
    .eq("owner_id",uid).eq("revision",revision).select("revision,updated_at").maybeSingle();
   if(error)throw error;
   if(!data){setStatus("A newer version exists in the cloud. Export your notes before refreshing; no data was overwritten.",true);return false}
+  if(uid!==savingOwner||!connected)return false;
   revision=Number(data.revision);entries=next;dirty=false;connected=true;renderList();
   $("#last-sync").textContent="Saved "+new Date(data.updated_at).toLocaleString();
   setStatus("Saved securely to your private DRIFTMARK cloud workspace.");
   return true;
  }catch(e){setStatus("Could not save changes: "+(e.message||"Connection problem")+". Your draft remains in the editor.",true);return false}
- finally{saving=false;controls.forEach(({el,disabled})=>el.disabled=disabled);$("#save").textContent="Save to cloud"}
+ finally{saving=false;controls.forEach(({el,disabled})=>el.disabled=disabled);$("#save").textContent="Save to cloud";wa.recordChanged()}
 }
 async function loadCloud(){
  if(!client||!uid)return;
  let {data,error}=await client.from(TABLE).select("revision,payload,updated_at").eq("owner_id",uid).maybeSingle();
  if(error)throw error;
  if(!data){
-  const inserted=await client.from(TABLE).insert({owner_id:uid,payload:{version:2,world:"Eilmark",entries:[]}})
+  const inserted=await client.from(TABLE).insert({owner_id:uid,payload:{version:3,world:"Eilmark",entries:[]}})
    .select("revision,payload,updated_at").single();
   if(inserted.error)throw inserted.error;
   data=inserted.data;
  }
- if(!data||!Array.isArray(data.payload?.entries)||![1,2].includes(data.payload.version))throw Error("Unexpected cloud workspace format; no data changed.");
+ if(!data||!Array.isArray(data.payload?.entries)||![1,2,3].includes(data.payload.version))throw Error("Unexpected cloud workspace format; no data changed.");
  revision=Number(data.revision);entries=data.payload.entries.map(normalize).filter(Boolean);
- connected=true;$("#workspace").hidden=false;resetEditor();renderList();
+ connected=true;$("#workspace").hidden=false;wa.accountChanged(uid);resetEditor();renderList();
  $("#last-sync").textContent="Synced "+new Date(data.updated_at).toLocaleString();
  setStatus("Connected to your shared ORBIT account · private cloud sync active");
 }
@@ -111,14 +144,22 @@ async function connect(){
  $("#sync").disabled=true;setStatus("Checking your shared ORBIT identity…");
  try{
   if(!window.supabase?.createClient)throw Error("Supabase library unavailable. Check your connection.");
-  if(!client)client=window.supabase.createClient(URL,KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false,flowType:"pkce"}});
+  if(!client){
+   client=window.supabase.createClient(URL,KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false,flowType:"pkce"}});
+   client.auth.onAuthStateChange((event,session)=>{
+    if(event==="SIGNED_OUT"||(uid&&session?.user?.id!==uid)){
+     uid="";connected=false;wa.accountChanged("");$("#workspace").hidden=true;
+     setStatus("Your ORBIT session ended. Sign in and verify your authenticator before reconnecting.",true);
+    }
+   });
+  }
   const {data:auth,error:authError}=await client.auth.getUser();
   if(authError&&!/session missing/i.test(authError.message||""))throw authError;
-  if(!auth?.user){uid="";connected=false;$("#workspace").hidden=true;setStatus("Sign in to ORBIT first, then return and choose Refresh. <No records exposed>",true);return}
-  uid=auth.user.id;
+  if(!auth?.user){uid="";wa.accountChanged("");connected=false;$("#workspace").hidden=true;setStatus("Sign in to ORBIT first, then return and choose Refresh. <No records exposed>",true);return}
+  uid=auth.user.id;wa.accountChanged(uid);
   const {data:level,error:levelError}=await client.auth.mfa.getAuthenticatorAssuranceLevel();
   if(levelError)throw levelError;
-  if(level?.currentLevel!=="aal2"){connected=false;$("#workspace").hidden=true;setStatus("Open ORBIT, complete authenticator verification, then return to DRIFTMARK and choose Refresh.",true);return}
+  if(level?.currentLevel!=="aal2"){uid="";wa.accountChanged("");connected=false;$("#workspace").hidden=true;setStatus("Open ORBIT, complete authenticator verification, then return to DRIFTMARK and choose Refresh.",true);return}
   if(dirty&&!confirm("Discard unsaved changes and load the cloud copy?"))return;
   await loadCloud();
  }catch(e){connected=false;setStatus("Could not open private atlas: "+(e.message||"Unknown error")+". No data was modified.",true)}
@@ -147,7 +188,7 @@ $("#delete").addEventListener("click",async()=>{
 search.addEventListener("input",renderList);filter.addEventListener("change",renderList);
 $("#sync").addEventListener("click",()=>void connect());
 $("#export").addEventListener("click",()=>{
- download(JSON.stringify({app:"DRIFTMARK",version:2,world:"Eilmark",exported_at:new Date().toISOString(),includes_unsaved_editor:dirty,entries:snapshot()},null,2),
+ download(JSON.stringify({app:"DRIFTMARK",version:3,world:"Eilmark",exported_at:new Date().toISOString(),includes_unsaved_editor:dirty,entries:snapshot()},null,2),
  "driftmark-atlas-"+new Date().toISOString().slice(0,10)+".json","application/json");
 });
 $("#import").addEventListener("change",async e=>{
@@ -156,7 +197,7 @@ $("#import").addEventListener("change",async e=>{
   if(file.size>12000000)throw Error("Backup is too large (maximum 12 MB).");
   const raw=JSON.parse(await file.text());
   if(raw.app!=="DRIFTMARK"||!Array.isArray(raw.entries)||raw.entries.length>1000)throw Error("Not a valid DRIFTMARK backup (maximum 1,000 entries).");
-  if(![1,2].includes(raw.version))throw Error("Unsupported backup version. No records changed.");
+  if(![1,2,3].includes(raw.version))throw Error("Unsupported backup version. No records changed.");
   const next=raw.entries.map(normalize).filter(Boolean);
   if(next.length!==raw.entries.length)throw Error("Backup contains invalid records.");
   if(new Set(next.map(entry=>entry.id)).size!==next.length)throw Error("Backup contains duplicate entry IDs.");

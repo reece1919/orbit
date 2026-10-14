@@ -10,14 +10,14 @@ The AI plans; the author writes. By default, creative assistance supplies short 
 
 The interface preserves the distinction between an author decision that remains open and uncertainty that belongs within the fictional world. Canon status is separate from writing status.
 
-## Writing workflow (v0.2)
+## Writing workflow (v0.3)
 
 1. Open or create an entry. Add the article's purpose, audience, and relevant atlas references.
 2. Choose **Prepare AI planning brief**, then copy the instructions into the existing Driftbound GPT or creative chat.
 3. Bring back the JSON response through **Import AI brief**. Preview its points, questions, and prompts before applying it.
 4. Work through the sections. The plan is beside an initially empty draft editor. Write in your own words, record decisions, and review each drafted section.
 5. **Save to cloud** to keep the plan, decisions, and prose together across devices.
-6. **Export your article** as plain text or World Anvil BBCode, review it, then transfer it manually.
+6. For an attached World Anvil article, choose **Review World Anvil update**, compare the current destination with your writing, acknowledge review, and save. **Export your article** also provides plain text or World Anvil BBCode for manual transfer.
 
 The built-in starter outline is clearly labeled. It is generic planning guidance, not an AI response or established lore.
 
@@ -35,7 +35,7 @@ The built-in starter outline is clearly labeled. It is generic planning guidance
 
 All earlier entry fields and original working text are preserved. Original text remains under **Existing text and working notes**; the author can copy prose into the appropriate draft section.
 
-Workspace/backup version 2 adds an article object; version 1 remains readable. JSON backups include plans, original text, section drafts, decisions, and any unsaved editor changes. Backup restoration remains an explicit replacement action with confirmation and rejects unsupported versions and duplicate entry IDs.
+Workspace/backup version 3 adds World Anvil source snapshots. Versions 1 and 2 remain readable. JSON backups include plans, original text, section drafts, decisions, source snapshots, and any unsaved editor changes. Credentials are excluded by explicit field serialization. Backup restoration remains an explicit replacement action with confirmation and rejects unsupported versions and duplicate entry IDs.
 
 ## Private storage and login
 
@@ -45,17 +45,33 @@ Workspace/backup version 2 adds an article object; version 1 remains readable. J
 - Private entries and drafts are never committed to the public repository.
 - An unsuccessful save or revision conflict leaves the editor intact. Save before leaving; an exported backup can preserve pending changes.
 
-## Integration boundary
+## World Anvil connection (v0.3)
 
-The planning brief currently uses an explicit copy-and-paste handoff. DRIFTMARK does not automatically invoke the custom GPT, load live World Anvil articles, or publish to World Anvil. Reuse of the existing GPT Action remains pending inspection of its current configuration.
+The supplied Driftbound GPT Action schema identifies https://worldanvil-proxy.onrender.com as its service. A live unauthenticated read returned HTTP 401 requiring x-auth-token. DRIFTMARK reuses this service through the private driftmark-worldanvil Edge Function.
 
-A future AI connection must write into planning fields only and keep the authorship rule above. Any World Anvil writes must be reviewed and preserve the destination's privacy and draft status.
+- Open Connect World Anvil and enter the existing World Anvil user token used by the GPT.
+- The token stays in memory for this tab. It is never stored in browser storage, workspace payloads, JSON backups, source code, logs written by this integration, or response bodies. Reconnect after reload; disconnect or sign-out clears it. Pending connection responses cannot restore a token after sign-out or cancellation.
+- The Edge Function requires a valid Supabase user JWT, the existing owner's identity, and AAL2/MFA. CORS is restricted to the existing GitHub Pages origin. It uses no admin credential or new database tables.
+- Connect verifies the World Anvil identity and permission to the Driftbound world. Browse lists articles in pages of 50.
+- Read current main article text; add a private cached reference or attach it to the current entry. Imported source text does not fill section drafts.
+- AI planning briefs receive the attached or selected source snapshots and their read dates. AI assistance remains the existing copy-and-paste handoff.
+- Write section drafts, then choose Review World Anvil update. The current destination and proposed main text appear together. The author must acknowledge review before saving.
+- The backend checks the latest source fingerprint before PATCH, sends content only, and reads the article back to verify the text and unchanged title, category, parent, privacy, draft, and WIP metadata. Missing privacy or edit permission blocks the update. Read counters are excluded from the fingerprint.
+- Changed sources return a conflict. Every write attempt consumes its review, including a lost response. Read the current destination in a new review before retrying an uncertain update.
+- Successful saves update the private source snapshot and attempt to save the writing workspace. A cloud failure keeps the editor and asks the author to save.
+- Version 3 stores source snapshots and remains compatible with backups 1 and 2. Credentials are excluded by explicit field serialization.
+
+This version reads and updates existing articles. Create a destination article in World Anvil before attaching a new draft. Specialized template fields, categories, and publication settings are not edited. There is no delete operation.
+
+World Anvil exposes no atomic conditional update in the supplied schema. Rechecking before PATCH narrows the chance of an intervening edit; it cannot eliminate the gap between the read and write.
 
 ## Validation
 
-Run: node --test driftmark/tests/writing.test.cjs
+Run: `node --test driftmark/tests/*.test.cjs driftmark/tests/*.test.mjs`
 
-Tests cover AI import restrictions, empty draft initialization, draft and decision preservation, JSON reload, source labels, and exports excluding planning material. Syntax checks and HTML control/script-order checks passed.
+The 32 tests cover authored-text preservation, planning imports, exports, source serialization, verified JWT/MFA handling, origin restrictions, conflicts, content-only PATCH and read-back, pagination, token clearing, cancelled connections, and uncertain writes. The GitHub workflow also checks all frontend and backend source syntax.
 
-The current Supabase payload column was verified as JSONB. Authenticated browser save/reload and visual desktop/tablet/mobile checks were not available in this session; the existing shared login and save API were retained.
+The existing JSONB table, owner/MFA policies, and workspace migration were inspected. The interrupted credential-storage migration did not run. This integration needs no database migration or admin key.
+
+Authenticated end-to-end reads and saves need the owner's existing World Anvil token; those are not claimed as verified without it. Visual browser QA was unavailable in this environment. AI planning remains a copy-and-paste handoff to the existing GPT and cannot insert article prose.
 

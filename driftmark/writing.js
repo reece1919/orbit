@@ -124,6 +124,10 @@
     return { article, retained: retained.length };
   }
   function wordCount(text) { return String(text || "").trim().match(/\S+/g)?.length || 0; }
+  function articleContent(article) {
+    const sections = normalizeArticle(article)?.sections.filter(s => s.draft.trim()) || [];
+    return sections.map(s => "[h2]" + s.title + "[/h2]\n" + s.draft.trim()).join("\n\n");
+  }
   function draftText(title, article, format) {
     const sections = normalizeArticle(article)?.sections.filter(s => s.draft.trim()) || [];
     if (!sections.length) return "";
@@ -135,9 +139,14 @@
     const a = normalizeArticle(article) || starter(entry.category);
     const context = { article_title: entry.title || "Untitled article", category: entry.category, purpose: a.purpose,
       audience: a.audience, canon_status: a.canon_status, author_notes: entry.body || "",
+      world_anvil_source: entry.world_anvil ? { title: entry.world_anvil.title, url: entry.world_anvil.url,
+        read_at: entry.world_anvil.read_at, state: entry.world_anvil.state, isWip: entry.world_anvil.isWip,
+        content: entry.world_anvil.content } : null,
       current_sections: a.sections.map(s => ({ id: s.id, title: s.title, current_plan: s.points, questions: s.questions,
         author_decisions: s.decisions, author_draft_for_reference_only: s.draft })),
       supplied_references: references.map(r => ({ title: r.title, status: r.status, url: r.url, text: r.body,
+        world_anvil_source: r.world_anvil ? { title: r.world_anvil.title, url: r.world_anvil.url,
+          read_at: r.world_anvil.read_at, content: r.world_anvil.content } : null,
         article_draft_for_reference: r.article ? draftText(r.title, r.article, "text") : "" })) };
     const example = { version: 1, article_title: entry.title || "Untitled article", purpose: "", audience: "",
       sections: [{ id: a.sections[0]?.id || "opening", title: "Section title",
@@ -153,6 +162,6 @@
       "Keep existing section IDs for the same section. Use no more than 30 sections, 30 points, 20 questions, or 20 references per section. No draft, body, completed, or reviewed fields.",
       "JSON STRUCTURE:", JSON.stringify(example, null, 2), "REFERENCE CONTEXT:", JSON.stringify(context, null, 2)].join("\n\n");
   }
-  const api = { STATUSES, LABELS, id, url, normalizeSection, normalizeArticle, starter, parseBrief, applyBrief, wordCount, draftText, planningPrompt };
+  const api = { STATUSES, LABELS, id, url, normalizeSection, normalizeArticle, starter, parseBrief, applyBrief, wordCount, articleContent, draftText, planningPrompt };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.DriftmarkWriting = api;
 })(typeof window !== "undefined" ? window : globalThis);

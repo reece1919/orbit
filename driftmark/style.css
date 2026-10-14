@@ -65,3 +65,13 @@ button:focus-visible,a:focus-visible,summary:focus-visible,.import:focus-visible
 @media(max-width:1100px){.desk{grid-template-columns:minmax(180px,22%) minmax(0,1fr)}form{padding:18px}.brief-panel,.draft-panel{padding:14px}.writing-grid{gap:12px}.writing-panel-head{flex-wrap:wrap}.writing-panel-head h4{font-size:18px}}
 @media(max-width:900px){.desk{grid-template-columns:1fr}.catalog{position:static}.catalog-list{max-height:230px;min-height:0}.writing-grid{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr)}}
 @media(max-width:650px){.writing-grid{grid-template-columns:1fr}.draft-panel #section-draft{min-height:340px}.section-tab{max-width:200px}.hero{padding:18px}.hero h2{font-size:30px}.section-bar>span{margin-left:0;flex-basis:100%}.panel-head{flex-wrap:wrap}dialog{padding:18px}form{padding:15px}.form-actions #delete{margin-left:0}.form-grid{grid-template-columns:1fr}.brief-actions button{flex:1 1 auto}.section-actions button{font-size:12px}.footer-actions{flex-wrap:wrap}}
+
+.wa-panel{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-top:18px;padding:18px 22px;border:1px solid var(--border);border-radius:12px;background:#202c33}
+.wa-panel h3{font-size:21px}.wa-panel p{font-size:12px;color:var(--muted);margin-top:5px}.wa-actions{display:flex;flex-wrap:wrap;gap:8px;flex-shrink:0}.wa-actions button{font-size:12px}
+.wa-linked{padding:10px 13px;margin-bottom:16px;border-left:3px solid var(--gold);border-radius:4px;background:#293a3d;font-size:12px;color:#decba9}
+#wa-connect-form{padding:0}#wa-articles{max-height:45vh;overflow-y:auto;border:1px solid var(--border);border-radius:9px;padding:7px}
+.wa-review-dialog{width:1100px;max-width:min(1100px,96vw)}.wa-compare{display:grid;grid-template-columns:1fr 1fr;gap:18px}.wa-compare textarea{min-height:350px;font:14px/1.7 Georgia,serif}#wa-after{background:var(--paper);color:var(--paper-ink)}
+#wa-connect-feedback,#wa-browser-feedback,#wa-reader-feedback,#wa-review-feedback{color:var(--gold);font-size:13px;line-height:1.7}
+@media(max-width:1000px){.wa-panel{align-items:flex-start;flex-direction:column}.wa-actions{flex-shrink:1}}
+@media(max-width:650px){.wa-compare{grid-template-columns:1fr}.wa-compare textarea{min-height:260px}.wa-panel{padding:16px}.wa-actions{width:100%}.wa-actions button{flex:1 1 auto}}
+

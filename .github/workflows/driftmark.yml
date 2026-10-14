@@ -1,0 +1,26 @@
+name: DRIFTMARK checks
+on:
+  push:
+    branches: [main, "codex/driftmark-worldanvil-*"]
+    paths: ["driftmark/**", "supabase/functions/driftmark-worldanvil/**", ".github/workflows/driftmark.yml"]
+  pull_request:
+    paths: ["driftmark/**", "supabase/functions/driftmark-worldanvil/**", ".github/workflows/driftmark.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Check source syntax
+        run: |
+          for file in driftmark/*.js supabase/functions/driftmark-worldanvil/*.mjs supabase/functions/driftmark-worldanvil/*.ts; do
+            node --check "$file"
+          done
+      - name: Verify planning, authorship, authentication, and reviewed updates
+        run: node --test driftmark/tests/*.test.cjs driftmark/tests/*.test.mjs
+
