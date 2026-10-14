@@ -254,7 +254,7 @@ async function checkDevice(){
  }catch(e){
   if(user?.id!==owner)return;
   pushRepairRequired=!!pushExisting&&/invalid push subscription address/i.test(String(e.message||""));
-  pushError="Device registration needs attention: "+(e.message||"Unknown error)+(pushRepairRequired?"":" Tap Check connection to retry.");
+  pushError="Device registration needs attention: "+(e.message||"Unknown error")+(pushRepairRequired?"":" Tap Check connection to retry.");
   logPush(pushError);
   console.warn("PULSE registration needs attention:",e.message);
  }
