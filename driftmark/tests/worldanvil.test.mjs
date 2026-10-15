@@ -59,8 +59,8 @@ test("cached source serialization strips authentication fields",async()=>{
 test("all frontend controls and script references are present",()=>{
  const html=readFileSync(new URL("../index.html",import.meta.url),"utf8"),wa=readFileSync(new URL("../worldanvil.js",import.meta.url),"utf8");
  const ids=new Set([...html.matchAll(/id="([\w-]+)"/g),...wa.matchAll(/id="([\w-]+)"/g),...wa.matchAll(/\.id="([\w-]+)"/g)].map(x=>x[1]));
- for(const file of["app.js","workbench.js","worldanvil.js"]){const js=readFileSync(new URL("../"+file,import.meta.url),"utf8");for(const m of js.matchAll(/\$\("#([\w-]+)"\)/g))assert.ok(ids.has(m[1]),file+": "+m[1]);}
- const scripts=[...html.matchAll(/<script src="([^"]+)"/g)].map(x=>x[1].split("?")[0]);assert.deepEqual(scripts.slice(1),["writing.js","reconcile.js","workbench.js","worldanvil.js","app.js"]);
+ for(const file of["app.js","workbench.js","worldanvil.js","editor.js"]){const js=readFileSync(new URL("../"+file,import.meta.url),"utf8");for(const m of js.matchAll(/\$\("#([\w-]+)"\)/g))assert.ok(ids.has(m[1]),file+": "+m[1]);}
+ const scripts=[...html.matchAll(/<script src="([^"]+)"/g)].map(x=>x[1].split("?")[0]);assert.deepEqual(scripts.slice(1),["formatting.js","editor.js","writing.js","reconcile.js","workbench.js","worldanvil.js","app.js"]);
 });
 
 test("JWT assurance is trusted only after Auth validates the exact owner token",async()=>{

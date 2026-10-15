@@ -37,6 +37,11 @@
       let syncing = false, stopRequested = false;
       let browseKind = "articles";
       const connectionStatus = message => { $("#wa-status").textContent = message; };
+      function showText(id, text) {
+        $(id).value = text;
+        const preview = $(id + "-preview");
+        if (window.DriftmarkFormat) window.DriftmarkFormat.show(preview, text); else preview.textContent = text;
+      }
       function recordChanged() {
         const s = options.getOwner() ? options.getSource() : null;
         const link = options.getOwner() ? options.getLink?.() : null;
@@ -44,7 +49,7 @@
         $("#wa-review").hidden = !s;
         $("#wa-linked-title").textContent = s ? "World Anvil " + (s.kind === "category" ? "category" : "article") + ": " + s.title + " · " + s.state + (s.isWip ? " · WIP" : "") :
           link ? "World Anvil: " + link.source_title + " · source text not loaded" : "";
-        $("#wa-linked-content").value = s ? s.kind === "category" ? categoryText(s.fields) : s.content : "";
+        showText("#wa-linked-content", s ? s.kind === "category" ? categoryText(s.fields) : s.content : "");
         $("#wa-source-details").hidden = !s;
         $("#wa-review").disabled = !connected || busy;
         $("#wa-connect").disabled = busy || !options.getOwner();
@@ -98,6 +103,7 @@
         stopRequested = true; syncing = false; busy = false;
         generation++; connecting = false; connected = false; saved = false; rows = []; offset = 0; more = false; review = null; reader = null;
         ["#wa-token", "#wa-reader-content", "#wa-before", "#wa-after", "#wa-search", "#wa-linked-content"].forEach(q => $(q).value = "");
+        ["#wa-reader-content", "#wa-before", "#wa-after", "#wa-linked-content"].forEach(q => showText(q, ""));
         $("#wa-review-ack").checked = false; $("#wa-save-update").disabled = true;
         $("#wa-articles").textContent = "";
         ["#wa-reader-meta", "#wa-review-meta", "#wa-page-label"].forEach(q => $(q).textContent = "");
@@ -170,7 +176,7 @@
         reader = s;
         $("#wa-reader-title").textContent = s.title;
         $("#wa-reader-meta").textContent = (s.kind === "category" ? "Category · " : "") + s.state + (s.isDraft ? " · Draft" : "") + (s.isWip ? " · WIP" : "") + " · Read " + new Date(s.read_at).toLocaleString();
-        $("#wa-reader-content").value = s.kind === "category" ? categoryText(s.fields) : s.content;
+        showText("#wa-reader-content", s.kind === "category" ? categoryText(s.fields) : s.content);
         $("#wa-reader-label").textContent = s.kind === "category" ? "Current category fields" : "Current article text";
         $("#wa-add-reference").textContent = s.kind === "category" ? "Open category writing desk" : "Add to reference atlas";
         $("#wa-attach").hidden = !options.hasEntry() || s.kind === "category" || options.getSource()?.kind === "category";
@@ -262,7 +268,7 @@
           options.status(category ? "Write or select a category field to include before reviewing its update." : "Write a section draft before reviewing a World Anvil update.", true); return;
         }
         review = null; $("#wa-review-ack").checked = false; $("#wa-save-update").disabled = true;
-        $("#wa-before").value = ""; $("#wa-after").value = content; $("#wa-review-meta").textContent = "";
+        showText("#wa-before", ""); showText("#wa-after", content); $("#wa-review-meta").textContent = "";
         $("#wa-review-feedback").textContent = "Reading the current destination page…";
         show("#wa-review-dialog"); setBusy(true);
         try {
@@ -278,8 +284,8 @@
           }
           review = { source: s, content, changes, sent: false };
           $("#wa-review-title").textContent = "Review update: " + s.title;
-          $("#wa-before").value = category ? categoryText(Object.fromEntries(Object.keys(changes).map(key => [key, s.fields[key]]))) : s.content;
-          $("#wa-after").value = category ? categoryText(changes) : content;
+          showText("#wa-before", category ? categoryText(Object.fromEntries(Object.keys(changes).map(key => [key, s.fields[key]]))) : s.content);
+          showText("#wa-after", category ? categoryText(changes) : content);
           $("#wa-review-ack-label").textContent = category ? "I reviewed the current fields and my changes, including any empty fields selected to clear." : "I reviewed the current article and my replacement text.";
           $("#wa-review-meta").textContent = "Destination: " + s.state + (s.isDraft ? " · Draft" : "") + (s.isWip ? " · WIP" : "") +
             (category ? " · " + Object.keys(changes).length + " category field(s) will change. Other fields are preserved." : " · Main article text will be replaced.");

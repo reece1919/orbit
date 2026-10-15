@@ -81,3 +81,27 @@ button:focus-visible,a:focus-visible,summary:focus-visible,.import:focus-visible
 
 
 .wa-linked details{margin-top:10px}.wa-linked textarea{min-height:180px;max-height:400px;font-size:13px}.source-note{color:var(--gold)!important;margin-top:6px}#wa-sync-status{color:#d9c6a6}
+
+/* Formatted reference reading and author-owned visual drafts. */
+.wa-prose{font:16px/1.8 Georgia,serif;white-space:pre-wrap;overflow-wrap:anywhere;tab-size:4}
+.wa-prose h1,.wa-prose h2,.wa-prose h3,.wa-prose h4{font-family:Georgia,serif;font-weight:600;letter-spacing:0;line-height:1.3;max-width:none;margin:1em 0 .45em}
+.wa-prose h1{font-size:1.8em}.wa-prose h2{font-size:1.5em}.wa-prose h3{font-size:1.25em}.wa-prose h4{font-size:1.1em}
+.wa-prose p{margin:.65em 0}.wa-prose>h1:first-child,.wa-prose>h2:first-child,.wa-prose>p:first-child{margin-top:0}
+.wa-prose ul,.wa-prose ol{padding-left:1.7em;margin:.6em 0;white-space:normal}.wa-prose li{white-space:pre-wrap;margin:.3em 0}
+.wa-prose blockquote{margin:1em 0;padding:10px 16px;border-left:3px solid var(--gold);background:#8b795d16}
+.wa-prose table{border-collapse:collapse;width:100%;font-size:.9em;margin:1em 0;white-space:normal}.wa-prose td,.wa-prose th{border:1px solid #8a8a8066;padding:8px;vertical-align:top;white-space:pre-wrap}.wa-prose th{background:#8b795d20;text-align:left}
+.wa-prose code{font: .88em/1.7 monospace;background:#8b795d25;padding:2px 4px}.wa-prose hr{border:0;border-top:1px solid #8a8a8066;margin:1.1em 0}.wa-prose a{text-decoration:underline}
+.wa-align-center{text-align:center}.wa-align-left{text-align:left}.wa-align-right{text-align:right}.wa-align-justify{text-align:justify}.wa-align-in{text-indent:1.5em}
+.source-preview{max-height:450px;overflow:auto;border:1px solid var(--border);border-radius:8px;background:#121e26;padding:18px;margin:10px 0;color:var(--ink)}
+.source-preview:empty::before{content:"No text";color:var(--muted);font-style:italic}.source-preview:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.bbcode-source{margin:10px 0;font:12px/1.6 "Segoe UI",sans-serif}.bbcode-source>summary{font-weight:400;color:var(--muted)}.bbcode-source textarea{font:12px/1.65 monospace!important}
+.draft-toolbar{border:1px solid #c2b8a5;border-bottom:0;border-radius:8px 8px 0 0;background:#343c3f;padding:8px;margin-top:10px}
+.draft-modes,.format-controls{display:flex;align-items:center;gap:5px;flex-wrap:wrap}.draft-modes{margin-bottom:8px}.draft-modes button{padding:5px 13px;font-size:12px}.draft-modes [aria-pressed="true"]{background:var(--gold);color:#1a2329;border-color:var(--gold)}
+.format-controls button{min-width:38px;min-height:38px;padding:6px 9px;font:13px/1.4 "Segoe UI",sans-serif}.format-controls select{margin:0;width:auto;min-width:110px;padding:7px;font:12px/1.5 "Segoe UI",sans-serif}
+.visual-draft{min-height:380px;background:var(--paper);color:var(--paper-ink);border:1px solid #c2b8a5;border-radius:0 0 8px 8px;padding:20px 22px;font-size:17px;line-height:1.85;outline:none}
+.visual-draft:focus{outline:2px solid var(--gold);outline-offset:1px}.visual-draft:empty::before{content:attr(data-placeholder);color:#807c76;font:15px/1.7 Georgia,serif;pointer-events:none}.visual-draft a{color:#74512b}
+.draft-panel #section-draft{border-radius:0 0 8px 8px;font:14px/1.8 monospace;margin:0}.use-source{font-size:12px;margin-bottom:8px;text-align:left}
+.draft-link-panel{padding:12px;background:#1b2931;border:1px solid var(--border)}.draft-link-panel label{margin-bottom:8px}.draft-link-panel button{font-size:12px}
+.wa-preserved{display:inline-flex;flex-direction:column;gap:2px;max-width:100%;border:1px dashed #96826999;border-radius:5px;background:#8b795d12;padding:4px 8px;margin:3px 2px;vertical-align:middle;white-space:normal;user-select:all}
+.wa-preserved-label{font:11px/1.5 "Segoe UI",sans-serif;opacity:.8}.wa-preserved-text{font-size:.94em;line-height:1.5}.wa-compare .source-preview{min-height:350px;max-height:55vh}.wa-compare h4{margin:10px 0;font-size:14px}#wa-after-preview{background:var(--paper);color:var(--paper-ink)}#wa-after-preview a{color:#74512b}
+@media(max-width:650px){.visual-draft{min-height:340px;padding:17px 15px}.format-controls button{min-height:42px}.source-preview{padding:14px;max-height:400px;font-size:15px}.wa-compare .source-preview{min-height:240px;max-height:45vh}.draft-toolbar{padding:7px}}

@@ -11,12 +11,9 @@ const raw = { id: "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee", world: { id: WORLD },
 
 // A small DOM adapter exercises the actual module's event handlers without
 // contacting an external service or requiring a signed-in browser.
-class Control {
-  value = ""; checked = false; disabled = false; hidden = false; textContent = ""; open = false;
-  listeners = new Map();
-  addEventListener(type, fn) { this.listeners.set(type, [...(this.listeners.get(type) || []), fn]); }
+const { Element } = createRequire(import.meta.url)("./dom.cjs");
+class Control extends Element {
   async emit(type, target = this) { for (const fn of this.listeners.get(type) || []) await fn({ preventDefault() {}, target }); }
-  showModal() { this.open = true; }
   close() { if (this.open) { this.open = false; void this.emit("close"); } }
 }
 async function fixture(invoke, afterWrite = async () => true, supplied = null, changes = {}, callbacks = {}) {
@@ -24,8 +21,9 @@ async function fixture(invoke, afterWrite = async () => true, supplied = null, c
   const controls = new Map([...html.matchAll(/id="([\w-]+)"/g)].map(match => ["#" + match[1], new Control()]));
   const $ = id => { assert.ok(controls.has(id), id); return controls.get(id); };
   const source = supplied || await articleDTO(raw); let owner = OWNER; const calls = [];
-  const context = { window: { DriftmarkWriting: createRequire(import.meta.url)("../writing.js") },
+  const context = { window: { DriftmarkWriting: createRequire(import.meta.url)("../writing.js"), DriftmarkFormat: createRequire(import.meta.url)("../formatting.js") },
     document: { querySelector: $, querySelectorAll: () => [], getElementById: id => $("#" + id) } };
+  for (const control of controls.values()) control.ownerDocument = context.document;
   vm.runInNewContext(readFileSync(new URL("../worldanvil.js", import.meta.url), "utf8"), context);
   const app = context.window.DriftmarkWorldAnvil.init({ getOwner: () => owner,
     getClient: () => ({ functions: { invoke: async (name, request) => {
@@ -193,4 +191,17 @@ test("category pagination uses 100 rows and switches back to article pagination"
   f.$("#wa-browser-kind").value = "articles"; await f.$("#wa-browser-kind").emit("change"); await new Promise(setImmediate);
   assert.equal(f.calls.at(-1).action, "articles"); assert.equal(f.calls.at(-1).offset, 0);
   assert.match(f.$("#wa-browser-title").textContent, /articles/);
+});
+
+
+test("review compares formatted prose while retaining exact BBCode for the reviewed write", async () => {
+  const source = await articleDTO({ ...raw, content: "[p][b]Existing[/b] source.[/p][img:123]" });
+  const f = await fixture(null, async () => true, source); await f.connect(); await f.$("#wa-review").emit("click");
+  assert.equal(f.$("#wa-before").value, source.content);
+  assert.match(f.$("#wa-before-preview").innerHTML, /<strong/);
+  assert.match(f.$("#wa-after-preview").innerHTML, /<h2/);
+  assert.doesNotMatch(f.$("#wa-before-preview").innerHTML, /<img/);
+  assert.equal(f.$("#wa-review-ack").checked, false); assert.equal(f.$("#wa-save-update").disabled, true);
+  f.logout();
+  for (const id of ["wa-linked-content", "wa-reader-content", "wa-before", "wa-after"]) assert.equal(f.$("#" + id + "-preview").innerHTML, "");
 });
