@@ -161,12 +161,14 @@
     const labels=Array.isArray(t?.labels)?t.labels.map(x=>String(x).replace(/^@/,'').trim().toLowerCase()):[];
     return HOME_SYSTEMS.find(x=>labels.includes(x)) || ancestorsOf(t).map(p=>homeTaskSystem(p)).find(x=>x!=='general') || 'general';
   }
-  // Skipping preserves a recurring task; dismissing a one-off removes it.
+  // Both choices are explicit for every open task. Neither records completion:
+  // Skip reschedules; Dismiss removes the task (or its entire recurring series).
   function todoistTaskAction(t,style){
     const recurring=Boolean(t.due?.is_recurring);
-    return recurring
-      ? `<button class="${style} todoist-skip" type="button" data-todoist-skip="${esc(t.id)}" aria-label="Skip ${esc(t.content)} without completing" title="Reschedule the next occurrence without marking done">Skip</button>`
-      : `<button class="${style} todoist-drop" type="button" data-todoist-drop="${esc(t.id)}" aria-label="Dismiss ${esc(t.content)} without completing" title="Remove the one-time task from Todoist without marking done">Dismiss</button>`;
+    return `<span class="todoist-decision-actions" role="group" aria-label="Options for ${esc(t.content)}">
+      <button class="${style} todoist-skip" type="button" data-todoist-skip="${esc(t.id)}" aria-label="Skip ${esc(t.content)} without completing" title="Not today — move the task to its next date without completion">Skip</button>
+      <button class="${style} todoist-drop" type="button" data-todoist-drop="${esc(t.id)}" aria-label="Dismiss ${esc(t.content)} without completing" title="${recurring?'Permanently end this recurring series':'Permanently remove this task'} without recording a completion">Dismiss</button>
+    </span>`;
   }
   function homeTaskMarkup(t){
     const system=homeTaskSystem(t);
@@ -309,29 +311,37 @@
     const task=tasks.find(t=>String(t.id)===String(id));
     if(!task||todoistActionBusy.has(String(id)))return;
     const recurring=Boolean(task.due?.is_recurring);
-    if((kind==='skip')!==recurring){toast('Task details changed; refresh Todoist.');return;}
     if(!serverConnected){toast('A secure Todoist OAuth connection is required to skip or dismiss from ORBIT.');return;}
     const today=TODAY(),due=dayOf(task);
-    const next=due&&due<today?today:nextDay();
-    const message=recurring
-      ? 'Skip “'+task.content+'” without marking it complete? Its next due date will move to '+prettyDate(next)+'. The repeating rule is preserved.'
-      : 'Dismiss “'+task.content+'”? This permanently deletes the one-time task from Todoist without marking it complete. This cannot be undone.';
+    const next=recurring && due && due<today ? today : nextDay();
+    const hasChildren=tasks.some(t=>String(t.parent_id)===String(id));
+    const message=kind==='skip'
+      ? 'Skip “'+task.content+'” without marking it complete? '+(recurring?'Only the next due date changes; the recurring rule stays active. ':'')+'Next date: '+prettyDate(next)+'.'
+      : 'Dismiss “'+task.content+'”? '+(recurring?'This permanently ends the ENTIRE repeating series. ':'This permanently deletes this task. ')+(hasChildren?'Any subtasks may be removed too. ':'')+'No completion is recorded. This cannot be undone.';
     if(!window.confirm(message))return;
     todoistActionBusy.add(String(id));
-    button.disabled=true;const text=button.textContent;
-    button.textContent=recurring?'Skipping…':'Dismissing…';
+    // Disable both decisions while this Todoist action is in progress.
+    const row=button.closest('.agenda-task-main, .live-task-body');
+    const controls=[...(row?.querySelectorAll('[data-todoist-skip],[data-todoist-drop]')||[button])];
+    controls.forEach(x=>x.disabled=true);
+    const original=button.textContent;
+    button.textContent=kind==='skip'?'Skipping…':'Dismissing…';
     try{
-      const result=await oauthRequest(recurring?'skip':'drop',{task_id:String(id),...(recurring?{next_date:next}:{})});
-      if(!result?.ok||result.action!==(recurring?'skipped':'dropped'))throw new Error('Todoist did not confirm the action.');
+      const result=await oauthRequest(kind==='skip'?'skip':'drop',{task_id:String(id),...(kind==='skip'?{next_date:next}:{})});
+      if(!result?.ok||result.action!==(kind==='skip'?'skipped':'dropped'))throw new Error('Todoist did not confirm the action.');
       // Refresh from Todoist rather than mark any occurrence completed locally.
       tasks=tasks.filter(t=>String(t.id)!==String(id));
       renderTodoist();
-      toast(recurring?'Skipped — not completed. Repeating schedule preserved.':'Dismissed — not completed.');
+      toast(kind==='skip'?'Skipped — not completed. Task rescheduled.':'Dismissed — not completed.');
       await refreshTodoist();
     }catch(error){
-      button.disabled=false;button.textContent=text;
-      toast('Could not '+(recurring?'skip':'dismiss')+' task: '+(error.message||'Please retry.'));
-    }finally{todoistActionBusy.delete(String(id));}
+      button.textContent=original;
+      toast('Could not '+(kind==='skip'?'skip':'dismiss')+' task: '+(error.message||'Please retry.'));
+      void refreshTodoist();
+    }finally{
+      controls.forEach(x=>x.disabled=false);
+      todoistActionBusy.delete(String(id));
+    }
   }
   async function createTodoist(e){
     e.preventDefault();if(!token&&!serverConnected)return;
