@@ -105,3 +105,7 @@ button:focus-visible,a:focus-visible,summary:focus-visible,.import:focus-visible
 .wa-preserved{display:inline-flex;flex-direction:column;gap:2px;max-width:100%;border:1px dashed #96826999;border-radius:5px;background:#8b795d12;padding:4px 8px;margin:3px 2px;vertical-align:middle;white-space:normal;user-select:all}
 .wa-preserved-label{font:11px/1.5 "Segoe UI",sans-serif;opacity:.8}.wa-preserved-text{font-size:.94em;line-height:1.5}.wa-compare .source-preview{min-height:350px;max-height:55vh}.wa-compare h4{margin:10px 0;font-size:14px}#wa-after-preview{background:var(--paper);color:var(--paper-ink)}#wa-after-preview a{color:#74512b}
 @media(max-width:650px){.visual-draft{min-height:340px;padding:17px 15px}.format-controls button{min-height:42px}.source-preview{padding:14px;max-height:400px;font-size:15px}.wa-compare .source-preview{min-height:240px;max-height:45vh}.draft-toolbar{padding:7px}}
+
+/* QUILL sapphire-and-pewter brand mark — transparent, no surrounding card. */
+.brand .quill-brand-icon{display:block;width:48px;height:48px;flex:0 0 48px;object-fit:contain;background:transparent;border:0;border-radius:0;box-shadow:none}
+@media(max-width:600px){.brand .quill-brand-icon{width:40px;height:40px;flex-basis:40px}}
