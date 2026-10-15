@@ -128,6 +128,7 @@
       $('#fuel-date').value=date;
       form.reset();setNow();lastSync=0;
       await refresh(true);
+      document.dispatchEvent(new Event('vita:food-changed'));
       setStatus('Food entry saved to your private journal.');
     }catch(e){setStatus('Could not save: '+(e?.message||'Please try again.'));}
     finally{button.disabled=false;button.textContent='Save to private journal';}
@@ -139,7 +140,7 @@
     try{
       const {error}=await auth.client.from('fuel_food_entries').delete().eq('id',id).eq('owner_id',auth.user.id);
       if(error)throw error;
-      lastSync=0;await refresh(true);setStatus('Entry deleted.');
+      lastSync=0;await refresh(true);document.dispatchEvent(new Event('vita:food-changed'));setStatus('Entry deleted.');
     }catch(e){setStatus('Could not delete entry: '+(e?.message||'Please try again.'));}
   }
   async function copySetup(){
