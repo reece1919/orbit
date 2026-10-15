@@ -17,6 +17,7 @@
   <link rel="stylesheet" href="wellness.css?v=1.0.0" />
   <link rel="stylesheet" href="vita.css?v=1.0.0" />
   <link rel="stylesheet" href="fuel-inbox.css?v=1.0.0" />
+  <link rel="stylesheet" href="nutrition-week.css?v=1.0.0" />
   <link rel="stylesheet" href="mobile-nav.css?v=1.0.0" />
   <link rel="stylesheet" href="orbit-brand.css?v=2.0.0" />
   <link rel="manifest" href="pulse.webmanifest" />
@@ -32,6 +33,7 @@
   <script src="assets/todoist-system.js?v=1.4.0" defer></script>
   <script src="fuel.js?v=0.6.4" defer></script>
   <script src="fuel-inbox.js?v=1.0.0" defer></script>
+  <script src="nutrition-week.js?v=1.0.0" defer></script>
   <script src="pulse.js?v=1.0.5" defer></script>
   <script src="wellness.js?v=1.0.0" defer></script>
   <script src="vita.js?v=1.0.0" defer></script>
@@ -192,6 +194,7 @@
                 <div class="vita-card-top"><img src="assets/systems/fuel.svg?v=1.6.0" alt="" width="41" height="41"><span>Nutrition</span></div>
                 <strong id="vita-summary-food" class="vita-card-figure">Loading…</strong>
                 <p class="vita-card-detail">Calories logged today in your private food journal.</p>
+                <p id="vita-week-overview" class="vita-card-detail">7-day trend loading…</p>
                 <button class="vita-card-action" type="button" data-view="fuel">Log food →</button>
               </article>
               <article class="vita-overview-card" data-kind="mind">
@@ -249,6 +252,19 @@
               <div class="fuel-metric"><span>FAT</span><strong id="fuel-total-fat">—</strong><small>grams logged</small></div>
             </div>
             <p id="fuel-status" role="status" class="watch-detail">Connecting to your private food journal…</p>
+          </section>
+          <section class="module vita-nutrition-week" aria-labelledby="vita-nutrition-week-title">
+            <div class="module-head">
+              <div><div class="eyebrow small">A LITTLE PERSPECTIVE</div><h3 id="vita-nutrition-week-title">The last 7 days</h3></div>
+              <button id="vita-nutrition-week-reload" class="quiet-pill" type="button">Refresh</button>
+            </div>
+            <div class="vita-nutrition-week-stats">
+              <div class="vita-nutrition-week-stat"><small>Average on logged days</small><strong id="vita-nutrition-week-average">—</strong></div>
+              <div class="vita-nutrition-week-stat"><small>Days with food entries</small><strong id="vita-nutrition-week-days">—</strong></div>
+            </div>
+            <div id="vita-nutrition-week-bars" class="vita-nutrition-week-bars" role="group" aria-label="Calories logged for each of the last seven days"><p class="watch-detail">Loading recent food entries…</p></div>
+            <p id="vita-nutrition-week-status" class="vita-nutrition-week-caption" role="status" aria-live="polite">Loading your seven-day trend…</p>
+            <p class="vita-nutrition-week-caption">Tap a day to see its food journal. The chart reflects only meals actually logged—not a judgment about what you ate.</p>
           </section>
           <section class="module fuel-setup">
             <div class="module-head"><div><div class="eyebrow small">ONE-TIME CONNECTION</div><h3>Connect the FUEL chat</h3></div><button type="button" class="quiet-pill" id="fuel-copy-setup">Copy FUEL setup</button></div>
