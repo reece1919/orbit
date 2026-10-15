@@ -33,7 +33,7 @@ test("Four-tab mobile bar retains Home / Systems / VITA / More in order",()=>{
 
 test("Systems selector offers existing destinations with secure external links",()=>{
  const sheet=within(html,'<section id="mobile-system-sheet"','</section>');
- for(const name of ["GAIA","ECHO","RUNE","VITA","DRIFTMARK"])
+ for(const name of ["GAIA","ECHO","RUNE","VITA","QUILL"])
   assert.ok(sheet.includes(">"+name+"</span>"),"Missing "+name+" link");
  assert.match(sheet,/href="https:\/\/reece1919.github.io\/gaia\/"/);
  assert.match(sheet,/href="https:\/\/reece1919.github.io\/echo\/"/);
@@ -97,7 +97,7 @@ test("Home system shortcuts omit duplicate VITA and Inbox destinations",()=>{
  const row=within(html,'<section class="system-launch-bar"','</section>');
  const entries=[...row.matchAll(/class="system-launch"/g)];
  assert.equal(entries.length,4);
- const expected=["GAIA","ECHO","RUNE","DRIFTMARK"];
+ const expected=["GAIA","ECHO","RUNE","QUILL"];
  let prev=-1;
  for(const label of expected){
   const index=row.indexOf(">"+label+"</span>");
@@ -112,3 +112,4 @@ test("Home system shortcuts omit duplicate VITA and Inbox destinations",()=>{
  assert.match(nav,/data-view="vita"/);
  assert.match(html,/class="subtle-link" type="button" data-view="inbox"|type="button" class="subtle-link" data-view="inbox"/);
 });
+

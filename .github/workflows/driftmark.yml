@@ -1,4 +1,4 @@
-name: DRIFTMARK checks
+name: QUILL checks
 on:
   push:
     branches: [main, "codex/driftmark-worldanvil-*"]
@@ -23,4 +23,5 @@ jobs:
           done
       - name: Verify planning, authorship, authentication, and reviewed updates
         run: node --test driftmark/tests/*.test.cjs driftmark/tests/*.test.mjs
+
 

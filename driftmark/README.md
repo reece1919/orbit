@@ -1,8 +1,8 @@
-# DRIFTMARK — Driftbound Writing Workbench
+# QUILL — Driftbound Writing Workbench
 
 **Website:** https://reece1919.github.io/orbit/driftmark/
 
-DRIFTMARK lives in the existing ORBIT GitHub Pages repository at /driftmark/. It combines a private reference atlas with a guided article-writing desk for Eilmark.
+QUILL, formerly DRIFTMARK, lives in the existing ORBIT GitHub Pages repository at /driftmark/. It combines a private reference atlas with a guided article-writing desk for Eilmark.
 
 ## Authorship rule
 
@@ -29,7 +29,7 @@ The persisted draft remains a BBCode string in the existing workspace and backup
 
 The renderer supports common headings, paragraphs, emphasis, lists (including hyphen lists), quotes, links, tables, line breaks, and alignment. World Anvil article mentions and wiki-style references appear as preserved article-link items. Advanced embeds, custom layouts/styles, restrictions, hidden comments, unsupported paired tags, and ambiguous block layouts are preserved as noneditable items. Their source stays intact; full text is readable where available. Images, maps, and other embeds are represented by placeholders, and World Anvil theme CSS is not reproduced. Use BBCode view to change those advanced items.
 
-Source content is parsed as BBCode, never trusted as HTML. HTML text is escaped; generated elements and link protocols use allowlists. No remote images, iframes, scripts, custom styles, or new network destinations are loaded. Pasted external HTML is ignored in favor of plain text. Copy/paste within formatted DRIFTMARK views also carries a BBCode clipboard representation, which is parsed through the same safe renderer. Dropped HTML/files are blocked. Plain-text exports remove formatting; World Anvil exports and reviewed writes retain BBCode. Formatting does not add AI prose or change the saved-token, login, MFA, or publication-review paths.
+Source content is parsed as BBCode, never trusted as HTML. HTML text is escaped; generated elements and link protocols use allowlists. No remote images, iframes, scripts, custom styles, or new network destinations are loaded. Pasted external HTML is ignored in favor of plain text. Copy/paste within formatted QUILL views also carries a BBCode clipboard representation, which is parsed through the same safe renderer. Dropped HTML/files are blocked. Plain-text exports remove formatting; World Anvil exports and reviewed writes retain BBCode. Formatting does not add AI prose or change the saved-token, login, MFA, or publication-review paths.
 
 Syntax follows the official [World Anvil formatting guide](https://www.worldanvil.com/learn/bbcode-tutorials/basic-bbcode), [list guide](https://www.worldanvil.com/learn/bbcode-tutorials/lists), and [external-link guide](https://www.worldanvil.com/learn/bbcode-tutorials/external-links).
 
@@ -42,6 +42,10 @@ Syntax follows the official [World Anvil formatting guide](https://www.worldanvi
 - Existing drafts and decisions match by stable section ID or title. Unmatched sections containing the author's text are retained. A changed plan requires fresh review.
 - Draft and review counts reflect the author's section drafts; ticking key points does not count as writing.
 - Article exports contain section drafts and headings only. Planning notes, decisions, references, and existing mixed notes are excluded.
+
+## Naming compatibility
+
+QUILL keeps the existing `/driftmark/` address, cloud workspace table, protected World Anvil function/RPC names, JavaScript interfaces, and BBCode clipboard type. The stable JSON backup identifier remains `DRIFTMARK` so earlier backups and clients remain compatible; new download filenames use `quill-atlas-YYYY-MM-DD.json`. This is a branding change and performs no data or credential migration.
 
 ## Existing entries and backups
 
@@ -61,7 +65,7 @@ Workspace/backup version 5 adds article-index links and reconciliation status al
 
 Saved connections restore automatically after a verified ORBIT login, including a new tab or page reload. Enter the existing user token once through **Check and save connection**.
 
-The supplied Driftbound GPT Action schema identifies https://worldanvil-proxy.onrender.com as its service. A live unauthenticated read returned HTTP 401 requiring x-auth-token. DRIFTMARK reuses this service through the private driftmark-worldanvil Edge Function.
+The supplied Driftbound GPT Action schema identifies https://worldanvil-proxy.onrender.com as its service. A live unauthenticated read returned HTTP 401 requiring x-auth-token. QUILL reuses this service through the private driftmark-worldanvil Edge Function.
 
 - Open Connect World Anvil and enter the existing World Anvil user token used by the GPT.
 - Connect validates the existing user token and saves it encrypted in Supabase Vault. Later requests and new page loads use this saved account connection without returning the token to the browser. It is excluded from browser storage, workspace payloads, JSON backups, source code, and application logs.
@@ -91,13 +95,13 @@ World Anvil exposes no atomic conditional update in the supplied schema. Recheck
 6. **Save to cloud** to preserve private drafts without changing World Anvil. **Review World Anvil update** reads the destination again, shows only selected fields that differ, and requires acknowledgement of any clears.
 7. Saving uses the stored token entirely on the server, checks the source fingerprint, PATCHes only the selected changed text fields, then reads back every returned text field and protected metadata. A mismatch is reported as uncertain; a fresh review is required before retrying.
 
-The official [World Anvil Boromir schema](https://www.worldanvil.com/api/external/boromir/swagger-documentation) includes these fields in `CategoryUpdate` through `CategoryExtended` and `Category`. Category text uses `description`, not the article `content` field. The GPT Action schema's narrower PATCH definition does not limit DRIFTMARK's own broker, but the existing Render service must forward these fields. Missing fields remain readable as private drafts and cannot be sent. Missing edit permission, privacy state, or subscriber-group metadata blocks a write. Category draft/WIP values may be null in the official schema; they are protected without imposing article-specific boolean requirements.
+The official [World Anvil Boromir schema](https://www.worldanvil.com/api/external/boromir/swagger-documentation) includes these fields in `CategoryUpdate` through `CategoryExtended` and `Category`. Category text uses `description`, not the article `content` field. The GPT Action schema's narrower PATCH definition does not limit QUILL's own broker, but the existing Render service must forward these fields. Missing fields remain readable as private drafts and cannot be sent. Missing edit permission, privacy state, or subscriber-group metadata blocks a write. Category draft/WIP values may be null in the official schema; they are protected without imposing article-specific boolean requirements.
 
 Privacy, subscriber groups, parent, covers, redirects, display flags, ordering, CSS classes, and layout metadata are never included in the update body. The backend verifies that they and untouched text fields remain unchanged on read-back. No new database migration or credential-store change is required.
 
 ## Automatic article reconciliation (v0.5)
 
-After verified ORBIT sign-in, DRIFTMARK opens the saved cloud workspace first, restores the existing World Anvil account connection, and automatically loads the entire available Driftbound article index. Signing in or completing authenticator verification while DRIFTMARK is already open starts this process without requiring Refresh. Auth calls are deferred outside the auth event callback. Saving a connection also starts loading. The index is saved before loading main reference text, so titles appear before all article reads finish. Reference text is loaded sequentially and checkpointed every ten results. **Reconcile articles** repeats the check; **Stop loading** retains completed checkpoints.
+After verified ORBIT sign-in, QUILL opens the saved cloud workspace first, restores the existing World Anvil account connection, and automatically loads the entire available Driftbound article index. Signing in or completing authenticator verification while QUILL is already open starts this process without requiring Refresh. Auth calls are deferred outside the auth event callback. Saving a connection also starts loading. The index is saved before loading main reference text, so titles appear before all article reads finish. Reference text is loaded sequentially and checkpointed every ten results. **Reconcile articles** repeats the check; **Stop loading** retains completed checkpoints.
 
 Reconciliation matches the immutable World Anvil article ID, never the title. New IDs receive new entries with empty author drafts. Existing IDs refresh only their source snapshot and reconciliation metadata. The author's title, category, tags, URL, writing status, original notes, purpose, section plans, drafts, decisions, reviews, creation date, and last author-edit date remain untouched. A remote rename is retained as the source title without replacing a custom dashboard title. Locally duplicated drafts are retained rather than collapsed. Unlinked local work and category-page entries are left intact.
 

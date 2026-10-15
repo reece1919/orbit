@@ -111,6 +111,7 @@ test("background reconciliation preserves a dirty active editor and includes it 
   assert.equal(f.fields.get("title").value, "Unsaved title"); assert.equal(f.draft().sections[0].draft, "My NEW unsaved words.\n");
   assert.equal(f.dirty(), true); assert.equal(f.$("#wa-linked-content").value, "Changed remote body");
   const backup = await f.backup(), entry = backup.entries.find(e => e.id === "saved-entry");
+  assert.equal(backup.app, "DRIFTMARK"); // The QUILL rename preserves the existing backup format.
   assert.equal(backup.includes_unsaved_editor, true); assert.equal(entry.title, "Unsaved title");
   assert.equal(entry.article.sections[0].draft, "My NEW unsaved words.\n"); assert.equal(entry.world_anvil.content, "Changed remote body");
   await f.$("#entry-form").emit("submit"); assert.equal(f.cloud().payload.entries[0].article.sections[0].draft, "My NEW unsaved words.\n");
