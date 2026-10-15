@@ -1,11 +1,14 @@
-/* ORBIT 2.1 — overdue agenda + an explicit alternative to completion.
-   Skip a repeating occurrence; dismiss a one-off with confirmation. */
+/* ORBIT 2.2 — overdue agenda and two explicit noncompletion decisions for every task. */
 .home-view .agenda-row{grid-template-columns:19px 69px minmax(0,1fr);align-items:start;gap:9px;min-width:0;overflow:visible}
 .home-view .agenda-row .agenda-task-main{display:flex;flex-direction:column;align-items:stretch;gap:4px;min-width:0;overflow-wrap:anywhere}
 .home-view .agenda-row .agenda-task-title{display:block;max-width:100%;overflow-wrap:anywhere;line-height:1.5}
-.home-view .agenda-task-controls,.todoist-task-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;min-width:0;margin-top:6px}
+.home-view .agenda-task-controls{display:flex;flex-direction:column;align-items:flex-start;gap:7px;min-width:0;margin-top:8px}
+.todoist-task-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;min-width:0;margin-top:8px}
+.todoist-decision-actions{display:inline-flex;align-items:center;justify-content:flex-start;gap:7px;flex-wrap:wrap;max-width:100%}
+.home-view .agenda-task-controls .todoist-decision-actions{margin:0}
+.todoist-task-controls .todoist-decision-actions{flex:none}
 .home-view .agenda-task-controls .agenda-overdue-date{display:block;flex:1 0 auto;margin:0;padding:0;white-space:normal;font-size:10px;line-height:1.45}
-.home-view .agenda-task-controls .agenda-task-action{flex:0 0 auto;margin-left:auto;min-width:53px;text-align:center}
+.home-view .agenda-task-controls .agenda-task-action{flex:0 0 auto;margin:0;min-width:62px;text-align:center}
 .todoist-task-controls{margin-top:8px}
 .todoist-task-controls .todoist-task-action{margin:0}
 .home-view .agenda-row .agenda-system-label{margin-top:4px}
@@ -13,7 +16,7 @@
 .home-view .agenda-day.is-overdue-group{padding:11px 12px;border-radius:9px;background:rgba(137,81,57,.1);border:1px solid rgba(206,129,84,.27)}
 .home-view .agenda-day.is-overdue-group h4{color:#f3bb98}
 .home-view .agenda-row.is-overdue .agenda-overdue-date{color:#deaa86;font-size:10px;line-height:1.45}
-.agenda-task-action,.todoist-task-action{font:inherit;cursor:pointer;font-size:10px;font-weight:700;line-height:1.3;white-space:nowrap;min-height:29px;padding:5px 8px;border:1px solid rgba(140,168,183,.35);background:rgba(255,255,255,.045);border-radius:6px;color:var(--text)}
+.agenda-task-action,.todoist-task-action{font:inherit;cursor:pointer;font-size:10px;font-weight:700;line-height:1.3;white-space:nowrap;min-height:32px;padding:6px 10px;border:1px solid rgba(140,168,183,.45);background:rgba(255,255,255,.065);border-radius:6px;color:var(--text)}
 .agenda-task-action:hover,.todoist-task-action:hover{border-color:var(--accent);background:var(--accent-dim)}
 .agenda-task-action:focus-visible,.todoist-task-action:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .agenda-task-action:disabled,.todoist-task-action:disabled{opacity:.5;cursor:wait}
@@ -30,3 +33,5 @@ body[data-theme="light"] .agenda-task-action,body[data-theme="light"] .todoist-t
   .home-view .agenda-day.is-overdue-group{padding:7px}
   .todoist-task-action{font-size:10px}
 }
+
+@media(max-width:440px){.todoist-decision-actions{gap:6px}.home-view .agenda-task-controls .agenda-task-action{min-width:59px}.todoist-task-controls{align-items:flex-start}}
