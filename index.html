@@ -21,6 +21,7 @@
   <link rel="stylesheet" href="mobile-nav.css?v=1.1.0" />
   <link rel="stylesheet" href="orbit-brand.css?v=4.0.0" />
   <link rel="stylesheet" href="agenda-overdue.css?v=1.2.1" />
+  <link rel="stylesheet" href="calendar.css?v=1.0.0" />
   <link rel="manifest" href="pulse.webmanifest?v=4.0.0" />
   <link rel="icon" type="image/png" href="assets/orbit-emblem-cutout.png?v=4.0.0" />
   <link rel="apple-touch-icon" sizes="160x160" href="apple-touch-icon.png?v=4.0.0" />
@@ -28,9 +29,10 @@
   <meta name="apple-mobile-web-app-title" content="ORBIT" />
   <script src="auth.js?v=0.6.2" defer></script>
   <script src="security-mfa.js?v=1.3.1" defer></script>
-  <script src="app.js?v=1.4.1" defer></script>
+  <script src="app.js?v=1.5.0" defer></script>
   <script src="orbit-cloud-sync.js?v=1.2.2" defer></script>
-  <script src="integrations.js?v=1.7.3" defer></script>
+  <script src="integrations.js?v=1.8.0" defer></script>
+  <script src="calendar.js?v=1.0.0" defer></script>
   <script src="assets/todoist-system.js?v=1.4.0" defer></script>
   <script src="fuel.js?v=0.6.5" defer></script>
   <script src="fuel-inbox.js?v=1.0.0" defer></script>
@@ -71,6 +73,7 @@
         <div class="nav-label">WORKSPACE</div>
         <button type="button" class="nav-item active" data-view="home"><span data-icon="layout-dashboard"></span> Overview <span class="nav-indicator"></span></button>
         <button type="button" class="nav-item" data-view="focus"><span data-icon="check-circle"></span> Todoist &amp; Tasks <span class="nav-count" id="nav-task-count">0</span></button>
+        <button type="button" class="nav-item" data-view="calendar"><span data-icon="calendar"></span> Calendar <span class="nav-indicator"></span></button>
         <span id="nav-gaia-count" hidden aria-hidden="true">—</span>
         <button type="button" class="nav-item" data-view="vita"><img class="nav-system-emblem" src="assets/systems/vita-metal.webp?v=2.0.0" width="21" height="21" alt=""> VITA <span class="nav-indicator"></span></button>
         <span id="nav-fuel-count" hidden aria-hidden="true">—</span>
@@ -113,7 +116,7 @@
           <div class="home-work-grid">
             <div class="home-main-stack">
               <section class="module home-agenda">
-                <div class="module-head home-module-head"><div><div class="eyebrow small">TODOIST</div><h3>Overdue, today &amp; tomorrow</h3></div><div class="home-module-actions"><button type="button" class="quiet-pill" data-refresh="todoist">Refresh</button><button type="button" class="subtle-link" data-view="focus">All tasks <span data-icon="arrow-right"></span></button></div></div>
+                <div class="module-head home-module-head"><div><div class="eyebrow small">TODOIST</div><h3>Overdue, today &amp; tomorrow</h3></div><div class="home-module-actions"><button type="button" class="quiet-pill" data-refresh="todoist">Refresh</button><button type="button" class="subtle-link" data-view="focus">All tasks <span data-icon="arrow-right"></span></button><button type="button" class="subtle-link" data-view="calendar">Calendar <span data-icon="calendar"></span></button></div></div>
                 <p id="todoist-home-note" class="watch-detail home-source-note"></p>
                 <div id="todoist-home-list" class="live-task-list"><p class="watch-detail">Connect Todoist to load your agenda.</p></div>
               </section>
@@ -153,6 +156,37 @@
           </div>
           <div class="dashboard-lower home-capture">
             <section class="module note-module"><div class="module-head"><div><div class="eyebrow small">NOTES</div><h3>Scratchpad</h3></div><span data-icon="pen-line" class="muted-icon"></span></div><textarea id="scratchpad" placeholder="An idea, a reminder, something to remember…" aria-label="Scratchpad notes"></textarea><div class="note-bottom"><span data-icon="hard-drive"></span> Saved on this device · cloud optional <span id="note-saved" aria-live="polite"></span></div></section>
+          </div>
+        </section>
+        <section data-panel="calendar" class="view-panel orbit-calendar-view" id="orbit-calendar" hidden aria-label="Calendar and dated Todoist tasks">
+          <div class="eyebrow"><span class="eyebrow-line"></span> ORBIT / PLANNING</div>
+          <div class="page-head"><div><h1>Calendar<span class="accent-period">.</span></h1><p>ORBIT events and Todoist due dates in one place.</p></div><button class="primary-button" type="button" data-cal-new-event><span data-icon="plus"></span> New event</button></div>
+          <div class="cal-toolbar">
+            <div class="cal-navigation">
+              <button type="button" class="cal-button" data-cal-prev aria-label="Previous calendar period">‹</button>
+              <button type="button" class="cal-button" data-cal-today>Today</button>
+              <button type="button" class="cal-button" data-cal-next aria-label="Next calendar period">›</button>
+              <h2 id="calendar-period">Calendar</h2>
+            </div>
+            <div class="cal-modes" role="group" aria-label="Calendar display mode">
+              <button type="button" class="cal-button is-active" data-cal-mode="month" aria-pressed="true">Month</button>
+              <button type="button" class="cal-button" data-cal-mode="week" aria-pressed="false">Week</button>
+            </div>
+          </div>
+          <p class="cal-status" id="calendar-status" role="status">Checking your calendar…</p>
+          <div class="cal-layout">
+            <section class="cal-month-card" aria-label="Calendar dates">
+              <div class="cal-grid" id="calendar-grid"></div>
+            </section>
+            <section class="cal-day-card" aria-label="Selected day agenda">
+              <div class="cal-day-head"><h3 id="calendar-selected">Today</h3><span id="calendar-day-count" class="cal-day-count">0 items</span></div>
+              <div class="cal-day-list" id="calendar-day-list"></div>
+              <div class="cal-day-actions">
+                <button type="button" id="cal-new-event" class="cal-button cal-primary" data-cal-new-event>+ Event</button>
+                <button type="button" id="cal-new-task" class="cal-button" data-cal-new-task>+ Todoist task</button>
+              </div>
+              <p class="helper-paragraph">Events belong to your ORBIT workspace. Tasks stay in Todoist and can be checked off there or here. Enable ORBIT cloud sync in Settings to share manually added events across devices.</p>
+            </section>
           </div>
         </section>
         <section data-panel="projects" class="view-panel" hidden>
@@ -414,7 +448,7 @@
           <section class="module setting-card account-settings"><div class="settings-icon"><span data-icon="shield-check"></span></div><h3>Your ORBIT account</h3><p>Signed in with your GAIA account. Signing out of ORBIT also signs out of GAIA in this browser.</p><div id="orbit-settings-email" class="account-email">Loading account…</div><button id="orbit-signout" class="outline-button" type="button">Sign out</button><div class="mfa-settings-widget"><strong>Two-factor authentication</strong><p id="mfa-settings-status">Checking your authenticators…</p><button type="button" id="mfa-open" class="outline-button">Manage authenticators</button><p>Authenticator verification is required to access private ORBIT and GAIA data.</p></div><p class="settings-warning">Your local workspace is saved on this device. Enable optional MFA-protected cloud sync below to access it on other devices.</p></section>
           <section class="module setting-card orbit-cloud-card">
             <div class="settings-icon"><span data-icon="database"></span></div><h3>Cross-device workspace sync</h3>
-            <p>Projects, routines, quick links, local tasks, scratchpad, and legacy local records. Stored privately with your existing Supabase account and mandatory MFA. ECHO, GAIA, FUEL and RUNE keep their own data.</p>
+            <p>Projects, routines, calendar events, quick links, local tasks, scratchpad, and legacy local records. Stored privately with your existing Supabase account and mandatory MFA. ECHO, GAIA, FUEL and RUNE keep their own data.</p>
             <strong id="orbit-sync-status" class="orbit-sync-status" role="status" aria-live="polite">Loading cloud status…</strong>
             <p id="orbit-sync-detail" class="orbit-sync-detail">This browser keeps its own data until you choose to sync.</p>
             <div class="orbit-sync-actions">
@@ -428,7 +462,7 @@
           </section>
           <section class="module setting-card"><div class="settings-icon"><span data-icon="palette"></span></div><h3>Appearance</h3><p>Choose a look for your command center.</p><div class="theme-choices"><button id="theme-dark" type="button" data-theme-choice="dark" class="theme-choice selected"><span data-icon="moon"></span> Midnight</button><button id="theme-light" type="button" data-theme-choice="light" class="theme-choice"><span data-icon="sun"></span> Daylight</button></div></section>
           <section class="module setting-card"><div class="settings-icon"><span data-icon="link"></span></div><h3>Quick launch links</h3><p>Add shortcuts for apps, ChatGPT Projects, or frequently visited pages.</p><div id="settings-links" class="settings-links"></div><button type="button" class="outline-button setting-action" data-action="add-link"><span data-icon="plus"></span> Add shortcut</button><div class="chat-shortcut-settings"><strong>ORBIT development chat</strong><p id="orbit-chat-setting-status" class="watch-detail">Checking your saved chat link…</p><button type="button" class="quiet-pill" id="orbit-chat-configure"><span data-icon="pen-line"></span> Set or change chat link</button></div></section>
-          <section class="module setting-card"><div class="settings-icon"><span data-icon="database"></span></div><h3>Your data</h3><p>Save a backup of your local projects, priorities, routines, links, and notes (plus any legacy local records). Todoist and GAIA are not copied into the backup. Alternatively enable protected cloud sync in Settings to share the setup. Keep this sensitive export secure.</p><div class="data-actions"><button type="button" class="outline-button" id="export-data"><span data-icon="download"></span> Export backup</button><label class="outline-button file-label"><span data-icon="upload"></span> Import backup <input id="import-data" type="file" accept="application/json,.json" hidden></label></div><div class="settings-warning"><span data-icon="info"></span> Backups remain useful even when cloud sync is active.</div><button type="button" id="orbit-import-legacy" class="outline-button legacy-import" hidden>Import older ORBIT browser data</button></section>
+          <section class="module setting-card"><div class="settings-icon"><span data-icon="database"></span></div><h3>Your data</h3><p>Save a backup of your local calendar events, projects, priorities, routines, links, and notes (plus any legacy local records). Todoist and GAIA are not copied into the backup. Alternatively enable protected cloud sync in Settings to share the setup. Keep this sensitive export secure.</p><div class="data-actions"><button type="button" class="outline-button" id="export-data"><span data-icon="download"></span> Export backup</button><label class="outline-button file-label"><span data-icon="upload"></span> Import backup <input id="import-data" type="file" accept="application/json,.json" hidden></label></div><div class="settings-warning"><span data-icon="info"></span> Backups remain useful even when cloud sync is active.</div><button type="button" id="orbit-import-legacy" class="outline-button legacy-import" hidden>Import older ORBIT browser data</button></section>
           <section class="module setting-card"><div class="settings-icon"><span data-icon="shield-check"></span></div><h3>Privacy & integrations</h3><p>Todoist supports an encrypted server-side OAuth connection across devices, with a temporary browser-tab token fallback. Your ORBIT sign-in uses GAIA’s existing Supabase account and owner-restricted tables. Todoist normally connects through its approval screen without a personal API token. No finance or health syncing.</p><div class="integrations"><div><span class="status-dot ready"></span> GAIA <span>Public catalog + signed-in tasks</span></div><div><span class="status-dot planned"></span> Todoist <span>Cloud OAuth; connect from Tasks</span></div><div><span class="status-dot planned"></span> Money &amp; Health <span>Paused</span></div><div><span class="status-dot ready"></span> Supabase authentication <span>Shared with GAIA</span></div><div><span class="status-dot ready"></span> ORBIT workspace sync <span>Opt-in from Settings</span></div></div><button type="button" class="danger-link" id="reset-data">Reset ORBIT data on this device</button></section></div>
         </section>
         <footer class="main-footer"><span>ORBIT / SYSTEM MAP</span><span>v1.4.0</span></footer>
@@ -452,6 +486,28 @@
       </section>
     </div>
   </div>
+  <dialog id="calendar-event-dialog" class="item-dialog" aria-labelledby="cal-event-dialog-title">
+    <form id="calendar-event-form" class="cal-event-form">
+      <div class="dialog-header"><div><div class="eyebrow small">ORBIT / CALENDAR</div><h2 id="cal-event-dialog-title">New event</h2></div><button type="button" id="cal-event-close" class="small-icon-btn" aria-label="Close"><span data-icon="x"></span></button></div>
+      <div class="dialog-fields">
+        <label>Event title<input type="text" name="title" required maxlength="160" placeholder="What's happening?"></label>
+        <label>Date<input type="date" name="date" required></label>
+        <label class="cal-all-day"><input type="checkbox" name="allDay" checked> All-day event</label>
+        <div class="cal-form-grid">
+          <label class="cal-time-field">Start time<input type="time" name="start" value="09:00"></label>
+          <label class="cal-time-field">End time<input type="time" name="end" value="10:00"></label>
+        </div>
+        <label>Location (optional)<input type="text" name="location" maxlength="180" placeholder="Where?"></label>
+        <label>Notes (optional)<textarea name="notes" rows="3" maxlength="1000" placeholder="Details to remember"></textarea></label>
+      </div>
+      <p id="cal-event-error" role="alert"></p>
+      <div class="cal-dialog-actions">
+        <button type="button" class="cal-button" id="cal-event-delete" hidden>Delete event</button>
+        <button type="button" class="cal-button" id="cal-event-cancel">Cancel</button>
+        <button type="submit" class="cal-button cal-primary">Save event</button>
+      </div>
+    </form>
+  </dialog>
   <dialog id="item-dialog" class="item-dialog" aria-labelledby="dialog-title"><form id="item-form" method="dialog" novalidate><div class="dialog-header"><div><div id="dialog-eyebrow" class="eyebrow small">CREATE</div><h2 id="dialog-title">Add something</h2></div><button type="button" class="small-icon-btn" id="dialog-close" aria-label="Close"><span data-icon="x"></span></button></div><div id="dialog-fields" class="dialog-fields"></div><div class="dialog-actions"><button type="button" class="outline-button" id="dialog-cancel">Cancel</button><button type="submit" class="primary-button" id="dialog-submit">Save</button></div></form></dialog>
   <dialog id="todoist-create-dialog" class="item-dialog"><form id="todoist-create-form"><div class="dialog-header"><div><div class="eyebrow small">TODOIST / NEW TASK</div><h2>Add a task</h2></div><button class="small-icon-btn" type="button" id="todoist-create-close" aria-label="Close"><span data-icon="x"></span></button></div><div class="dialog-fields"><label class="dialog-field">Task name<input name="content" type="text" minlength="1" maxlength="300" required placeholder="What needs doing?"></label><label class="dialog-field">Due date (optional)<input name="due_date" type="date"></label><label class="dialog-field">Priority<select name="priority"><option value="1">Normal</option><option value="3">High (p2)</option><option value="4">Urgent (p1)</option></select></label></div><div class="dialog-actions"><button class="outline-button" type="button" id="todoist-create-cancel">Cancel</button><button class="primary-button" type="submit">Add to Todoist</button></div></form></dialog>
   <dialog id="orbit-chat-dialog" class="item-dialog chat-shortcut-dialog" aria-labelledby="orbit-chat-dialog-title">
