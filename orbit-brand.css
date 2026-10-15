@@ -17,3 +17,14 @@
  .orbit-home-logo{width:36px;height:36px;flex-basis:36px;border-radius:0;}
  .system-launch-bar{gap:6px;}
 }
+
+/* v4: native transparent PNG, no SVG/JPEG matte or square backing. */
+.orbit-logo-mark,.auth-brand .orbit-logo-mark{background:transparent!important;background-image:none!important;box-shadow:none!important;border:0!important;border-radius:0!important;}
+.orbit-logo-mark img,.orbit-home-logo,.orbit-auth-watermark{
+ background:transparent!important;background-image:none!important;
+ border:0!important;border-radius:0!important;box-shadow:none!important;
+ mix-blend-mode:screen;
+}
+body[data-theme="light"] .orbit-logo-mark img,
+body[data-theme="light"] .orbit-home-logo,
+body[data-theme="light"] .orbit-auth-watermark{mix-blend-mode:normal;}
