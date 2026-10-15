@@ -156,7 +156,7 @@
     const detail=[due?(overdue?'Overdue · ':'Due ')+prettyDate(due):'No due date', Number(t.priority||1)>=3?'High priority':''].filter(Boolean).join(' · ');
     return `<article class="live-task${overdue?' is-overdue':''}"${t._treeDepth?' style="margin-left:'+Math.min(t._treeDepth,5)*1.15+'rem;border-left:2px solid currentColor"':''}><input type="checkbox" data-todoist-done="${esc(t.id)}" aria-label="Complete ${esc(t.content)}"><div class="live-task-body"><strong>${t._treeDepth?'↳ ':''}${esc(t.content)}</strong><small>${esc(detail)}</small><div class="todoist-task-controls">${todoistTaskAction(t,'todoist-task-action')}<a href="${esc(safeTaskLink(t.id))}" target="_blank" rel="noopener noreferrer">Open in Todoist ↗</a></div></div></article>`;
   }
-  const HOME_SYSTEMS=['gaia','echo','rune','fuel','pulse'];
+  const HOME_SYSTEMS=['gaia','echo','rune','fuel','pulse','vita','quill','driftmark','orbit'];
   function homeTaskSystem(t){
     const labels=Array.isArray(t?.labels)?t.labels.map(x=>String(x).replace(/^@/,'').trim().toLowerCase()):[];
     return HOME_SYSTEMS.find(x=>labels.includes(x)) || ancestorsOf(t).map(p=>homeTaskSystem(p)).find(x=>x!=='general') || 'general';
@@ -172,13 +172,22 @@
   }
   function homeTaskMarkup(t){
     const system=homeTaskSystem(t);
-    const icon=system==='general'?'':`<img class="agenda-system-icon" src="assets/systems/${system}.svg" alt="" width="20" height="20">`;
+    // Unassigned Todoist tasks belong to ORBIT. Preserve the source icon for module-tagged tasks.
+    const origin=system==='general'?'orbit':system;
+    const iconAssets={
+      orbit:'assets/orbit-emblem-cutout.png?v=4.0.0',
+      vita:'assets/systems/vita-metal.webp?v=2.0.0',
+      quill:'assets/systems/quill-blue-metal.png?v=2.0.0',
+      driftmark:'assets/systems/quill-blue-metal.png?v=2.0.0'
+    };
+    const iconSrc=iconAssets[origin]||'assets/systems/'+origin+'.svg';
+    const icon=`<img class="agenda-system-icon" src="${iconSrc}" alt="" width="20" height="20">`;
     const due=dayOf(t)||t._groupDay||'';
     const overdue=!!due && due<TODAY();
     const dateLabel=due ? `<small class="agenda-due-date${overdue?' agenda-overdue-date':''}" title="${esc(overdue?'Overdue since '+prettyDate(due):'Due '+prettyDate(due))}">${esc(overdue?'Due '+prettyDate(due):prettyDate(due))}</small>` : '<small class="agenda-due-date" aria-hidden="true">—</small>';
     return `<article class="agenda-row${overdue?' is-overdue':''}">
       <input type="checkbox" data-todoist-done="${esc(t.id)}" aria-label="Complete ${esc(t.content)}">
-      <span class="agenda-system-label">${icon}${esc(system==='general'?'GENERAL':system.toUpperCase())}</span>
+      <span class="agenda-system-label">${icon}${esc(origin==='driftmark'?'QUILL':origin.toUpperCase())}</span>
       <div class="agenda-task-layout">
         <a href="${esc(safeTaskLink(t.id))}" target="_blank" rel="noopener noreferrer" class="agenda-task-title"${t._treeDepth?' style="padding-left:'+Math.min(t._treeDepth,5)*0.7+'rem"':''}>${t._treeDepth?'↳ ':''}${esc(t.content)}</a>
         ${dateLabel}
