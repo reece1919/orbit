@@ -1,6 +1,7 @@
 /* Planning and prose stay separate. AI briefs may never supply draft fields. */
 (function (root) {
   "use strict";
+  const F = root.DriftmarkFormat || (typeof module === "object" && module.exports ? require("./formatting.js") : null);
   const STATUSES = ["established", "proposed", "undecided", "in_world_uncertainty", "needs_checking"];
   const LABELS = { established: "Established in supplied sources", proposed: "Proposal", undecided: "Author decision needed",
     in_world_uncertainty: "Unknown within the world", needs_checking: "Needs checking" };
@@ -164,7 +165,7 @@
     if (!sections.length) return "";
     const heading = format === "bbcode" ? "[h1]" + title + "[/h1]" : title;
     return heading + "\n\n" + sections.map(s => ((format === "bbcode" ? "[h2]" + s.title + "[/h2]" : s.title) +
-      "\n" + s.draft.trim())).join("\n\n");
+      "\n" + (format === "bbcode" || !F ? s.draft.trim() : F.plainText(s.draft)))).join("\n\n");
   }
   function planningPrompt(entry, article, references) {
     const a = normalizeArticle(article) || starter(entry.category);

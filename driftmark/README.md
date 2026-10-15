@@ -10,16 +10,28 @@ The AI plans; the author writes. By default, creative assistance supplies short 
 
 The interface preserves the distinction between an author decision that remains open and uncertainty that belongs within the fictional world. Canon status is separate from writing status.
 
-## Writing workflow (v0.5)
+## Writing workflow (v0.6)
 
 1. Open or create an entry. Add the article's purpose, audience, and relevant atlas references.
 2. Choose **Prepare AI planning brief**, then copy the instructions into the existing Driftbound GPT or creative chat.
 3. Bring back the JSON response through **Import AI brief**. Preview its points, questions, and prompts before applying it.
-4. Work through the sections. The plan is beside an initially empty draft editor. Write in your own words, record decisions, and review each drafted section.
+4. Read the formatted World Anvil reference and work through the sections. Use the visual editor to write and format your own words beside the plan. **Use World Anvil text in this section** deliberately brings the attached article into the active draft; category fields have their own **Use current text as my starting draft** action. Existing drafts require confirmation before replacement. Record decisions and review each drafted section.
 5. **Save to cloud** to keep the plan, decisions, and prose together across devices.
 6. For an attached World Anvil article, choose **Review World Anvil update**, compare the current destination with your writing, acknowledge review, and save. **Export your article** also provides plain text or World Anvil BBCode for manual transfer.
 
 The built-in starter outline is clearly labeled. It is generic planning guidance, not an AI response or established lore.
+
+## Visual formatting
+
+World Anvil references, category-field references, and both sides of the update review show formatted text by default. Drafts open in **Visual** mode with paragraph/headings/quote styles, bold, italic, underline, bullet and numbered lists, links, and undo/redo. **BBCode** switches to the underlying source when needed. The toolbar wraps on mobile. Tables imported from World Anvil display as tables and their cell text can be edited visually; adding/removing table structure remains a BBCode operation.
+
+The persisted draft remains a BBCode string in the existing workspace and backups. An untouched visual draft round-trips byte for byte; edited supported elements retain original wrappers and arguments, while new formatting converts back to World Anvil BBCode. Section-local undo cannot restore another section's writing. Oversized edits are rejected as a whole rather than silently truncated. Source articles longer than the 80,000-character section limit remain readable but cannot be imported wholesale into one section.
+
+The renderer supports common headings, paragraphs, emphasis, lists (including hyphen lists), quotes, links, tables, line breaks, and alignment. World Anvil article mentions and wiki-style references appear as preserved article-link items. Advanced embeds, custom layouts/styles, restrictions, hidden comments, unsupported paired tags, and ambiguous block layouts are preserved as noneditable items. Their source stays intact; full text is readable where available. Images, maps, and other embeds are represented by placeholders, and World Anvil theme CSS is not reproduced. Use BBCode view to change those advanced items.
+
+Source content is parsed as BBCode, never trusted as HTML. HTML text is escaped; generated elements and link protocols use allowlists. No remote images, iframes, scripts, custom styles, or new network destinations are loaded. Pasted external HTML is ignored in favor of plain text. Copy/paste within formatted DRIFTMARK views also carries a BBCode clipboard representation, which is parsed through the same safe renderer. Dropped HTML/files are blocked. Plain-text exports remove formatting; World Anvil exports and reviewed writes retain BBCode. Formatting does not add AI prose or change the saved-token, login, MFA, or publication-review paths.
+
+Syntax follows the official [World Anvil formatting guide](https://www.worldanvil.com/learn/bbcode-tutorials/basic-bbcode), [list guide](https://www.worldanvil.com/learn/bbcode-tutorials/lists), and [external-link guide](https://www.worldanvil.com/learn/bbcode-tutorials/external-links).
 
 ## Planning-brief safeguards
 
@@ -99,11 +111,11 @@ The complete imported source is available under **World Anvil reference text**, 
 
 Run: `node --test driftmark/tests/*.test.cjs driftmark/tests/*.test.mjs`
 
-The 95 tests cover authored-text preservation, planning imports, exports, source serialization, verified JWT/MFA handling, origin restrictions, conflicts, content-only PATCH and read-back, pagination, restoring saved connections, sanitized storage errors, forgetting credentials, sign-out during requests, and uncertain writes. Category tests also cover all seven text fields, partial PATCH, reviewed empty-field clears, unchanged fields and metadata, fixed planning IDs, selected-field drafts, and reload preservation. Reconciliation tests cover complete and partial pagination, stable-ID deduplication, remote renames, missing articles, cached failures, reference-only updates, owner changes, stopping, rate limits, cloud revision conflicts, automatic login loading, and preserving a dirty active editor in both its backup and later save. The GitHub workflow also checks all frontend and backend source syntax.
+The 125 tests cover authored-text preservation, planning imports, exports, source serialization, verified JWT/MFA handling, origin restrictions, conflicts, content-only PATCH and read-back, pagination, restoring saved connections, sanitized storage errors, forgetting credentials, sign-out during requests, and uncertain writes. Category tests also cover all seven text fields, partial PATCH, reviewed empty-field clears, unchanged fields and metadata, fixed planning IDs, selected-field drafts, and reload preservation. Reconciliation tests cover complete and partial pagination, stable-ID deduplication, remote renames, missing articles, cached failures, reference-only updates, owner changes, stopping, rate limits, cloud revision conflicts, automatic login loading, and preserving a dirty active editor in both its backup and later save. Formatting tests additionally exercise safe rendering, literal text and comments, malformed/deep nesting, tables, both list syntaxes, exact untouched round-trips, adjacent edits around preserved items, link changes, visual/source switching, clipboard sanitation, size limits, section-local undo, draft navigation/reload, category selection, and formatted review/sign-out. These use deterministic DOM adapters; browser engine/layout and native formatting-command behavior are not covered by those adapters. The GitHub workflow also checks all frontend and backend source syntax.
 
 Storage migration `20261014192310_persist_driftmark_worldanvil_connection` was applied from `supabase/functions/driftmark-worldanvil/connection.sql`. A rolled-back database test verified credential round-trip, rotation, encrypted storage, wrong-owner rejection, input validation, and removal of both the mapping and Vault secret. Catalog checks confirmed RLS, service-only RPC permissions, browser-role denial of the private schema and decrypted Vault view, and SECURITY INVOKER public wrappers. The existing writing table remains in use.
 
 The private mapping intentionally has no browser RLS policies, which denies direct row access. The [Supabase linter's informational no-policy notice](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy) reflects this design; credential operations use only the protected service functions.
 
-The category and reconciliation releases were tested with simulated upstream services and verified source contracts; authenticated end-to-end category reads and saves require the owner's saved connection. At release preparation, the credential mapping was absent. Live category forwarding and writes are not claimed as verified without that connection. Visual browser QA was unavailable in this environment. AI planning remains a copy-and-paste handoff to the existing GPT and cannot insert article prose.
+The saved owner connection and live article import were verified after the reconciliation release: on 2026-10-14, the private workspace held all 205 indexed articles with 205 cached source texts and no unavailable text. Category forwarding/writes have automated simulated-service coverage; a live category write is not claimed as verified. Visual browser QA was unavailable in this environment (the browser executable is absent); formatting has parser, serialization, workbench, and reviewed-update integration coverage. AI planning remains a copy-and-paste handoff to the existing GPT and cannot insert article prose.
 

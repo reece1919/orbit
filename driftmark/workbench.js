@@ -8,6 +8,20 @@
       let article = null, active = "", pending = null;
       const section = () => article?.sections.find(s => s.id === active);
       const mark = () => options.markDirty();
+      function draftChanged() {
+        if (article?.kind === "category" && !$("#category-field-include").disabled) $("#category-field-include").checked = true;
+        $("#section-reviewed").checked = false; flush(); mark(); counts();
+      }
+      const draft = window.DriftmarkEditor?.create({ onChange: draftChanged }) || {
+        getValue: () => $("#section-draft").value,
+        setValue: text => { $("#section-draft").value = text; }, focus: () => $("#section-draft").focus()
+      };
+      if (!window.DriftmarkEditor) $("#section-draft").addEventListener("input", draftChanged);
+      function showSource(id, text) {
+        $(id).value = text;
+        const preview = $(id + "-preview");
+        if (window.DriftmarkFormat) window.DriftmarkFormat.show(preview, text); else preview.textContent = text;
+      }
       function flush() {
         if (!article) return;
         article.purpose = $("#article-purpose").value;
@@ -16,7 +30,7 @@
         article.last_section_id = active;
         const s = section();
         if (s) {
-          s.draft = $("#section-draft").value;
+          s.draft = draft.getValue();
           if (article.kind === "category") s.include = $("#category-field-include").checked;
           s.decisions = $("#section-decisions").value;
           s.reviewed = $("#section-reviewed").checked && !!s.draft.trim();
@@ -34,7 +48,7 @@
         $("#writing-progress").textContent = drafted + "/" + article.sections.length + " drafted · " + reviewed + " reviewed";
       }
       function counts() {
-        const s = section(), n = W.wordCount(s?.draft);
+        const s = section(), n = W.wordCount(window.DriftmarkFormat ? window.DriftmarkFormat.plainText(s?.draft) : s?.draft);
         $("#word-count").textContent = n + (n === 1 ? " word" : " words");
         $("#section-reviewed").disabled = !s?.draft.trim();
         if (!s?.draft.trim()) $("#section-reviewed").checked = false;
@@ -71,20 +85,26 @@
           "</summary>" + (r.excerpt ? "<blockquote>" + esc(r.excerpt) + "</blockquote>" :
           '<p class="hint">Open the reference to check the source.</p>') + "</details>").join("") : "";
         $("#writing-prompt").textContent = s.prompt || "Write this section in your own words, using the points and questions above.";
-        $("#section-draft").value = s.draft;
+        draft.setValue(s.draft);
         $("#section-decisions").value = s.decisions;
         $("#section-reviewed").checked = s.reviewed;
+        sourceControls();
+        counts();
+      }
+      function sourceControls() {
+        const s = section(); if (!s) return;
         const category = article.kind === "category", source = options.getRecord().world_anvil;
         const available = category && Object.hasOwn(source?.fields || {}, s.id);
         $("#category-field-controls").hidden = !category;
-        $("#category-field-source").value = available ? source.fields[s.id] : "This field was not returned by World Anvil.";
+        showSource("#category-field-source", available ? source.fields[s.id] : "This field was not returned by World Anvil.");
+        $("#article-use-current").hidden = category || source?.kind !== "article";
+        $("#article-use-current").disabled = !source?.content || source.content.length > 80000;
         $("#category-field-use-current").disabled = !available || source.fields[s.id].length > 80000;
         $("#category-field-include").checked = s.include;
         $("#category-field-include").disabled = !available;
         $("#category-field-note").textContent = available ?
           "Only included fields are sent. An included empty draft clears this field after your review. BBCode is kept as written." :
           "You can keep a private draft, but this field cannot be sent until World Anvil returns its current text.";
-        counts();
       }
       function render() {
         if (!article) return;
@@ -126,18 +146,21 @@
         const button = e.target.closest("[data-section]"); if (!button || !article) return;
         flush(); active = button.dataset.section; renderSection();
       });
-      $("#section-draft").addEventListener("input", () => {
-        if (article?.kind === "category" && !$("#category-field-include").disabled) $("#category-field-include").checked = true;
-        $("#section-reviewed").checked = false; flush(); mark(); counts();
-      });
       $("#category-field-include").addEventListener("change", () => { flush(); mark(); counts(); });
       $("#category-field-use-current").addEventListener("click", () => {
         if (article?.kind !== "category" || $("#category-field-use-current").disabled) return;
         flush(); const s = section(), text = options.getRecord().world_anvil?.fields[s.id];
         if (typeof text !== "string" || text.length > 80000) return;
         if (s.draft && s.draft !== text && !confirm("Replace this field's draft with the current World Anvil text?")) return;
-        $("#section-draft").value = text; $("#section-reviewed").checked = false; $("#category-field-include").checked = true;
-        flush(); mark(); counts(); $("#section-draft").focus();
+        draft.setValue(text); $("#section-reviewed").checked = false; $("#category-field-include").checked = true;
+        flush(); mark(); counts(); draft.focus();
+      });
+      $("#article-use-current").addEventListener("click", () => {
+        if (article?.kind === "category") return;
+        flush(); const s = section(), text = options.getRecord().world_anvil?.content;
+        if (!s || typeof text !== "string" || !text || text.length > 80000) return;
+        if (s.draft && s.draft !== text && !confirm("Replace this section's draft with the current World Anvil text? Other section drafts stay saved.")) return;
+        draft.setValue(text); draftChanged(); draft.focus();
       });
       $("#section-decisions").addEventListener("input", () => { flush(); mark(); });
       $("#section-reviewed").addEventListener("change", () => { flush(); mark(); counts(); });
@@ -157,7 +180,7 @@
       });
       [["#previous-section", -1], ["#next-section", 1]].forEach(([q, offset]) => $(q).addEventListener("click", () => {
         flush(); const index = article.sections.findIndex(s => s.id === active) + offset;
-        if (article.sections[index]) { active = article.sections[index].id; renderSection(); $("#section-draft").focus(); }
+        if (article.sections[index]) { active = article.sections[index].id; renderSection(); draft.focus(); }
       }));
       $("#add-section").addEventListener("click", () => {
         flush();
@@ -231,6 +254,7 @@
       $("#download-article").addEventListener("click", () => options.download(
         $("#article-export-text").value, (options.getRecord().title || "driftbound-article").replace(/[^a-z0-9_-]+/gi, "-").slice(0, 80) + ".txt", "text/plain"));
       return {
+        refreshSource: sourceControls,
         open(entry) {
           article = entry.world_anvil?.kind === "category" ? W.normalizeCategoryArticle(entry.article) : W.normalizeArticle(entry.article) || W.starter(entry.category);
           if (!article.sections.length) article.sections = W.starter(entry.category).sections;

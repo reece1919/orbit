@@ -32,7 +32,7 @@ const wa=window.DriftmarkWorldAnvil.init({getClient:()=>client,getOwner:()=>uid,
   next=R.reconcileSources(next,batch.sources||[],batch.failed||[]).entries;
   if(!await saveCloud(next,{preserveEditor:true}))return false;
   const current=entries.find(e=>e.id===selected),target=linkedSource?.id||linkedLink?.id;
-  if(current&&target&&R.key(current)===target){linkedSource=current.world_anvil;linkedLink=current.world_anvil_link;wa.recordChanged()}
+  if(current&&target&&R.key(current)===target){linkedSource=current.world_anvil;linkedLink=current.world_anvil_link;desk.refreshSource?.();wa.recordChanged()}
   return true;
  },
  getArticleText:()=>W.articleContent(desk.collect()),
@@ -44,6 +44,7 @@ const wa=window.DriftmarkWorldAnvil.init({getClient:()=>client,getOwner:()=>uid,
    source_title:source.title,presence:"present",text_status:"available",checked_at:source.read_at}):null;
   if(!field("title").value.trim())field("title").value=source.title;
   if(!field("url").value.trim()&&source.url)field("url").value=source.url;
+  desk.refreshSource?.();
   dirty=true;$("#editor-state").textContent="Unsaved changes";
  },
  addReference:async source=>{
