@@ -174,8 +174,17 @@
     const system=homeTaskSystem(t);
     const icon=system==='general'?'':`<img class="agenda-system-icon" src="assets/systems/${system}.svg" alt="" width="20" height="20">`;
     const due=dayOf(t)||t._groupDay||'';
-    const overdue=due&&due<TODAY();
-    return `<article class="agenda-row${overdue?' is-overdue':''}"><input type="checkbox" data-todoist-done="${esc(t.id)}" aria-label="Complete ${esc(t.content)}"><span class="agenda-system-label">${icon}${esc(system==='general'?'GENERAL':system.toUpperCase())}</span><div class="agenda-task-main"><a href="${esc(safeTaskLink(t.id))}" target="_blank" rel="noopener noreferrer" class="agenda-task-title"${t._treeDepth?' style="padding-left:'+Math.min(t._treeDepth,5)*0.7+'rem"':''}>${t._treeDepth?'↳ ':''}${esc(t.content)}</a><div class="agenda-task-controls">${overdue?'<small class="agenda-overdue-date">Due '+esc(prettyDate(due))+'</small>':''}${todoistTaskAction(t,'agenda-task-action')}</div></div></article>`;
+    const overdue=!!due && due<TODAY();
+    const dateLabel=due ? `<small class="agenda-due-date${overdue?' agenda-overdue-date':''}" title="${esc(overdue?'Overdue since '+prettyDate(due):'Due '+prettyDate(due))}">${esc(overdue?'Due '+prettyDate(due):prettyDate(due))}</small>` : '<small class="agenda-due-date" aria-hidden="true">—</small>';
+    return `<article class="agenda-row${overdue?' is-overdue':''}">
+      <input type="checkbox" data-todoist-done="${esc(t.id)}" aria-label="Complete ${esc(t.content)}">
+      <span class="agenda-system-label">${icon}${esc(system==='general'?'GENERAL':system.toUpperCase())}</span>
+      <div class="agenda-task-layout">
+        <a href="${esc(safeTaskLink(t.id))}" target="_blank" rel="noopener noreferrer" class="agenda-task-title"${t._treeDepth?' style="padding-left:'+Math.min(t._treeDepth,5)*0.7+'rem"':''}>${t._treeDepth?'↳ ':''}${esc(t.content)}</a>
+        ${dateLabel}
+        ${todoistTaskAction(t,'agenda-task-action')}
+      </div>
+    </article>`;
   }
   function homeAgenda(){
     const today=TODAY(),future=new Date(today+'T12:00:00');
