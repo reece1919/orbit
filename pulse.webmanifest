@@ -13,6 +13,12 @@
   "background_color": "#070d19",
   "icons": [
     {
+      "src": "/orbit/apple-touch-icon.png?v=2.0.1",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
       "src": "/orbit/assets/orbit-logo.svg?v=2.0.0",
       "sizes": "any",
       "type": "image/svg+xml",
