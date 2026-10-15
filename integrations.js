@@ -249,6 +249,7 @@
       todoistLoading&&!todoistSyncTime?'<p class="watch-detail">Looking for your side quests…</p>':
       sidequests.length?sidequests.map(sideQuestMarkup).join(''):
       `<p class="watch-detail">${esc(todoistError||'No side quests.')}</p>`;
+    window.ORBITCalendar?.render();
   }
   async function todoistRequest(path, opts={}, apiToken=token){
     if(serverConnected && (!apiToken || apiToken===token)){
@@ -515,7 +516,17 @@
   $('#todoist-connect-form').addEventListener('submit',connectTodoist);
   $('#todoist-create-form').addEventListener('submit',createTodoist);
   $('#sidequest-create-form').addEventListener('submit',createSideQuest);
-  window.ORBITConnectedTodoist={active:()=>Boolean(token||serverConnected),render:renderTodoist,refreshGaiaPrivate};
+  window.ORBITConnectedTodoist={
+    active:()=>Boolean(token||serverConnected),
+    render:renderTodoist,
+    refreshGaiaPrivate,
+    getCalendarTasks:()=>tasks.map(t=>({
+      id:String(t.id),title:String(t.content||'Untitled task'),
+      date:dayOf(t),system:homeTaskSystem(t),priority:Number(t.priority||1),
+      recurring:!!t.due?.is_recurring,url:safeTaskLink(t.id)
+    })).filter(t=>t.date),
+    getCalendarStatus:()=>({connected:Boolean(token||serverConnected),loading:todoistLoading,syncedAt:todoistSyncTime,error:todoistError})
+  };
   document.addEventListener('orbit:auth-changed',event=>handleOrbitAccount(event.detail?.user||null));
   renderTodoist();renderGaiaPublic();renderGaiaPrivate();
   // Restore Todoist as soon as ORBIT knows the signed-in account, without
