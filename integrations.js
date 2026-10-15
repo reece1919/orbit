@@ -164,20 +164,25 @@
   function homeTaskMarkup(t){
     const system=homeTaskSystem(t);
     const icon=system==='general'?'':`<img class="agenda-system-icon" src="assets/systems/${system}.svg" alt="" width="20" height="20">`;
-    return `<article class="agenda-row"><input type="checkbox" data-todoist-done="${esc(t.id)}" aria-label="Complete ${esc(t.content)}"><span class="agenda-system-label">${icon}${esc(system==='general'?'GENERAL':system.toUpperCase())}</span><a href="${esc(safeTaskLink(t.id))}" target="_blank" rel="noopener noreferrer" class="agenda-task-title"${t._treeDepth?' style="padding-left:'+Math.min(t._treeDepth,5)*0.7+'rem"':''}>${t._treeDepth?'↳ ':''}${esc(t.content)}</a></article>`;
+    const due=dayOf(t)||t._groupDay||'';
+    const overdue=due&&due<TODAY();
+    return `<article class="agenda-row${overdue?' is-overdue':''}"><input type="checkbox" data-todoist-done="${esc(t.id)}" aria-label="Complete ${esc(t.content)}"><span class="agenda-system-label">${icon}${esc(system==='general'?'GENERAL':system.toUpperCase())}</span><span class="agenda-task-main"><a href="${esc(safeTaskLink(t.id))}" target="_blank" rel="noopener noreferrer" class="agenda-task-title"${t._treeDepth?' style="padding-left:'+Math.min(t._treeDepth,5)*0.7+'rem"':''}>${t._treeDepth?'↳ ':''}${esc(t.content)}</a>${overdue?'<small class="agenda-overdue-date">Due '+esc(prettyDate(due))+'</small>':''}</span></article>`;
   }
   function homeAgenda(){
     const today=TODAY(),future=new Date(today+'T12:00:00');
     future.setDate(future.getDate()+1);
     const tomorrow=`${future.getFullYear()}-${String(future.getMonth()+1).padStart(2,'0')}-${String(future.getDate()).padStart(2,'0')}`;
     const organized=ordered(tasks);
-    const fresh=organized.filter(t=>!isSideQuest(t)&&t._groupDay===today);
-    const next=organized.filter(t=>!isSideQuest(t)&&t._groupDay===tomorrow);
+    const visible=organized.filter(t=>!isSideQuest(t));
+    const effectiveDate=t=>dayOf(t)||t._groupDay||'';
+    const behind=visible.filter(t=>effectiveDate(t)&&effectiveDate(t)<today);
+    const fresh=visible.filter(t=>effectiveDate(t)===today);
+    const next=visible.filter(t=>effectiveDate(t)===tomorrow);
     const group=(name,list,limit)=>{
       if(!list.length)return `<section class="agenda-day"><h4>${name} <span class="agenda-count">0</span></h4><p class="agenda-empty">Nothing scheduled</p></section>`;
       return `<section class="agenda-day"><h4>${name} <span class="agenda-count">${list.length}</span></h4>${list.map(homeTaskMarkup).join('')}</section>`;
     };
-    return group('Today',fresh,6)+group('Tomorrow',next,4);
+    return (behind.length?group('Overdue',behind):'')+group('Today',fresh)+group('Tomorrow',next);
   }
   function sideQuestMarkup(t){
     const due=dayOf(t);
