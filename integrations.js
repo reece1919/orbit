@@ -181,13 +181,14 @@
       driftmark:'assets/systems/quill-blue-metal.png?v=2.0.0'
     };
     const iconSrc=iconAssets[origin]||'assets/systems/'+origin+'.svg';
-    const icon=`<img class="agenda-system-icon" src="${iconSrc}" alt="" width="20" height="20">`;
+    const originName=origin==='driftmark'?'QUILL':origin.toUpperCase();
+    const icon=`<img class="agenda-system-icon" src="${iconSrc}" alt="${esc(originName)}" width="20" height="20">`;
     const due=dayOf(t)||t._groupDay||'';
     const overdue=!!due && due<TODAY();
     const dateLabel=due ? `<small class="agenda-due-date${overdue?' agenda-overdue-date':''}" title="${esc(overdue?'Overdue since '+prettyDate(due):'Due '+prettyDate(due))}">${esc(overdue?'Due '+prettyDate(due):prettyDate(due))}</small>` : '<small class="agenda-due-date" aria-hidden="true">—</small>';
     return `<article class="agenda-row${overdue?' is-overdue':''}">
       <input type="checkbox" data-todoist-done="${esc(t.id)}" aria-label="Complete ${esc(t.content)}">
-      <span class="agenda-system-label">${icon}${esc(origin==='driftmark'?'QUILL':origin.toUpperCase())}</span>
+      <span class="agenda-system-label" title="${esc(originName)}">${icon}</span>
       <div class="agenda-task-layout">
         <a href="${esc(safeTaskLink(t.id))}" target="_blank" rel="noopener noreferrer" class="agenda-task-title"${t._treeDepth?' style="padding-left:'+Math.min(t._treeDepth,5)*0.7+'rem"':''}>${t._treeDepth?'↳ ':''}${esc(t.content)}</a>
         ${dateLabel}
