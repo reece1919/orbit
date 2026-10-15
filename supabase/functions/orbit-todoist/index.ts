@@ -200,9 +200,11 @@ async function changeTaskWithoutCompletion(user,payload){
   // for overdue tasks, while preserving the original recurrence expression.
   const next=String(payload?.next_date||"");
   if(!/^\d{4}-\d{2}-\d{2}$/.test(next))return errors(400,"Invalid next date.");
-  const currentLocal=new Intl.DateTimeFormat("en-CA",{timeZone:"America/Los_Angeles",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+  const parts=new Intl.DateTimeFormat("en-US",{timeZone:"America/Los_Angeles",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date());
+  const value=type=>parts.find(x=>x.type===type)?.value||"";
+  const currentLocal=value("year")+"-"+value("month")+"-"+value("day");
   const tomorrow=new Date(currentLocal+"T12:00:00Z");tomorrow.setUTCDate(tomorrow.getUTCDate()+1);
-  const min=tomorrow.toISOString().slice(0,10);
+  const min=String(task.due?.date||"").slice(0,10)<currentLocal?currentLocal:tomorrow.toISOString().slice(0,10);
   const max=new Date(tomorrow);max.setUTCDate(max.getUTCDate()+30);
   if(next<min||next>max.toISOString().slice(0,10))return errors(400,"Choose tomorrow or a date within 30 days.");
   const original=task.due;
