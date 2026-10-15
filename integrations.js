@@ -154,7 +154,7 @@
     function taskMarkup(t){
     const due=dayOf(t),overdue=due && due<TODAY();
     const detail=[due?(overdue?'Overdue · ':'Due ')+prettyDate(due):'No due date', Number(t.priority||1)>=3?'High priority':''].filter(Boolean).join(' · ');
-    return `<article class="live-task${overdue?' is-overdue':''}"${t._treeDepth?' style="margin-left:'+Math.min(t._treeDepth,5)*1.15+'rem;border-left:2px solid currentColor"':''}><input type="checkbox" data-todoist-done="${esc(t.id)}" aria-label="Complete ${esc(t.content)}"><div class="live-task-body"><strong>${t._treeDepth?'↳ ':''}${esc(t.content)}</strong><small>${esc(detail)}</small><a href="${esc(safeTaskLink(t.id))}" target="_blank" rel="noopener noreferrer">Open in Todoist ↗</a></div>${todoistTaskAction(t,'todoist-task-action')}</article>`;
+    return `<article class="live-task${overdue?' is-overdue':''}"${t._treeDepth?' style="margin-left:'+Math.min(t._treeDepth,5)*1.15+'rem;border-left:2px solid currentColor"':''}><input type="checkbox" data-todoist-done="${esc(t.id)}" aria-label="Complete ${esc(t.content)}"><div class="live-task-body"><strong>${t._treeDepth?'↳ ':''}${esc(t.content)}</strong><small>${esc(detail)}</small><div class="todoist-task-controls">${todoistTaskAction(t,'todoist-task-action')}<a href="${esc(safeTaskLink(t.id))}" target="_blank" rel="noopener noreferrer">Open in Todoist ↗</a></div></div></article>`;
   }
   const HOME_SYSTEMS=['gaia','echo','rune','fuel','pulse'];
   function homeTaskSystem(t){
@@ -173,7 +173,7 @@
     const icon=system==='general'?'':`<img class="agenda-system-icon" src="assets/systems/${system}.svg" alt="" width="20" height="20">`;
     const due=dayOf(t)||t._groupDay||'';
     const overdue=due&&due<TODAY();
-    return `<article class="agenda-row${overdue?' is-overdue':''}"><input type="checkbox" data-todoist-done="${esc(t.id)}" aria-label="Complete ${esc(t.content)}"><span class="agenda-system-label">${icon}${esc(system==='general'?'GENERAL':system.toUpperCase())}</span><span class="agenda-task-main"><a href="${esc(safeTaskLink(t.id))}" target="_blank" rel="noopener noreferrer" class="agenda-task-title"${t._treeDepth?' style="padding-left:'+Math.min(t._treeDepth,5)*0.7+'rem"':''}>${t._treeDepth?'↳ ':''}${esc(t.content)}</a>${overdue?'<small class="agenda-overdue-date">Due '+esc(prettyDate(due))+'</small>':''}</span>${todoistTaskAction(t,'agenda-task-action')}</article>`;
+    return `<article class="agenda-row${overdue?' is-overdue':''}"><input type="checkbox" data-todoist-done="${esc(t.id)}" aria-label="Complete ${esc(t.content)}"><span class="agenda-system-label">${icon}${esc(system==='general'?'GENERAL':system.toUpperCase())}</span><div class="agenda-task-main"><a href="${esc(safeTaskLink(t.id))}" target="_blank" rel="noopener noreferrer" class="agenda-task-title"${t._treeDepth?' style="padding-left:'+Math.min(t._treeDepth,5)*0.7+'rem"':''}>${t._treeDepth?'↳ ':''}${esc(t.content)}</a><div class="agenda-task-controls">${overdue?'<small class="agenda-overdue-date">Due '+esc(prettyDate(due))+'</small>':''}${todoistTaskAction(t,'agenda-task-action')}</div></div></article>`;
   }
   function homeAgenda(){
     const today=TODAY(),future=new Date(today+'T12:00:00');
