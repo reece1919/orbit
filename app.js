@@ -53,7 +53,7 @@
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const id = () => (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `id-${Date.now()}-${Math.random().toString(36).slice(2)}`;
   const defaultState = () => ({
-    version:2, theme:'dark', scratchpad:'', tasks:[], accounts:[], bills:[], checkins:[], balancesVisible:false,
+    version:2, theme:'dark', scratchpad:'', tasks:[], calendarEvents:[], accounts:[], bills:[], checkins:[], balancesVisible:false,
     routines:[{id:'exercise',name:'Get some exercise',goal:3,completions:[]},{id:'prescription',name:'Fill weekly prescription organizer',goal:1,completions:[]}],
     projects:[
       {id:'gaia',name:'GAIA',description:'Plant collection, care history, and your living herbarium.',type:'plants',status:'Live',url:'https://reece1919.github.io/gaia/'},
@@ -81,7 +81,14 @@
     catch { return ''; }
   }
   function validMeasure(v,min,max){if(v===null||v===undefined||v==='')return null;const n=Number(v);return Number.isFinite(n)&&n>=min&&n<=max?n:null;}
-  function normalized(data) {
+  const calendarValidDate = value => {
+     if(typeof value!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(value))return false;
+     const [y,m,d]=value.split('-').map(Number);
+     const check=new Date(y,m-1,d,12);
+     return y>=1900&&y<=2100&&check.getFullYear()===y&&check.getMonth()===m-1&&check.getDate()===d;
+   };
+   const calendarValidTime = value => typeof value==='string'&&/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(value);
+   function normalized(data) {
     const base = defaultState();
     if(!data || typeof data !== 'object' || Array.isArray(data) || ![1,2].includes(data.version)) throw new Error('Unsupported ORBIT backup format.');
     return {
@@ -93,7 +100,12 @@
       routines:Array.isArray(data.routines)?data.routines.slice(0,80).filter(x=>x&&typeof x==='object').map(x=>({id:safeText(x.id,90)||id(),name:safeText(x.name,100),goal:Math.max(1,Math.min(14,Number(x.goal)||1)),completions:Array.isArray(x.completions)?x.completions.filter(s=>/^\d{4}-\d{2}-\d{2}$/.test(s)).slice(-365):[]})).filter(x=>x.name):base.routines,
       theme:data.theme==='light'?'light':'dark', scratchpad:safeText(data.scratchpad,50000),
       tasks:Array.isArray(data.tasks)?data.tasks.slice(0,300).filter(x=>x&&typeof x==='object').map(x=>({id:safeText(x.id,90)||id(),title:safeText(x.title,160),priority:x.priority==='High'?'High':'Normal',due:/^\d{4}-\d{2}-\d{2}$/.test(x.due)?x.due:'',done:!!x.done,created:safeText(x.created,35)})).filter(x=>x.title):[],
-      projects:Array.isArray(data.projects)?data.projects.slice(0,100).filter(x=>x&&typeof x==='object').map(x=>({id:safeText(x.id,90)||id(),name:safeText(x.name,80),description:safeText(x.description,400),type:['plants','world','stream','work','general'].includes(x.type)?x.type:'general',status:['Live','In progress','Planned'].includes(x.status)?x.status:'Planned',url:safeUrl(x.url)})).filter(x=>x.name):base.projects,
+      calendarEvents:Array.isArray(data.calendarEvents)?data.calendarEvents.slice(0,1000).filter(x=>x&&typeof x==='object'&&calendarValidDate(x.date)).map(x=>({
+         id:safeText(x.id,90)||id(),title:safeText(x.title,160),date:x.date,
+         allDay:!!x.allDay,start:calendarValidTime(x.start)?x.start:'',end:calendarValidTime(x.end)?x.end:'',
+         location:safeText(x.location,180),notes:safeText(x.notes,1000)
+       })).filter(x=>x.title):[],
+       projects:Array.isArray(data.projects)?data.projects.slice(0,100).filter(x=>x&&typeof x==='object').map(x=>({id:safeText(x.id,90)||id(),name:safeText(x.name,80),description:safeText(x.description,400),type:['plants','world','stream','work','general'].includes(x.type)?x.type:'general',status:['Live','In progress','Planned'].includes(x.status)?x.status:'Planned',url:safeUrl(x.url)})).filter(x=>x.name):base.projects,
       links:Array.isArray(data.links)?data.links.slice(0,100).filter(x=>x&&typeof x==='object').map(x=>({id:safeText(x.id,90)||id(),name:safeText(x.name,80),url:safeUrl(x.url)})).filter(x=>x.name&&x.url):base.links
     };
   }
@@ -187,7 +199,7 @@
     $('#attention-items').innerHTML=notices.length?notices.slice(0,5).map(n=>`<button class="attention-row" type="button" data-view="${n.view}"><span class="attention-tag">${n.kind}</span><span>${n.text}</span>${icon('arrow-right')}</button>`).join(''):`<p class="watch-detail">Everything you have configured is on track. This doesn't include unconnected external services.</p>`;
   }
   function renderTheme(){document.body.dataset.theme=state.theme;$$('[data-theme-choice]').forEach(b=>{b.classList.toggle('selected',b.dataset.themeChoice===state.theme);b.setAttribute('aria-pressed',String(b.dataset.themeChoice===state.theme));});}
-  function render(){renderProjects();renderTasks();renderLinks();renderRoutines();renderAttention();renderTheme();$('#scratchpad').value=state.scratchpad;window.ORBITConnectedTodoist?.render();}
+  function render(){renderProjects();renderTasks();renderLinks();renderRoutines();renderAttention();renderTheme();$('#scratchpad').value=state.scratchpad;window.ORBITConnectedTodoist?.render();window.ORBITCalendar?.render();}
   function closeSystemsMenu(restoreFocus=false){
     const sheet=$('#mobile-system-sheet');
     if(sheet.hidden)return;
@@ -233,7 +245,7 @@
     }else if(next==='vita'){
       vitaSection='overview';
     }
-    if(!['home','projects','focus','gaia','vita','inbox','automations','routines','settings'].includes(next))return;
+    if(!['home','projects','focus','calendar','gaia','vita','inbox','automations','routines','settings'].includes(next))return;
     view=next;
     closeSystemsMenu();
     // Only top-level workspace panels are switched here. The three nested
@@ -251,8 +263,8 @@
     document.querySelectorAll('.main-nav [data-view], .mobile-nav [data-view]').forEach(x=>{x.classList.toggle('active',x.dataset.view===view);if(x.dataset.view===view)x.setAttribute('aria-current','page');else x.removeAttribute('aria-current')});
     const more=$('#mobile-more');
     more.classList.toggle('active',!['home','vita'].includes(view));
-    $('#current-crumb').textContent=({home:'OVERVIEW',projects:'PROJECTS',focus:'TASKS',gaia:'GAIA',vita:'VITA',inbox:'INBOX',automations:'AUTOMATIONS',routines:'ROUTINES',settings:'SETTINGS'})[view];
-    closeNavigation();window.scrollTo({top:0,behavior:'instant'});
+    $('#current-crumb').textContent=({home:'OVERVIEW',projects:'PROJECTS',focus:'TASKS',calendar:'CALENDAR',gaia:'GAIA',vita:'VITA',inbox:'INBOX',automations:'AUTOMATIONS',routines:'ROUTINES',settings:'SETTINGS'})[view];
+    closeNavigation();if(view==='calendar')window.ORBITCalendar?.render();window.scrollTo({top:0,behavior:'instant'});
   }
   const field = (name,label,value='',type='text',other='') => `<label class="dialog-field">${label}<input name="${name}" type="${type}" value="${esc(value)}" ${other}></label>`;
   const select = (name,label,value,options) => `<label class="dialog-field">${label}<select name="${name}">${options.map(v=>`<option value="${esc(v.value)}" ${v.value===value?'selected':''}>${esc(v.label)}</option>`).join('')}</select></label>`;
@@ -394,7 +406,30 @@
   window.ORBITLocal = Object.freeze({
     getOwner:()=>accountId,
     snapshot:()=>JSON.parse(JSON.stringify(state)),
-    setFromCloud:(incoming,expectedOwner)=>{
+    upsertCalendarEvent:(entry)=>{
+       if(!accountId||!currentKey())throw new Error('Sign in to save calendar events.');
+       if(!entry||!safeText(entry.title,160).trim()||!calendarValidDate(entry.date))throw new Error('Enter an event title and valid date.');
+       const allDay=!!entry.allDay;
+       const start=allDay?'':entry.start, end=allDay?'':entry.end;
+       if(!allDay&&(!calendarValidTime(start)||!calendarValidTime(end)||start>=end))throw new Error('The end time must be after the start time.');
+       const clean={id:safeText(entry.id,90)||id(),title:safeText(entry.title,160).trim(),date:entry.date,allDay,
+         start,end,location:safeText(entry.location,180),notes:safeText(entry.notes,1000)};
+       const at=state.calendarEvents.findIndex(x=>x.id===clean.id);
+       if(at>=0)state.calendarEvents[at]=clean;else state.calendarEvents.push(clean);
+       if(!persist())throw new Error('Calendar event could not be saved.');
+       window.ORBITCalendar?.render();
+       return clean.id;
+     },
+     deleteCalendarEvent:(eventId)=>{
+       if(!accountId||!currentKey())throw new Error('Sign in to change calendar events.');
+       const prior=state.calendarEvents.length;
+       state.calendarEvents=state.calendarEvents.filter(x=>x.id!==eventId);
+       if(prior===state.calendarEvents.length)return false;
+       if(!persist())throw new Error('Calendar change could not be saved.');
+       window.ORBITCalendar?.render();
+       return true;
+     },
+     setFromCloud:(incoming,expectedOwner)=>{
       if(!expectedOwner || expectedOwner!==accountId)throw new Error('Account changed; cloud state was not loaded.');
       const clean=normalized(incoming);
       const key=currentKey();
