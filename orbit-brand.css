@@ -1,19 +1,19 @@
 /* ORBIT identity v2: blue-and-silver celestial emblem. Keep other systems untouched. */
 .brand-mark.orbit-logo-mark,.auth-brand .brand-mark.orbit-logo-mark{
   width:45px;height:45px;flex:0 0 45px;overflow:hidden;
-  border:0!important;border-radius:12px!important;
+  border:0!important;border-radius:0!important;
   background:transparent!important;box-shadow:none!important;
   padding:0;display:block;
 }
 .brand-mark.orbit-logo-mark::before,.brand-mark.orbit-logo-mark::after{content:none!important;display:none!important;}
-.orbit-logo-mark img{display:block;width:100%;height:100%;object-fit:contain;border-radius:12px;}
-.orbit-home-logo{display:block;flex:0 0 52px;width:52px;height:52px;object-fit:contain;border-radius:13px;
+.orbit-logo-mark img{display:block;width:100%;height:100%;object-fit:contain;border-radius:0;}
+.orbit-home-logo{display:block;flex:0 0 52px;width:52px;height:52px;object-fit:contain;border-radius:0;
   box-shadow:0 0 24px rgba(70,151,220,.13);}
-.orbit-auth-watermark{width:min(64vw,440px);height:auto;aspect-ratio:1;object-fit:contain;opacity:.42;border-radius:22%;}
+.orbit-auth-watermark{width:min(64vw,440px);height:auto;aspect-ratio:1;object-fit:contain;opacity:.42;border-radius:0;}
 @media(max-width:980px){
- .orbit-home-logo{width:42px;height:42px;flex-basis:42px;border-radius:11px;}
+ .orbit-home-logo{width:42px;height:42px;flex-basis:42px;border-radius:0;}
 }
 @media(max-width:610px){
- .orbit-home-logo{width:36px;height:36px;flex-basis:36px;border-radius:9px;}
+ .orbit-home-logo{width:36px;height:36px;flex-basis:36px;border-radius:0;}
  .system-launch-bar{gap:6px;}
 }
