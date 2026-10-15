@@ -124,8 +124,22 @@ async function liveToken(row,user){
   if(expires && expires<Date.now()+120000 && row.encrypted_refresh_token){
     const refresh=await decrypt(row.encrypted_refresh_token);
     const tokens=await tokenExchange({client_id:CLIENT_ID,grant_type:"refresh_token",refresh_token:refresh});
-    await saveConnection(user.id,tokens);
-    return tokens.access_token;
+    // Todoist rotates refresh tokens. Concurrent requests can receive a 60-second
+    // grace-window retry response containing only the access token. Never
+    // overwrite a durable refresh token with null in that case.
+    if(typeof tokens.refresh_token==="string" && tokens.refresh_token){
+      await saveConnection(user.id,tokens);
+      return tokens.access_token;
+    }
+    // Another request may already have saved the newly rotated credentials.
+    const latest=await getRow(user);
+    if(latest?.encrypted_refresh_token && latest.encrypted_refresh_token!==row.encrypted_refresh_token){
+      return decrypt(latest.encrypted_access_token);
+    }
+    // Do not corrupt the stored connection with a response missing its
+    // rotation token. Another request can retry after the first one saves.
+    throw new Error("Todoist refresh in progress or missing rotation token; retry.");
+
   }
   if(expires && expires<Date.now())throw new Error("Todoist authorization expired. Reconnect Todoist.");
   return decrypt(row.encrypted_access_token);
@@ -158,6 +172,57 @@ async function todoistApi(user,body){
   }
   return json(responseBody);
 }
+// Purpose-limited per-task skip/drop controls. The signed-in Todoist owner
+// must explicitly click the matching ORBIT action. No generic update/delete API.
+async function changeTaskWithoutCompletion(user,payload){
+  const taskId=String(payload?.task_id||"");
+  const action=String(payload?.action||"");
+  if(!/^[A-Za-z0-9_-]{1,128}$/.test(taskId)||!["skip","drop"].includes(action))return errors(400,"Invalid task action.");
+  const connection=await getRow(user);
+  if(!connection)return errors(409,"Todoist is not connected.");
+  const token=await liveToken(connection,user);
+  const headers={Authorization:"Bearer "+token,"Accept":"application/json"};
+  const itemUrl=API+"/tasks/"+encodeURIComponent(taskId);
+  const currentResponse=await fetch(itemUrl,{headers});
+  if(!currentResponse.ok)return errors(currentResponse.status===404?404:502,"Could not verify the current Todoist task.");
+  const task=await currentResponse.json();
+  if(task?.checked||task?.is_deleted)return errors(409,"Task is no longer active. Refresh tasks.");
+  const repeat=Boolean(task?.due?.is_recurring);
+  if(action==="drop"){
+    if(repeat)return errors(400,"Recurring tasks must be skipped, not deleted.");
+    const response=await fetch(itemUrl,{method:"DELETE",headers});
+    if(!response.ok)return errors(502,"Todoist did not remove the one-time task.");
+    return json({ok:true,action:"dropped",task_id:taskId});
+  }
+  if(!repeat)return errors(400,"Only recurring tasks can be skipped. Use Dismiss for a one-time task.");
+  // Skipping never calls the completion endpoint and never awards completion
+  // credit. Moving the next iteration to tomorrow mirrors Todoist postponement
+  // for overdue tasks, while preserving the original recurrence expression.
+  const next=String(payload?.next_date||"");
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(next))return errors(400,"Invalid next date.");
+  const tomorrow=new Date();tomorrow.setUTCHours(0,0,0,0);tomorrow.setUTCDate(tomorrow.getUTCDate()+1);
+  const min=tomorrow.toISOString().slice(0,10);
+  const max=new Date(tomorrow);max.setUTCDate(max.getUTCDate()+30);
+  if(next<min||next>max.toISOString().slice(0,10))return errors(400,"Choose tomorrow or a date within 30 days.");
+  const original=task.due;
+  const raw=String(original.date||"");
+  if(!/^\d{4}-\d{2}-\d{2}(T\d\d:\d\d.*)?$/.test(raw))return errors(409,"Unexpected recurring task date.");
+  // Keep the original local clock time, timezone and recurrence text intact.
+  const recurringDue={...original,date:next+raw.slice(10),is_recurring:true};
+  const uuid=crypto.randomUUID();
+  const cmd=[{type:"item_update",uuid,args:{id:taskId,due:recurringDue}}];
+  const res=await fetch(API+"/sync",{method:"POST",headers:{...headers,"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({commands:JSON.stringify(cmd)})});
+  if(!res.ok)return errors(502,"Todoist could not reschedule the recurring task.");
+  const data=await res.json();
+  if(data?.sync_status?.[uuid]!=="ok")return errors(502,"Todoist did not confirm rescheduling.");
+  const check=await fetch(itemUrl,{headers});
+  if(!check.ok)return errors(502,"Task rescheduled but the result could not be verified. Refresh Todoist.");
+  const updated=await check.json();
+  if(!updated?.due?.is_recurring||String(updated.due.string)!==String(original.string)||String(updated.due.date).slice(0,10)!==next){
+    return errors(502,"Todoist could not confirm the recurring schedule is unchanged. Check the task in Todoist.");
+  }
+  return json({ok:true,action:"skipped",task_id:taskId,next_date:next});
+}
 Deno.serve(async req=>{
   if(req.method==="OPTIONS")return new Response(null,{status:204,headers:CORS});
   if(!db)return errors(503,"Supabase server credentials are unavailable");
@@ -176,7 +241,9 @@ Deno.serve(async req=>{
     switch(payload?.action){
       case "status":{
         const row=await getRow(user);
-        return json({connected:Boolean(row),type:"oauth",connected_at:row?.connected_at||null});
+        const expires=row?.access_token_expires_at ? Date.parse(row.access_token_expires_at) : 0;
+        const reconnectRequired=Boolean(row && Number.isFinite(expires) && expires>0 && expires<=Date.now() && !row.encrypted_refresh_token);
+        return json({connected:Boolean(row)&&!reconnectRequired,reconnect_required:reconnectRequired,type:"oauth",connected_at:row?.connected_at||null});
       }
       case "start":{
         await db.from("orbit_todoist_oauth_states").delete().eq("owner_id",user.id);
@@ -188,6 +255,8 @@ Deno.serve(async req=>{
         return json({authorization_url:auth.href});
       }
       case "api":return todoistApi(user,payload);
+      case "skip":
+      case "drop":return changeTaskWithoutCompletion(user,payload);
       case "disconnect":{
         const {error}=await db.from("orbit_todoist_connections").delete().eq("owner_id",user.id);
         if(error)throw error;
