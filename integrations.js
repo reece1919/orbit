@@ -185,9 +185,10 @@
     const behind=visible.filter(t=>effectiveDate(t)&&effectiveDate(t)<today);
     const fresh=visible.filter(t=>effectiveDate(t)===today);
     const next=visible.filter(t=>effectiveDate(t)===tomorrow);
-    const group=(name,list,limit)=>{
-      if(!list.length)return `<section class="agenda-day"><h4>${name} <span class="agenda-count">0</span></h4><p class="agenda-empty">Nothing scheduled</p></section>`;
-      return `<section class="agenda-day"><h4>${name} <span class="agenda-count">${list.length}</span></h4>${list.map(homeTaskMarkup).join('')}</section>`;
+    const group=(name,list)=>{
+      const groupClass='agenda-day'+(name==='Overdue'?' is-overdue-group':'');
+      if(!list.length)return `<section class="${groupClass}"><h4>${name} <span class="agenda-count">0</span></h4><p class="agenda-empty">Nothing scheduled</p></section>`;
+      return `<section class="${groupClass}"><h4>${name} <span class="agenda-count">${list.length}</span></h4>${list.map(homeTaskMarkup).join('')}</section>`;
     };
     return (behind.length?group('Overdue',behind):'')+group('Today',fresh)+group('Tomorrow',next);
   }
