@@ -45,6 +45,7 @@
     'mail':'<rect x="2.5" y="4.5" width="19" height="15" rx="2"/><path d="m3.5 6.5 8.5 6 8.5-6"/>',
     'message-circle':'<path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5c-1.7 0-3.3-.48-4.65-1.3L3 20l1.42-4.64A8.5 8.5 0 1 1 21 11.5Z"/><path d="M8 11.5h8m-8 3.5h5"/>',
     'clock':'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    'calendar':'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 10h18M8 14h3m2 0h3m-8 4h3"/>',
     'heart-pulse':'<path d="M20.8 4.6a5.4 5.4 0 0 0-7.7 0L12 5.7l-1.1-1.1a5.4 5.4 0 0 0-7.7 7.7L12 21l8.8-8.7a5.4 5.4 0 0 0 0-7.7Z"/><path d="M3 12h5l2-3 3 6 2-3h6"/>',
     'repeat':'<path d="M17 3l4 4-4 4M3 11V9a2 2 0 0 1 2-2h16M7 21l-4-4 4-4m14 0v2a2 2 0 0 1-2 2H3"/>',
     'radar':'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M12 12 19 5"/>'
