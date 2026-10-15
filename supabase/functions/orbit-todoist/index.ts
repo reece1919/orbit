@@ -208,7 +208,7 @@ async function changeTaskWithoutCompletion(user,payload){
   if(next<min||next>max.toISOString().slice(0,10))return errors(400,"Choose tomorrow or a date within 30 days.");
   const original=task.due||null;
   const raw=String(original?.date||"");
-  if(raw && !/^\\d{4}-\\d{2}-\\d{2}(T\\d\\d:\\d\\d.*)?$/.test(raw))return errors(409,"Unexpected Todoist due date.");
+  if(raw && !/^\d{4}-\d{2}-\d{2}(T\d\d:\d\d.*)?$/.test(raw))return errors(409,"Unexpected Todoist due date.");
   // Preserve recurring text and original clock time. For one-offs pass a
   // concrete new date without retaining a stale natural-language date.
   const due=repeat
