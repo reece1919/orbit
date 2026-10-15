@@ -189,15 +189,14 @@ async function changeTaskWithoutCompletion(user,payload){
   if(task?.checked||task?.is_deleted)return errors(409,"Task is no longer active. Refresh tasks.");
   const repeat=Boolean(task?.due?.is_recurring);
   if(action==="drop"){
-    if(repeat)return errors(400,"Recurring tasks must be skipped, not deleted.");
+    // Explicitly confirmed in ORBIT: remove a one-off or the entire recurrence.
+    // Deletion is not completion and never awards task-completion credit.
     const response=await fetch(itemUrl,{method:"DELETE",headers});
-    if(!response.ok)return errors(502,"Todoist did not remove the one-time task.");
-    return json({ok:true,action:"dropped",task_id:taskId});
+    if(!response.ok)return errors(502,"Todoist did not dismiss the task.");
+    return json({ok:true,action:"dropped",task_id:taskId,series_ended:repeat});
   }
-  if(!repeat)return errors(400,"Only recurring tasks can be skipped. Use Dismiss for a one-time task.");
-  // Skipping never calls the completion endpoint and never awards completion
-  // credit. Moving the next iteration to tomorrow mirrors Todoist postponement
-  // for overdue tasks, while preserving the original recurrence expression.
+  // Skip reschedules the current item without marking it complete. Repeating
+  // tasks keep their recurrence text, and single tasks remain on the list.
   const next=String(payload?.next_date||"");
   if(!/^\d{4}-\d{2}-\d{2}$/.test(next))return errors(400,"Invalid next date.");
   const parts=new Intl.DateTimeFormat("en-US",{timeZone:"America/Los_Angeles",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date());
@@ -207,13 +206,16 @@ async function changeTaskWithoutCompletion(user,payload){
   const min=String(task.due?.date||"").slice(0,10)<currentLocal?currentLocal:tomorrow.toISOString().slice(0,10);
   const max=new Date(tomorrow);max.setUTCDate(max.getUTCDate()+30);
   if(next<min||next>max.toISOString().slice(0,10))return errors(400,"Choose tomorrow or a date within 30 days.");
-  const original=task.due;
-  const raw=String(original.date||"");
-  if(!/^\d{4}-\d{2}-\d{2}(T\d\d:\d\d.*)?$/.test(raw))return errors(409,"Unexpected recurring task date.");
-  // Keep the original local clock time, timezone and recurrence text intact.
-  const recurringDue={...original,date:next+raw.slice(10),is_recurring:true};
+  const original=task.due||null;
+  const raw=String(original?.date||"");
+  if(raw && !/^\\d{4}-\\d{2}-\\d{2}(T\\d\\d:\\d\\d.*)?$/.test(raw))return errors(409,"Unexpected Todoist due date.");
+  // Preserve recurring text and original clock time. For one-offs pass a
+  // concrete new date without retaining a stale natural-language date.
+  const due=repeat
+    ? {...original,date:next+raw.slice(10),is_recurring:true}
+    : {date:next+raw.slice(10),...(original?.timezone?{timezone:original.timezone}:{}),...(original?.lang?{lang:original.lang}:{})};
   const uuid=crypto.randomUUID();
-  const cmd=[{type:"item_update",uuid,args:{id:taskId,due:recurringDue}}];
+  const cmd=[{type:"item_update",uuid,args:{id:taskId,due}}];
   const res=await fetch(API+"/sync",{method:"POST",headers:{...headers,"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({commands:JSON.stringify(cmd)})});
   if(!res.ok)return errors(502,"Todoist could not reschedule the recurring task.");
   const data=await res.json();
@@ -221,8 +223,10 @@ async function changeTaskWithoutCompletion(user,payload){
   const check=await fetch(itemUrl,{headers});
   if(!check.ok)return errors(502,"Task rescheduled but the result could not be verified. Refresh Todoist.");
   const updated=await check.json();
-  if(!updated?.due?.is_recurring||String(updated.due.string)!==String(original.string)||String(updated.due.date).slice(0,10)!==next){
-    return errors(502,"Todoist could not confirm the recurring schedule is unchanged. Check the task in Todoist.");
+  if(Boolean(updated?.due?.is_recurring)!==repeat
+    || String(updated?.due?.date||"").slice(0,10)!==next
+    || (repeat && String(updated.due.string)!==String(original.string))){
+    return errors(502,"Todoist could not verify the rescheduled date and recurrence. Check the task in Todoist.");
   }
   return json({ok:true,action:"skipped",task_id:taskId,next_date:next});
 }
