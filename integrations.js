@@ -154,19 +154,26 @@
     function taskMarkup(t){
     const due=dayOf(t),overdue=due && due<TODAY();
     const detail=[due?(overdue?'Overdue · ':'Due ')+prettyDate(due):'No due date', Number(t.priority||1)>=3?'High priority':''].filter(Boolean).join(' · ');
-    return `<article class="live-task${overdue?' is-overdue':''}"${t._treeDepth?' style="margin-left:'+Math.min(t._treeDepth,5)*1.15+'rem;border-left:2px solid currentColor"':''}><input type="checkbox" data-todoist-done="${esc(t.id)}" aria-label="Complete ${esc(t.content)}"><div class="live-task-body"><strong>${t._treeDepth?'↳ ':''}${esc(t.content)}</strong><small>${esc(detail)}</small><a href="${esc(safeTaskLink(t.id))}" target="_blank" rel="noopener noreferrer">Open in Todoist ↗</a></div></article>`;
+    return `<article class="live-task${overdue?' is-overdue':''}"${t._treeDepth?' style="margin-left:'+Math.min(t._treeDepth,5)*1.15+'rem;border-left:2px solid currentColor"':''}><input type="checkbox" data-todoist-done="${esc(t.id)}" aria-label="Complete ${esc(t.content)}"><div class="live-task-body"><strong>${t._treeDepth?'↳ ':''}${esc(t.content)}</strong><small>${esc(detail)}</small><a href="${esc(safeTaskLink(t.id))}" target="_blank" rel="noopener noreferrer">Open in Todoist ↗</a></div>${todoistTaskAction(t,'todoist-task-action')}</article>`;
   }
   const HOME_SYSTEMS=['gaia','echo','rune','fuel','pulse'];
   function homeTaskSystem(t){
     const labels=Array.isArray(t?.labels)?t.labels.map(x=>String(x).replace(/^@/,'').trim().toLowerCase()):[];
     return HOME_SYSTEMS.find(x=>labels.includes(x)) || ancestorsOf(t).map(p=>homeTaskSystem(p)).find(x=>x!=='general') || 'general';
   }
+  // Skipping preserves a recurring task; dismissing a one-off removes it.
+  function todoistTaskAction(t,style){
+    const recurring=Boolean(t.due?.is_recurring);
+    return recurring
+      ? `<button class="${style} todoist-skip" type="button" data-todoist-skip="${esc(t.id)}" aria-label="Skip ${esc(t.content)} without completing" title="Reschedule the next occurrence without marking done">Skip</button>`
+      : `<button class="${style} todoist-drop" type="button" data-todoist-drop="${esc(t.id)}" aria-label="Dismiss ${esc(t.content)} without completing" title="Remove the one-time task from Todoist without marking done">Dismiss</button>`;
+  }
   function homeTaskMarkup(t){
     const system=homeTaskSystem(t);
     const icon=system==='general'?'':`<img class="agenda-system-icon" src="assets/systems/${system}.svg" alt="" width="20" height="20">`;
     const due=dayOf(t)||t._groupDay||'';
     const overdue=due&&due<TODAY();
-    return `<article class="agenda-row${overdue?' is-overdue':''}"><input type="checkbox" data-todoist-done="${esc(t.id)}" aria-label="Complete ${esc(t.content)}"><span class="agenda-system-label">${icon}${esc(system==='general'?'GENERAL':system.toUpperCase())}</span><span class="agenda-task-main"><a href="${esc(safeTaskLink(t.id))}" target="_blank" rel="noopener noreferrer" class="agenda-task-title"${t._treeDepth?' style="padding-left:'+Math.min(t._treeDepth,5)*0.7+'rem"':''}>${t._treeDepth?'↳ ':''}${esc(t.content)}</a>${overdue?'<small class="agenda-overdue-date">Due '+esc(prettyDate(due))+'</small>':''}</span></article>`;
+    return `<article class="agenda-row${overdue?' is-overdue':''}"><input type="checkbox" data-todoist-done="${esc(t.id)}" aria-label="Complete ${esc(t.content)}"><span class="agenda-system-label">${icon}${esc(system==='general'?'GENERAL':system.toUpperCase())}</span><span class="agenda-task-main"><a href="${esc(safeTaskLink(t.id))}" target="_blank" rel="noopener noreferrer" class="agenda-task-title"${t._treeDepth?' style="padding-left:'+Math.min(t._treeDepth,5)*0.7+'rem"':''}>${t._treeDepth?'↳ ':''}${esc(t.content)}</a>${overdue?'<small class="agenda-overdue-date">Due '+esc(prettyDate(due))+'</small>':''}</span>${todoistTaskAction(t,'agenda-task-action')}</article>`;
   }
   function homeAgenda(){
     const today=TODAY(),future=new Date(today+'T12:00:00');
@@ -291,6 +298,39 @@
       // Recurring tasks move to their next date in Todoist: reload the updated occurrence.
       void refreshTodoist();
     }catch(e){checkbox.checked=false;checkbox.disabled=false;toast('Could not complete task: '+e.message);}
+  }
+  const todoistActionBusy=new Set();
+  const nextDay=()=>{
+    const d=new Date(TODAY()+'T12:00:00');d.setDate(d.getDate()+1);
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  };
+  async function skipOrDismissTodoist(id,kind,button){
+    const task=tasks.find(t=>String(t.id)===String(id));
+    if(!task||todoistActionBusy.has(String(id)))return;
+    const recurring=Boolean(task.due?.is_recurring);
+    if((kind==='skip')!==recurring){toast('Task details changed; refresh Todoist.');return;}
+    if(!serverConnected){toast('A secure Todoist OAuth connection is required to skip or dismiss from ORBIT.');return;}
+    const today=TODAY(),due=dayOf(task);
+    const next=due&&due<today?today:nextDay();
+    const message=recurring
+      ? 'Skip “'+task.content+'” without marking it complete? Its next due date will move to '+prettyDate(next)+'. The repeating rule is preserved.'
+      : 'Dismiss “'+task.content+'”? This permanently deletes the one-time task from Todoist without marking it complete. This cannot be undone.';
+    if(!window.confirm(message))return;
+    todoistActionBusy.add(String(id));
+    button.disabled=true;const text=button.textContent;
+    button.textContent=recurring?'Skipping…':'Dismissing…';
+    try{
+      const result=await oauthRequest(recurring?'skip':'drop',{task_id:String(id),...(recurring?{next_date:next}:{})});
+      if(!result?.ok||result.action!==(recurring?'skipped':'dropped'))throw new Error('Todoist did not confirm the action.');
+      // Refresh from Todoist rather than mark any occurrence completed locally.
+      tasks=tasks.filter(t=>String(t.id)!==String(id));
+      renderTodoist();
+      toast(recurring?'Skipped — not completed. Repeating schedule preserved.':'Dismissed — not completed.');
+      await refreshTodoist();
+    }catch(error){
+      button.disabled=false;button.textContent=text;
+      toast('Could not '+(recurring?'skip':'dismiss')+' task: '+(error.message||'Please retry.'));
+    }finally{todoistActionBusy.delete(String(id));}
   }
   async function createTodoist(e){
     e.preventDefault();if(!token&&!serverConnected)return;
@@ -433,6 +473,8 @@
     const filter=event.target.closest('[data-todoist-filter]');if(filter){todoistFilter=filter.dataset.todoistFilter;renderTodoist();return;}
     if(event.target.closest('#todoist-oauth-connect')){void startOAuth();return;}
     if(event.target.closest('#todoist-disconnect')){void disconnectTodoist();return;}
+    const skip=event.target.closest('[data-todoist-skip]');if(skip){void skipOrDismissTodoist(skip.dataset.todoistSkip,'skip',skip);return;}
+    const drop=event.target.closest('[data-todoist-drop]');if(drop){void skipOrDismissTodoist(drop.dataset.todoistDrop,'drop',drop);return;}
     if(event.target.closest('#todoist-add')){if(token||serverConnected)$('#todoist-create-dialog').showModal();return;}
     if(event.target.closest('#todoist-create-close, #todoist-create-cancel')){$('#todoist-create-dialog').close();return;}
   });
