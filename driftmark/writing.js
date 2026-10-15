@@ -186,9 +186,9 @@
         points: [{ text: "A short note about what the author needs to cover.", status: "needs_checking", source: "" }],
         questions: ["A focused question that helps the author decide what to write."],
         prompt: "Ask the author to write this section in their own words.", references: [] }] };
-    return [a.kind === "category" ? "Prepare a DRIFTMARK category-page planning brief for Driftbound. The author writes every field. Keep the field IDs exactly: " +
+    return [a.kind === "category" ? "Prepare a QUILL category-page planning brief for Driftbound. The author writes every field. Keep the field IDs exactly: " +
         Object.keys(CATEGORY_FIELDS).join(", ") + ". Include plans for whichever fields need work. Do not add or rename field IDs. Custom block placement is controlled by the existing World Anvil layout." :
-        "Prepare a DRIFTMARK article planning brief for Driftbound. The author writes the article.",
+        "Prepare a QUILL article planning brief for Driftbound. The author writes the article.",
       "Return ONLY JSON in the structure below. Do not write paragraphs, sample sentences, opening quotations, excerpts you invented, draft prose, or a finished article.",
       "Give short key points, relevant supplied references, unresolved questions, and a focused writing prompt for each section. Make the plan specific to this subject.",
       "Use current World Anvil sources if your configured Action is available. Otherwise use only supplied context and mark unverified points needs_checking. Do not claim to have retrieved anything you have not read.",

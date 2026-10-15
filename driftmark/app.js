@@ -1,8 +1,9 @@
-/* DRIFTMARK 0.5 — automatic source reconciliation preserves author-owned work. */
+/* QUILL 0.6 — automatic source reconciliation preserves author-owned work. */
 (()=>{"use strict";
 const URL="https://zdurujqwhxqrwbhwzzxg.supabase.co";
 const KEY="sb_publishable_Xa0DTx_PbvtynbiQN6_xNQ_l1D55vzK"; // publishable, never a service-role key
 const TABLE="driftmark_workspaces";
+const BACKUP_ID="DRIFTMARK"; // Stable format ID keeps earlier backups and clients compatible.
 const W=window.DriftmarkWriting;
 const R=window.DriftmarkReconcile;
 const CATS=["Locations","Characters","Factions","Lore","Timeline","Scenes","Drafts","Ideas"];
@@ -128,7 +129,7 @@ function renderList(){
 }
 function sourceLabel(e){
  const link=R.linkFor(e);
- if(!link)return e.world_anvil?.kind==="category"?"":'<small class="source-note">Only in DRIFTMARK</small>';
+ if(!link)return e.world_anvil?.kind==="category"?"":'<small class="source-note">Only in QUILL</small>';
  const note=link.presence==="not_seen"?"Not returned by World Anvil · kept locally":
   link.source_changed?"Source changed · your work is preserved":link.text_status==="cached"?"Cached source · live text unavailable":
   link.text_status==="unavailable"?"Source text unavailable · entry retained":link.text_status==="pending"?"Source text not loaded yet":"World Anvil reference";
@@ -149,7 +150,7 @@ async function saveCloud(next,{preserveEditor=false}={}){
   if(uid!==savingOwner||!connected)return false;
   revision=Number(data.revision);entries=next;if(!preserveEditor)dirty=false;connected=true;renderList();
   $("#last-sync").textContent="Saved "+new Date(data.updated_at).toLocaleString();
-  setStatus("Saved securely to your private DRIFTMARK cloud workspace.");
+  setStatus("Saved securely to your private QUILL cloud workspace.");
   return true;
  }catch(e){setStatus("Could not save changes: "+(e.message||"Connection problem")+". Your draft remains in the editor.",true);return false}
  finally{saving=false;controls.forEach(({el,disabled})=>el.disabled=disabled);$("#save").textContent="Save to cloud";wa.recordChanged()}
@@ -200,7 +201,7 @@ async function connect(){
   uid=auth.user.id;wa.accountChanged(uid);
   const {data:level,error:levelError}=await client.auth.mfa.getAuthenticatorAssuranceLevel();
   if(levelError)throw levelError;
-  if(level?.currentLevel!=="aal2"){uid="";wa.accountChanged("");connected=false;$("#workspace").hidden=true;setStatus("Open ORBIT, complete authenticator verification, then return to DRIFTMARK and choose Refresh.",true);return}
+  if(level?.currentLevel!=="aal2"){uid="";wa.accountChanged("");connected=false;$("#workspace").hidden=true;setStatus("Open ORBIT, complete authenticator verification, then return to QUILL and choose Refresh.",true);return}
   if(dirty){
    if(editorOwner!==uid){connected=false;$("#workspace").hidden=true;setStatus("Your unsaved editor belongs to the previous account and is preserved. Sign back into that account to continue.",true);return}
    connected=true;$("#workspace").hidden=false;setStatus("Your unsaved writing is preserved. Checking World Anvil references…");void wa.restore();return;
@@ -235,20 +236,20 @@ $("#delete").addEventListener("click",async()=>{
 search.addEventListener("input",renderList);filter.addEventListener("change",renderList);
 $("#sync").addEventListener("click",()=>void connect());
 $("#export").addEventListener("click",()=>{
- download(JSON.stringify({app:"DRIFTMARK",version:5,world:"Eilmark",exported_at:new Date().toISOString(),includes_unsaved_editor:dirty,entries:snapshot()},null,2),
- "driftmark-atlas-"+new Date().toISOString().slice(0,10)+".json","application/json");
+ download(JSON.stringify({app:BACKUP_ID,version:5,world:"Eilmark",exported_at:new Date().toISOString(),includes_unsaved_editor:dirty,entries:snapshot()},null,2),
+ "quill-atlas-"+new Date().toISOString().slice(0,10)+".json","application/json");
 });
 $("#import").addEventListener("change",async e=>{
  const file=e.target.files?.[0];if(!file)return;
  try{
   if(file.size>100000000)throw Error("Backup is too large (maximum 100 MB).");
   const raw=JSON.parse(await file.text());
-  if(raw.app!=="DRIFTMARK"||!Array.isArray(raw.entries)||raw.entries.length>110000)throw Error("Not a valid DRIFTMARK backup (maximum 110,000 entries).");
+  if(raw.app!==BACKUP_ID||!Array.isArray(raw.entries)||raw.entries.length>110000)throw Error("Not a valid QUILL backup (maximum 110,000 entries).");
   if(![1,2,3,4,5].includes(raw.version))throw Error("Unsupported backup version. No records changed.");
   const next=raw.entries.map(normalize).filter(Boolean);
   if(next.length!==raw.entries.length)throw Error("Backup contains invalid records.");
   if(new Set(next.map(entry=>entry.id)).size!==next.length)throw Error("Backup contains duplicate entry IDs.");
-  if(!confirm("Replace all current DRIFTMARK cloud entries with "+next.length+" imported entries? Export a backup first."))return;
+  if(!confirm("Replace all current QUILL cloud entries with "+next.length+" imported entries? Export a backup first."))return;
   if(dirty&&!confirm("This will also replace your unsaved editor. Export a backup first. Continue?"))return;
   if(await saveCloud(next))resetEditor();
  }catch(err){setStatus("Import rejected: "+err.message,true)}
