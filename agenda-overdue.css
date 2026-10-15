@@ -1,0 +1,25 @@
+/* ORBIT 2.1 — overdue agenda + an explicit alternative to completion.
+   Skip a repeating occurrence; dismiss a one-off with confirmation. */
+.home-view .agenda-row{grid-template-columns:19px 69px minmax(0,1fr) auto;align-items:center}
+.home-view .agenda-row .agenda-task-main{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:0}
+.home-view .agenda-row .agenda-task-title{max-width:100%;overflow-wrap:anywhere}
+.home-view .agenda-day.is-overdue-group{padding:11px 12px;border-radius:9px;background:rgba(137,81,57,.1);border:1px solid rgba(206,129,84,.27)}
+.home-view .agenda-day.is-overdue-group h4{color:#f3bb98}
+.home-view .agenda-row.is-overdue .agenda-overdue-date{color:#deaa86;font-size:10px;line-height:1.45}
+.agenda-task-action,.todoist-task-action{font:inherit;cursor:pointer;font-size:10px;font-weight:700;line-height:1.3;white-space:nowrap;min-height:29px;padding:5px 8px;border:1px solid rgba(140,168,183,.35);background:rgba(255,255,255,.045);border-radius:6px;color:var(--text)}
+.agenda-task-action:hover,.todoist-task-action:hover{border-color:var(--accent);background:var(--accent-dim)}
+.agenda-task-action:focus-visible,.todoist-task-action:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.agenda-task-action:disabled,.todoist-task-action:disabled{opacity:.5;cursor:wait}
+.agenda-task-action.todoist-drop,.todoist-task-action.todoist-drop{color:var(--muted)}
+.todoist-task-action{margin-left:auto;align-self:center;flex:none}
+body[data-theme="light"] .home-view .agenda-day.is-overdue-group{background:#fff3e9;border-color:#e6bea2}
+body[data-theme="light"] .home-view .agenda-day.is-overdue-group h4,body[data-theme="light"] .home-view .agenda-row.is-overdue .agenda-overdue-date{color:#924821}
+body[data-theme="light"] .agenda-task-action,body[data-theme="light"] .todoist-task-action{background:#fff;border-color:#c9d8cd;color:#305648}
+@media(max-width:610px){
+  .home-view .agenda-row{grid-template-columns:18px 48px minmax(0,1fr) auto;gap:6px}
+  .home-view .agenda-row .agenda-system-label{font-size:9px;max-width:48px;overflow:hidden}
+  .home-view .agenda-row .agenda-system-label img{max-width:17px;max-height:17px}
+  .agenda-task-action{font-size:9px;min-height:30px;padding:5px 6px}
+  .home-view .agenda-day.is-overdue-group{padding:7px}
+  .todoist-task-action{font-size:10px}
+}
