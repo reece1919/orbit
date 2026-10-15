@@ -1,0 +1,29 @@
+/* VITA 7-day nutrition — casual, confirmed-entry trend with no goals or penalties. */
+.vita-nutrition-week{border:1px solid #655346;background:linear-gradient(140deg,#272b2d,#222b2e);border-radius:11px;padding:18px;margin:16px 0}
+.vita-nutrition-week .module-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.vita-nutrition-week .module-head h3{font-family:Georgia,serif;color:#f1d3af;margin:3px 0;font-size:20px;font-weight:600}
+.vita-nutrition-week .eyebrow{color:#d0ae8b}
+.vita-nutrition-week-stats{display:flex;align-items:baseline;flex-wrap:wrap;gap:12px 24px;margin:17px 0 12px}
+.vita-nutrition-week-stat{display:flex;flex-direction:column;gap:3px}
+.vita-nutrition-week-stat small{color:#baae9e;font-size:10px;letter-spacing:.08em;text-transform:uppercase}
+.vita-nutrition-week-stat strong{color:#f3e6ce;font-size:23px;line-height:1.25;font-weight:650;font-variant-numeric:tabular-nums}
+.vita-nutrition-week-bars{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));align-items:end;gap:9px;margin:15px 0 6px;min-height:160px}
+.vita-nutrition-day{display:flex;flex-direction:column;align-items:center;gap:7px;padding:7px 3px 5px;min-width:0;background:none;border:1px solid transparent;color:inherit;cursor:pointer;border-radius:8px;min-height:165px}
+.vita-nutrition-day:hover{background:#d2ac7b15;border-color:#987b5660}
+.vita-nutrition-day:focus-visible{outline:2px solid #e5b486;outline-offset:2px}
+.vita-nutrition-day-value{color:#ead5b9;font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.vita-nutrition-day-track{display:flex;flex-direction:column;justify-content:flex-end;align-items:stretch;overflow:hidden;width:min(100%,45px);height:116px;border-radius:6px 6px 3px 3px;background:#695b4a29;border:1px solid #cdae7630}
+.vita-nutrition-day-fill{height:0%;width:100%;background:linear-gradient(0deg,#bf8159,#f0bd86);border-radius:5px 5px 0 0}
+.vita-nutrition-day.is-empty .vita-nutrition-day-track{background:repeating-linear-gradient(135deg,#6c615014 0 7px,#6c615027 7px 13px);border-style:dashed}
+.vita-nutrition-day.is-today .vita-nutrition-day-label{color:#f0c9a2;font-weight:800}
+.vita-nutrition-day-label{font-size:11px;color:#b8b2a8;white-space:nowrap}
+.vita-nutrition-week-caption{font-size:11px;line-height:1.6;color:#bfb3a3;margin:14px 0 0}
+body[data-theme="light"] .vita-nutrition-week{background:#fdf9f2;border-color:#ddc8ad}
+body[data-theme="light"] .vita-nutrition-week .module-head h3,body[data-theme="light"] .vita-nutrition-week-stat strong{color:#63482f}
+body[data-theme="light"] .vita-nutrition-week-stat small,body[data-theme="light"] .vita-nutrition-week-caption{color:#756b5d}
+body[data-theme="light"] .vita-nutrition-day-value{color:#654d32}
+body[data-theme="light"] .vita-nutrition-day-label{color:#655d4f}
+body[data-theme="light"] .vita-nutrition-day.is-today .vita-nutrition-day-label{color:#8b502f}
+body[data-theme="light"] .vita-nutrition-day-track{background:#eadcc840;border-color:#d9c5a5}
+body[data-theme="light"] .vita-nutrition-day.is-empty .vita-nutrition-day-track{background:repeating-linear-gradient(135deg,#d1c1a025 0 7px,#d1c1a04d 7px 13px)}
+@media(max-width:610px){.vita-nutrition-week{padding:13px 10px}.vita-nutrition-week .module-head h3{font-size:18px}.vita-nutrition-week-stats{gap:8px 20px}.vita-nutrition-week-stat strong{font-size:19px}.vita-nutrition-week-bars{gap:2px}.vita-nutrition-day{padding:5px 0}.vita-nutrition-day-value{font-size:9px}.vita-nutrition-day-label{font-size:10px}.vita-nutrition-day-track{width:min(100%,32px)}}
