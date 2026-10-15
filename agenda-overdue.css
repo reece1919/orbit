@@ -2,7 +2,7 @@
    Existing Todoist actions remain user-confirmed, never silently completed. */
 .home-view .agenda-row{
   display:grid;
-  grid-template-columns:19px 74px minmax(0,1fr);
+  grid-template-columns:19px 25px minmax(0,1fr);
   align-items:center;
   gap:11px;
   min-width:0;
@@ -10,7 +10,7 @@
   padding:7px 6px;
 }
 .home-view .agenda-row input[type="checkbox"]{margin:0;align-self:center}
-.home-view .agenda-row .agenda-system-label{min-width:0;margin:0;align-self:center}
+.home-view .agenda-row .agenda-system-label{min-width:0;margin:0;align-self:center;justify-content:center}
 .home-view .agenda-task-layout{
   display:flex;
   flex-flow:row wrap;
@@ -97,9 +97,9 @@ body[data-theme="light"] .home-view .agenda-task-layout .agenda-task-action,
 body[data-theme="light"] .todoist-task-action{background:#fff;border-color:#c9d8cd;color:#305648}
 /* On phones, prioritize readable task titles and touch targets over density. */
 @media(max-width:610px){
-  .home-view .agenda-row{grid-template-columns:18px 48px minmax(0,1fr);gap:7px;padding:9px 4px;align-items:start}
+  .home-view .agenda-row{grid-template-columns:18px 19px minmax(0,1fr);gap:7px;padding:9px 4px;align-items:start}
   .home-view .agenda-row input[type="checkbox"]{margin-top:4px}
-  .home-view .agenda-row .agenda-system-label{font-size:9px;max-width:48px;margin-top:3px;overflow:hidden}
+  .home-view .agenda-row .agenda-system-label{max-width:19px;margin-top:3px;overflow:hidden}
   .home-view .agenda-row .agenda-system-label img{max-width:17px;max-height:17px}
   .home-view .agenda-task-layout{gap:7px 10px}
   .home-view .agenda-task-layout .agenda-task-title{flex:1 1 100%;font-size:12px}
