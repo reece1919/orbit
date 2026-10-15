@@ -42,7 +42,7 @@
         time:'',source:t.system||'orbit',url:t.url,recurring:t.recurring}))
     ];
   }
-  const order=(a,b)=>a.kind===b.kind?(a.time||'').localeCompare(b.time||'')||a.title.localeCompare(b.title):a.kind==='event'?-1:1;
+  const order=(a,b)=>a.kind===b.kind?(a.event?.allDay?'':a.time||'').localeCompare(b.event?.allDay?'':b.time||'')||a.title.localeCompare(b.title):a.kind==='event'?-1:1;
   function weeks(){
     if(mode==='week'){
       const start=parseDay(selected);
@@ -82,7 +82,7 @@
     document.querySelectorAll('[data-cal-mode]').forEach(b=>{b.classList.toggle('is-active',b.dataset.calMode===mode);b.setAttribute('aria-pressed',String(b.dataset.calMode===mode))});
     const heading=weekday.map(x=>'<div class="cal-weekday" aria-hidden="true">'+x+'</div>').join('');
     $('#calendar-grid').innerHTML=heading+days.map(key=>{
-      const group=byDate.get(key)||[],day=parseDay(key).getDate(),other=key.slice(0,7)!==month;
+      const group=byDate.get(key)||[],day=parseDay(key).getDate(),other=mode==='month'&&key.slice(0,7)!==month;
       const classes='cal-cell'+(key===selected?' is-selected':'')+(key===now?' is-today':'')+(other?' is-outside':'');
       const chips=group.slice(0,3).map(dayChip).join('');
       const more=group.length>3?'<span class="cal-more">+'+(group.length-3)+' more</span>':'';
@@ -99,7 +99,7 @@
         '<div class="cal-agenda-copy"><strong>'+esc(item.title)+'</strong><small>'+esc((item.time==='All day'?'All day':item.event.start+'–'+item.event.end)+(item.event.location?' · '+item.event.location:''))+'</small>'+
         (item.event.notes?'<p>'+esc(item.event.notes)+'</p>':'')+'</div><button class="cal-edit" data-cal-edit="'+esc(item.id)+'" type="button">Edit</button></article>';
     }).join(''):'<p class="cal-empty">Nothing scheduled for this day. Select another date or add an event.</p>';
-    $('#cal-new-event').disabled=!owner;
+    root.querySelectorAll('[data-cal-new-event]').forEach(button=>{button.disabled=!owner});
     $('#cal-new-task').disabled=!owner||!window.ORBITConnectedTodoist?.active?.();
     $('#cal-new-task').title=$('#cal-new-task').disabled?'Connect Todoist in Tasks to add tasks':'Add task to Todoist';
   }
