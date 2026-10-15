@@ -1,7 +1,23 @@
-<svg viewBox="0 0 92 112" fill="none" color="#c6b183" xmlns="http://www.w3.org/2000/svg">
-          <path d="M46 4 84 19v39c0 24-16 39-38 50C24 97 8 82 8 58V19L46 4Z" stroke="currentColor" stroke-width="1.5"/>
-          <path d="M46 11 77 24v33c0 20-12 33-31 43C27 90 15 77 15 57V24L46 11Z" stroke="currentColor" stroke-width=".6" opacity=".5"/>
-          <path d="M46 89V27m0 46c-18-4-22-16-24-23 15 1 23 9 24 23Zm0-19c14-2 21-11 25-22-14 0-22 8-25 22Zm0-10C34 41 31 30 32 22c9 3 14 10 14 22Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
-          <path d="M26 83h40" stroke="currentColor" opacity=".5"/>
-          <circle cx="46" cy="18" r="1.5" fill="currentColor"/>
-        </svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 124" role="img" aria-label="GAIA golden botanical crest">
+ <defs>
+  <linearGradient id="gold" x1="0" y1=".08" x2="1" y2=".88" gradientUnits="objectBoundingBox">
+   <stop stop-color="#88602e"/><stop offset=".13" stop-color="#fff6c6"/><stop offset=".25" stop-color="#e9b85f"/><stop offset=".40" stop-color="#ad6d30"/><stop offset=".54" stop-color="#fbe0a2"/><stop offset=".72" stop-color="#bf7a31"/><stop offset=".87" stop-color="#ffdf94"/><stop offset="1" stop-color="#805421"/>
+  </linearGradient>
+  <linearGradient id="green" x1="0" y1="0" x2=".85" y2="1"><stop stop-color="#143f36"/><stop offset=".5" stop-color="#072920"/><stop offset="1" stop-color="#001912"/></linearGradient>
+  <linearGradient id="leaf" x1="0" y1="0" x2="1" y2=".8"><stop stop-color="#ffdfa0"/><stop offset=".48" stop-color="#ae6c28"/><stop offset="1" stop-color="#ffe2a1"/></linearGradient>
+  <filter id="shadow" x="-20%" y="-16%" width="140%" height="140%"><feDropShadow dx="0" dy="2" stdDeviation="1.4" flood-color="#000b06" flood-opacity=".8"/></filter>
+ </defs>
+ <g filter="url(#shadow)" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M50 5 92 24V77C92 97 74 107 50 119 26 107 8 97 8 77V24Z" fill="url(#green)" stroke="url(#gold)" stroke-width="5.4"/>
+  <path d="M50 11.2 85 27V76C85 92 71 102 50 111 29 102 15 92 15 76V27Z" fill="none" stroke="#fff0b8" stroke-width=".9" opacity=".68"/>
+  <path d="M50 14 81 29V76C81 89 68 98 50 106 32 98 19 89 19 76V29Z" fill="none" stroke="url(#gold)" stroke-width=".9" opacity=".95"/>
+  <path d="M50 99V36" fill="none" stroke="#694419" stroke-width="4.4"/>
+  <path d="M50 99V36" fill="none" stroke="url(#gold)" stroke-width="3.2"/>
+  <path d="M50 54C39 52 31 42 34 29 45 32 50 41 50 54Z" fill="#092a20" stroke="url(#leaf)" stroke-width="2.65"/>
+  <path d="M50 69C59 55 70 48 78 46 75 61 65 69 50 69Z" fill="#092a20" stroke="url(#leaf)" stroke-width="2.65"/>
+  <path d="M50 83C36 81 27 72 25 61 39 62 47 69 50 83Z" fill="#092a20" stroke="url(#leaf)" stroke-width="2.65"/>
+  <path d="M27 93H73" stroke="url(#gold)" stroke-width="1.7"/>
+  <circle cx="50" cy="26" r="2.15" fill="url(#gold)" stroke="#f8e6bb" stroke-width=".3"/>
+  <path d="M11 24 50 7 89 24" stroke="#fff1ba" stroke-width=".6" opacity=".5" fill="none"/>
+ </g>
+</svg>
