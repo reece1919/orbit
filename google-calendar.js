@@ -4,7 +4,7 @@
  const BRIDGE='https://zdurujqwhxqrwbhwzzxg.supabase.co/functions/v1/orbit-google-calendar';
  const $=s=>document.querySelector(s);
  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
- let owner='',connected=false,configured=false,email='',busy=false,calendarOptions=[],selected=[],items=[],rangeStart='',rangeEnd='',loaded=false,needsRange=null,error='',lastSync='';
+ let owner='',connected=false,configured=false,email='',busy=false,calendarOptions=[],selected=[],items=[],rangeStart='',rangeEnd='',loaded=false,needsRange=null,error='',lastSync='',failedRangeKey='';
  const stamp=s=>{const d=new Date(s);return Number.isNaN(d.valueOf())?'':d.toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})};
  const emit=()=>document.dispatchEvent(new CustomEvent('orbit:google-calendar-changed'));
  function info(){return {connected,configured,email,busy,error,lastSync,selected:[...selected],calendars:[...calendarOptions]}}
@@ -123,6 +123,8 @@
   if(!connected)return;
   needsRange=[start,end];
   if(!force&&loaded&&rangeStart<=start&&rangeEnd>=end)return;
+  const key=start+'|'+end;
+  if(!force&&failedRangeKey===key)return;
   if(busy)return;
   const current=owner;
   busy=true;error='';renderConnection();let successful=false;
@@ -130,9 +132,9 @@
    const begin=new Date(start+'T00:00:00'),finish=new Date(end+'T00:00:00');
    const result=await request('events',{start:begin.toISOString(),end:finish.toISOString()});
    if(owner!==current)return;
-   items=Array.isArray(result.items)?result.items:[];rangeStart=start;rangeEnd=end;loaded=true;successful=true;lastSync=result.synced_at||new Date().toISOString();
+   items=Array.isArray(result.items)?result.items:[];rangeStart=start;rangeEnd=end;loaded=true;successful=true;failedRangeKey='';lastSync=result.synced_at||new Date().toISOString();
    if(result.incomplete)error='Google Calendar returned a partial result. Some events may be missing.';
-  }catch(e){if(owner===current)error=e.message||'Calendar refresh failed.'}
+  }catch(e){if(owner===current){error=e.message||'Calendar refresh failed.';failedRangeKey=key;items=[];loaded=false}}
   finally{
    if(owner===current){
     busy=false;renderConnection();emit();
@@ -141,13 +143,13 @@
   }
  }
  $('#cal-google-connect')?.addEventListener('click',begin);
- $('#cal-google-refresh')?.addEventListener('click',()=>{loaded=false;items=[];lastSync='';if(needsRange)void ensureRange(...needsRange);else void check()});
+ $('#cal-google-refresh')?.addEventListener('click',()=>{loaded=false;failedRangeKey='';items=[];lastSync='';if(needsRange)void ensureRange(...needsRange);else void check()});
  $('#cal-google-disconnect')?.addEventListener('click',disconnect);
  $('#cal-google-calendars')?.addEventListener('click',e=>{if(e.target.closest('#cal-google-save'))void save()});
  document.addEventListener('orbit:auth-changed',e=>{
   const id=e.detail?.user?.id||'';
   if(id===owner)return;
-  owner=id;connected=false;configured=false;email='';busy=false;calendarOptions=[];selected=[];items=[];rangeStart='';rangeEnd='';loaded=false;error='';lastSync='';
+  owner=id;connected=false;configured=false;email='';busy=false;calendarOptions=[];selected=[];items=[];rangeStart='';rangeEnd='';loaded=false;failedRangeKey='';needsRange=null;error='';lastSync='';
   renderConnection();emit();if(owner)void check();
  });
  window.ORBITGoogleCalendar=Object.freeze({ensureRange,getEvents:events,getStatus:info});
