@@ -39,10 +39,16 @@
         time:e.allDay?'All day':e.start||'',
         source:'orbit',event:e})),
       ...tasks().map(t=>({kind:'task',date:t.date,title:t.title,id:t.id,
-        time:'',source:t.system||'orbit',url:t.url,recurring:t.recurring}))
+        time:'',source:t.system||'orbit',url:t.url,recurring:t.recurring})),
+      ...(window.ORBITGoogleCalendar?.getEvents?.()||[])
     ];
   }
-  const order=(a,b)=>a.kind===b.kind?(a.event?.allDay?'':a.time||'').localeCompare(b.event?.allDay?'':b.time||'')||a.title.localeCompare(b.title):a.kind==='event'?-1:1;
+  const order=(a,b)=>{
+    const priority=x=>x.kind==='event'?0:x.kind==='google'?1:2;
+    return priority(a)===priority(b)
+      ?(a.event?.allDay?'':a.time||'').localeCompare(b.event?.allDay?'':b.time||'')||a.title.localeCompare(b.title)
+      :priority(a)-priority(b);
+  };
   function weeks(){
     if(mode==='week'){
       const start=parseDay(selected);
@@ -57,10 +63,11 @@
   }
   function dayChip(item){
     const source=item.kind==='event'?'orbit':item.source;
-    const name=item.kind==='event'?'Event':sourceName(source)+' task';
-    return '<span class="cal-chip '+(item.kind==='event'?'cal-chip-event':'cal-chip-task')+'" title="'+esc(name+': '+item.title)+'">'+
-      '<img src="'+esc(sourceIcon(source))+'" alt="" loading="lazy" width="15" height="15">'+
-      '<span>'+esc(item.title)+'</span></span>';
+    const name=item.kind==='event'?'Event':item.kind==='google'?'Google / '+item.event.calendarName:sourceName(source)+' task';
+    const icon=item.kind==='google'?'<span class="cal-google-icon" aria-hidden="true">G</span>':
+      '<img src="'+esc(sourceIcon(source))+'" alt="" loading="lazy" width="15" height="15">';
+    return '<span class="cal-chip '+(item.kind==='google'?'cal-chip-google':item.kind==='event'?'cal-chip-event':'cal-chip-task')+'" title="'+esc(name+': '+item.title)+'">'+
+      icon+'<span>'+esc(item.title)+'</span></span>';
   }
   function render(){
     if(!root)return;
@@ -69,16 +76,20 @@
     for(const item of list){if(!byDate.has(item.date))byDate.set(item.date,[]);byDate.get(item.date).push(item)}
     for(const group of byDate.values())group.sort(order);
     const days=weeks(),month=selected.slice(0,7),now=today(),count=byDate.get(selected)||[];
+    if(days.length)void window.ORBITGoogleCalendar?.ensureRange?.(days[0],addDays(days[days.length-1],1));
     const header=mode==='month'
       ?dateText(month+'-01',{month:'long',year:'numeric'})
       :dateText(days[0],{month:'short',day:'numeric'})+' – '+dateText(days[6],{month:'short',day:'numeric',year:'numeric'});
     $('#calendar-period').textContent=header;
     $('#calendar-selected').textContent=dateText(selected);
     $('#calendar-day-count').textContent=count.length+' item'+(count.length===1?'':'s');
-    $('#calendar-status').textContent=!owner?'Sign in to see your calendar.'
-      :!window.ORBITConnectedTodoist?.getCalendarStatus?.()?.connected?'ORBIT events shown · connect Todoist in Tasks to include your due dates.'
-      :window.ORBITConnectedTodoist.getCalendarStatus().error?'Todoist: '+window.ORBITConnectedTodoist.getCalendarStatus().error
-      :'ORBIT events + live Todoist due dates'+(window.ORBITConnectedTodoist.getCalendarStatus().syncedAt?' · tasks synced '+window.ORBITConnectedTodoist.getCalendarStatus().syncedAt:'');
+    const todoist=window.ORBITConnectedTodoist?.getCalendarStatus?.();
+    const google=window.ORBITGoogleCalendar?.getStatus?.();
+    $('#calendar-status').textContent=!owner?'Sign in to see your calendar.':
+      'ORBIT events'+(todoist?.connected?' + Todoist due dates':' · connect Todoist in Tasks for due dates')+
+      (google?.connected?' + Google Calendar (read only)':' · Google Calendar not connected')+
+      (todoist?.error?' · Todoist: '+todoist.error:'')+
+      (google?.connected&&google.error?' · Google: '+google.error:'');
     document.querySelectorAll('[data-cal-mode]').forEach(b=>{b.classList.toggle('is-active',b.dataset.calMode===mode);b.setAttribute('aria-pressed',String(b.dataset.calMode===mode))});
     const heading=weekday.map(x=>'<div class="cal-weekday" aria-hidden="true">'+x+'</div>').join('');
     $('#calendar-grid').innerHTML=heading+days.map(key=>{
@@ -90,11 +101,20 @@
         '<span class="cal-date">'+day+'</span><span class="cal-chips">'+chips+more+'</span></button>';
     }).join('');
     $('#calendar-day-list').innerHTML=count.length?count.map(item=>{
-      const name=item.kind==='event'?'ORBIT event':sourceName(item.source)+' / Todoist';
-      const icon='<img class="cal-agenda-icon" src="'+esc(sourceIcon(item.source))+'" alt="'+esc(name)+'" width="23" height="23">';
+      const name=item.kind==='event'?'ORBIT event':item.kind==='google'?'Google · '+item.event.calendarName:sourceName(item.source)+' / Todoist';
+      const icon=item.kind==='google'?'<span class="cal-google-agenda-icon" aria-label="Google Calendar">G</span>':
+        '<img class="cal-agenda-icon" src="'+esc(sourceIcon(item.source))+'" alt="'+esc(name)+'" width="23" height="23">';
       if(item.kind==='task')return '<article class="cal-agenda-item"><input type="checkbox" data-todoist-done="'+esc(item.id)+'" aria-label="Complete '+esc(item.title)+' in Todoist">'+icon+
         '<div class="cal-agenda-copy"><strong>'+esc(item.title)+'</strong><small>'+esc(name)+(item.recurring?' · Recurring':'')+'</small></div>'+
         '<a href="'+esc(item.url)+'" target="_blank" rel="noopener noreferrer" aria-label="Open '+esc(item.title)+' in Todoist">Open ↗</a></article>';
+      if(item.kind==='google'){
+        const event=item.event;
+        const when=event.allDay?'All day':esc(item.time);
+        const link=event.url&&/^https:\/\/(www\.google\.com|calendar\.google\.com)\/calendar\//.test(event.url)
+          ?'<a href="'+esc(event.url)+'" target="_blank" rel="noopener noreferrer" aria-label="Open this event in Google Calendar">Open ↗</a>':'';
+        return '<article class="cal-agenda-item cal-agenda-google">'+icon+
+          '<div class="cal-agenda-copy"><strong>'+esc(item.title)+'</strong><small>'+esc(name)+' · '+when+(event.location?' · '+esc(event.location):'')+'</small></div>'+link+'</article>';
+      }
       return '<article class="cal-agenda-item"><span class="cal-event-dot" aria-hidden="true"></span>'+icon+
         '<div class="cal-agenda-copy"><strong>'+esc(item.title)+'</strong><small>'+esc((item.time==='All day'?'All day':item.event.start+'–'+item.event.end)+(item.event.location?' · '+item.event.location:''))+'</small>'+
         (item.event.notes?'<p>'+esc(item.event.notes)+'</p>':'')+'</div><button class="cal-edit" data-cal-edit="'+esc(item.id)+'" type="button">Edit</button></article>';
@@ -172,6 +192,7 @@
     }catch(err){$('#cal-event-error').textContent=err.message||'Could not save event.'}
   });
   document.addEventListener('orbit:auth-changed',()=>{selected=today();render()});
+  document.addEventListener('orbit:google-calendar-changed',render);
   window.ORBITCalendar=Object.freeze({render});
   render();
 })();
