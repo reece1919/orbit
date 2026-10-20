@@ -572,6 +572,8 @@
     fullyLoaded = false;
     search.value = "";
     form.reset();
+    tarotCardsHost.replaceChildren(); // Never retain a previous account's private card notes in the DOM.
+    feedbackStatus.textContent = "";
     form.elements.entry_date.value = today();
     deleteButton.hidden = true;
     selectedLabel.textContent = id ? "Private journal" : "Sign in to open the Journal";
