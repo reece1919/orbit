@@ -85,3 +85,30 @@
 @media(max-width:620px){.journal-mode-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}.journal-mode-button{min-height:116px;padding:12px;gap:7px;}.journal-mode-button strong{font-size:12px;}.journal-mode-button small{font-size:10px;}.journal-prompt-panel{padding:13px;}}
 @media(max-width:380px){.journal-mode-grid{grid-template-columns:1fr;}.journal-mode-button{min-height:76px;display:grid;grid-template-columns:24px 1fr;grid-template-rows:auto auto;column-gap:11px;align-content:center;}.journal-mode-button svg{grid-row:1 / span 2;}.journal-mode-button strong,.journal-mode-button small{grid-column:2;}}
 @media(prefers-reduced-motion:reduce){.journal-mode-button{transition:none}}
+
+/* Journal v1.2: reflective tarot spreads and voluntary critique handoff */
+.journal-mode-grid {grid-template-columns:repeat(3,minmax(0,1fr));}
+.journal-tarot,.journal-feedback {border:1px solid rgba(127,157,195,.3);border-radius:13px;background:rgba(43,72,109,.13);padding:18px;margin:16px 0;}
+.journal-tarot[hidden],.journal-feedback[hidden] {display:none;}
+.journal-tarot-header h3,.journal-feedback-header h3 {margin:0 0 7px;color:var(--text,#eef5ff);font-size:16px;}
+.journal-tarot-header p,.journal-feedback-header p {font-size:12px;line-height:1.6;color:var(--muted,#a5b6c9);margin:0 0 14px;}
+.journal-tarot-top {display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:12px;align-items:end;}
+.journal-tarot-top label:last-child {grid-column:1/-1;}
+.journal-tarot label,.journal-feedback label {display:grid;gap:7px;font-size:12px;color:var(--muted,#9fadc0);font-weight:630;min-width:0;}
+.journal-tarot input,.journal-tarot select,.journal-tarot textarea,.journal-feedback textarea,.journal-feedback select {width:100%;box-sizing:border-box;min-width:0;padding:10px 12px;border:1px solid var(--line,#31475c);border-radius:9px;background:var(--surface,#102135);color:var(--text,#eef5ff);font:inherit;font-size:13px;}
+.journal-tarot input:focus,.journal-tarot select:focus,.journal-tarot textarea:focus,.journal-feedback select:focus,.journal-feedback textarea:focus {outline:2px solid rgba(115,167,230,.5);outline-offset:1px;}
+.journal-tarot-cards {display:grid;gap:11px;margin:16px 0 10px;}
+.journal-tarot-card {padding:13px;border:1px solid rgba(139,169,211,.23);border-radius:10px;background:rgba(13,28,44,.26);display:grid;gap:10px;min-width:0;}
+.journal-tarot-card-head {display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:12px;color:var(--text,#e5f5ff);}
+.journal-tarot-remove {border:0;background:transparent;color:#d7b1b1;text-decoration:underline;cursor:pointer;padding:5px 2px;}
+.journal-tarot-card-grid {display:grid;grid-template-columns:1.1fr 1.5fr 1fr;gap:10px;}
+.journal-tarot-card-meaning textarea {resize:vertical;min-height:65px;}
+.journal-feedback-choice {max-width:360px;}
+.journal-feedback-actions {display:flex;align-items:center;flex-wrap:wrap;gap:9px;margin:12px 0;}
+.journal-feedback-actions .quiet-pill {display:inline-flex;align-items:center;justify-content:center;text-decoration:none;min-height:36px;}
+.journal-feedback-status {font-size:11px;color:var(--muted,#a9bfd5);line-height:1.65;margin:8px 0 15px;}
+.journal-feedback textarea {min-height:95px;resize:vertical;line-height:1.6;}
+@media(max-width:1120px){.journal-mode-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}
+@media(max-width:760px){.journal-tarot-card-grid{grid-template-columns:1fr 1fr;}.journal-tarot-card-grid label:last-child{grid-column:1/-1;}}
+@media(max-width:620px){.journal-mode-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.journal-tarot,.journal-feedback{padding:13px;}.journal-tarot-top{grid-template-columns:1fr;}.journal-tarot-top label:last-child{grid-column:auto;}}
+@media(max-width:380px){.journal-mode-grid{grid-template-columns:1fr;}.journal-tarot-card-grid{grid-template-columns:1fr;}.journal-tarot-card-grid label:last-child{grid-column:auto;}}

@@ -22,7 +22,7 @@
   <link rel="stylesheet" href="orbit-brand.css?v=4.0.0" />
   <link rel="stylesheet" href="agenda-overdue.css?v=1.2.1" />
   <link rel="stylesheet" href="calendar.css?v=1.1.0" />
-  <link rel="stylesheet" href="journal.css?v=1.1.0" />
+  <link rel="stylesheet" href="journal.css?v=1.2.0" />
   <link rel="manifest" href="pulse.webmanifest?v=4.0.0" />
   <link rel="icon" type="image/png" href="assets/orbit-emblem-cutout.png?v=4.0.0" />
   <link rel="apple-touch-icon" sizes="160x160" href="apple-touch-icon.png?v=4.0.0" />
@@ -35,7 +35,7 @@
   <script src="integrations.js?v=1.8.0" defer></script>
   <script src="google-calendar.js?v=1.0.1" defer></script>
   <script src="calendar.js?v=1.1.0" defer></script>
-  <script src="journal.js?v=1.1.0" defer></script>
+  <script src="journal.js?v=1.2.0" defer></script>
   <script src="assets/todoist-system.js?v=1.4.0" defer></script>
   <script src="fuel.js?v=0.6.5" defer></script>
   <script src="fuel-inbox.js?v=1.0.0" defer></script>
@@ -175,6 +175,7 @@
               <button type="button" class="journal-mode-button" data-journal-mode="dream"><span data-icon="moon"></span><strong>Dream log</strong><small>Capture dreams before they fade</small></button>
               <button type="button" class="journal-mode-button" data-journal-mode="gratitude"><span data-icon="heart"></span><strong>Gratitude</strong><small>Remember something meaningful</small></button>
               <button type="button" class="journal-mode-button" data-journal-mode="freewrite"><span data-icon="pen-line"></span><strong>Free writing</strong><small>No prompts or rules</small></button>
+              <button type="button" class="journal-mode-button" data-journal-mode="tarot"><span data-icon="layers"></span><strong>Tarot journal</strong><small>Log cards, spreads and interpretations</small></button>
             </div>
           </section>
           <div class="journal-toolbar">
@@ -194,6 +195,7 @@
                   <option value="dream">Dream log</option>
                   <option value="gratitude">Gratitude</option>
                   <option value="freewrite">Free writing</option>
+                  <option value="tarot">Tarot journal</option>
                 </select>
               </label>
               <div class="journal-entry-list" id="journal-entry-list" aria-live="polite">Sign in to read your journal.</div>
@@ -212,8 +214,44 @@
                     <label>Title <input type="text" name="title" maxlength="180" placeholder="Give this entry a name (optional)" autocomplete="off"></label>
                     <label>Date <input type="date" name="entry_date" required></label>
                   </div>
-                  <div class="journal-form-body"><label>Journal entry <textarea name="body" rows="14" maxlength="50000" placeholder="What's on your mind? Write as much or as little as you like…" required></textarea></label></div>
+                  <section id="journal-tarot" class="journal-tarot" hidden aria-labelledby="journal-tarot-heading">
+                    <div class="journal-tarot-header"><div><h3 id="journal-tarot-heading">Your reading</h3><p>Record the cards you actually drew, then write what they mean to you. No predictions are generated.</p></div></div>
+                    <div class="journal-tarot-top">
+                      <label>Question or intention <input name="tarot_question" type="text" maxlength="500" placeholder="What am I exploring with this reading?"></label>
+                      <label>Deck (optional) <input name="tarot_deck" type="text" maxlength="120" placeholder="e.g. Rider–Waite–Smith"></label>
+                      <label>Spread <select name="tarot_spread" id="journal-tarot-spread">
+                        <option value="single">One-card reflection</option>
+                        <option value="past_present_future">Past · Present · Future</option>
+                        <option value="situation_action_outcome">Situation · Action · Outcome</option>
+                        <option value="five_card">Five-card reflection</option>
+                        <option value="custom">Custom spread</option>
+                      </select></label>
+                    </div>
+                    <div id="journal-tarot-cards" class="journal-tarot-cards"></div>
+                    <button id="journal-tarot-add" type="button" class="quiet-pill" hidden>Add a card</button>
+                  </section>
+                  <div class="journal-form-body"><label><span id="journal-body-label">Journal entry</span> <textarea name="body" rows="14" maxlength="50000" placeholder="What's on your mind? Write as much or as little as you like…" required></textarea></label></div>
                   <label class="journal-tags-label">Tags (optional, separated by commas) <input type="text" name="tags" maxlength="400" placeholder="Ideas, memories, gratitude…" autocomplete="off"></label>
+                  <section id="journal-feedback" class="journal-feedback" aria-labelledby="journal-feedback-title">
+                    <div class="journal-feedback-header"><div><h3 id="journal-feedback-title">Writing feedback</h3><p>Choose what you want critiqued. Nothing is sent to ChatGPT automatically.</p></div></div>
+                    <label class="journal-feedback-choice">Feedback focus
+                      <select id="journal-feedback-focus" name="feedback_focus">
+                        <option value="story">Story craft, characters and pacing</option>
+                        <option value="style">Clarity, style and flow</option>
+                        <option value="dialogue">Dialogue and voice</option>
+                        <option value="structure">Structure and organization</option>
+                        <option value="reflective">Thoughtful questions, not judgment</option>
+                      </select>
+                    </label>
+                    <div class="journal-feedback-actions">
+                      <button id="journal-feedback-copy" type="button" class="quiet-pill">Copy feedback request</button>
+                      <a id="journal-feedback-open" href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer" class="quiet-pill">Open ChatGPT ↗</a>
+                    </div>
+                    <p id="journal-feedback-status" class="journal-feedback-status" role="status" aria-live="polite">Review the text before pasting it into ChatGPT. The feedback request includes your entry's title, writing prompt and text.</p>
+                    <label>Your feedback notes (optional)
+                      <textarea name="feedback_notes" rows="4" maxlength="15000" placeholder="Paste feedback here, or record your own observations and revisions."></textarea>
+                    </label>
+                  </section>
                 </fieldset>
                 <div class="journal-actions">
                   <button class="journal-danger" id="journal-delete" type="button" hidden disabled>Delete entry</button>
