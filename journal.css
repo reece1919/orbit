@@ -112,3 +112,10 @@
 @media(max-width:760px){.journal-tarot-card-grid{grid-template-columns:1fr 1fr;}.journal-tarot-card-grid label:last-child{grid-column:1/-1;}}
 @media(max-width:620px){.journal-mode-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.journal-tarot,.journal-feedback{padding:13px;}.journal-tarot-top{grid-template-columns:1fr;}.journal-tarot-top label:last-child{grid-column:auto;}}
 @media(max-width:380px){.journal-mode-grid{grid-template-columns:1fr;}.journal-tarot-card-grid{grid-template-columns:1fr;}.journal-tarot-card-grid label:last-child{grid-column:auto;}}
+
+/* MUSE identity: polished metal book, unboxed like the other system emblems. */
+.journal-view {--journal-accent:#e1baa9;}
+.journal-heading-mark {flex:0 0 58px;width:58px;height:58px;display:grid;place-items:center;padding:0;border:0;border-radius:0;background:transparent;color:inherit;}
+.journal-heading-mark img {display:block;width:58px;height:58px;object-fit:contain;filter:drop-shadow(0 3px 5px rgba(10,4,14,.38));}
+.sidebar .nav-item[data-view="journal"] .nav-system-emblem {width:22px;height:22px;object-fit:contain;flex:0 0 22px;}
+.journal-mobile-launch img {width:34px;height:34px;object-fit:contain;display:block;}
