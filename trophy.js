@@ -53,6 +53,9 @@
  function renderGames(){
   const target=$("trophy-game-list");
   const all=state.games.filter(g=>{
+    if(state.filter==="recently-played"&&(!g.last_played_at||Date.now()-Date.parse(g.last_played_at)>30*86400000))return false;
+    if(state.filter==="nearly-complete"&&!(g.achievements_total>0&&progress(g)>=75&&!done(g)))return false;
+    if(state.filter==="not-started"&&g.playtime_minutes>0)return false;
     if(state.filter==="complete"&&!done(g))return false;
     if(state.filter==="progress"&&!(g.achievements_total>0&&!done(g)))return false;
     if(state.filter==="unchecked"&&checked(g))return false;
