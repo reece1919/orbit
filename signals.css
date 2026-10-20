@@ -83,3 +83,10 @@ a.signal-item:hover,a.signal-item:focus-visible{border-color:rgba(108,203,246,.5
   }
   .home-signals-grid-single .home-signal-mail .signal-list{display:grid;grid-template-columns:minmax(0,1fr)}
 }
+
+/* v1.2 — account-aware Gmail inbox */
+.signal-mailbox-filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:15px 0 6px}
+.signal-mailbox-filter{display:inline-flex;gap:8px;align-items:center;justify-content:center;white-space:nowrap}
+.signal-mailbox-filter span{opacity:.75;font-variant-numeric:tabular-nums}
+.signal-mailbox-filter.selected,.signal-mailbox-filter[aria-pressed="true"]{border-color:rgba(115,208,255,.8);background:rgba(60,142,196,.3);color:#eaf9ff}
+@media(max-width:610px){.signal-mailbox-filters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.signal-mailbox-filter{white-space:normal;font-size:11px}}
