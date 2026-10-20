@@ -22,7 +22,7 @@
   <link rel="stylesheet" href="orbit-brand.css?v=4.0.0" />
   <link rel="stylesheet" href="agenda-overdue.css?v=1.2.1" />
   <link rel="stylesheet" href="calendar.css?v=1.1.0" />
-  <link rel="stylesheet" href="journal.css?v=1.0.0" />
+  <link rel="stylesheet" href="journal.css?v=1.1.0" />
   <link rel="manifest" href="pulse.webmanifest?v=4.0.0" />
   <link rel="icon" type="image/png" href="assets/orbit-emblem-cutout.png?v=4.0.0" />
   <link rel="apple-touch-icon" sizes="160x160" href="apple-touch-icon.png?v=4.0.0" />
@@ -35,7 +35,7 @@
   <script src="integrations.js?v=1.8.0" defer></script>
   <script src="google-calendar.js?v=1.0.1" defer></script>
   <script src="calendar.js?v=1.1.0" defer></script>
-  <script src="journal.js?v=1.0.0" defer></script>
+  <script src="journal.js?v=1.1.0" defer></script>
   <script src="assets/todoist-system.js?v=1.4.0" defer></script>
   <script src="fuel.js?v=0.6.5" defer></script>
   <script src="fuel-inbox.js?v=1.0.0" defer></script>
@@ -167,8 +167,18 @@
           <div class="page-head">
             <div class="journal-heading"><span class="journal-heading-mark" aria-hidden="true"><span data-icon="book-open"></span></span><div><h1>Journal<span class="accent-period">.</span></h1><p>Personal reflections, memories, ideas, and whatever else you want to keep.</p></div></div>
           </div>
+          <section class="journal-modes" aria-label="Journal writing modes">
+            <div class="journal-mode-heading"><h2>What would you like to write?</h2><p>Pick a style to start a new entry, or open something you've already written.</p></div>
+            <div class="journal-mode-grid">
+              <button type="button" class="journal-mode-button" data-journal-mode="reflection"><span data-icon="brain"></span><strong>Self-reflection</strong><small>Explore a question about yourself</small></button>
+              <button type="button" class="journal-mode-button" data-journal-mode="story"><span data-icon="feather"></span><strong>Story practice</strong><small>Get a creative writing challenge</small></button>
+              <button type="button" class="journal-mode-button" data-journal-mode="dream"><span data-icon="moon"></span><strong>Dream log</strong><small>Capture dreams before they fade</small></button>
+              <button type="button" class="journal-mode-button" data-journal-mode="gratitude"><span data-icon="heart"></span><strong>Gratitude</strong><small>Remember something meaningful</small></button>
+              <button type="button" class="journal-mode-button" data-journal-mode="freewrite"><span data-icon="pen-line"></span><strong>Free writing</strong><small>No prompts or rules</small></button>
+            </div>
+          </section>
           <div class="journal-toolbar">
-            <button class="primary-button" type="button" id="journal-new"><span data-icon="plus"></span> New entry</button>
+            <button class="primary-button" type="button" id="journal-new"><span data-icon="plus"></span> Blank entry</button>
             <button class="quiet-pill" type="button" id="journal-reload">Refresh</button>
             <button class="quiet-pill" type="button" id="journal-export" disabled><span data-icon="download"></span> Export journal</button>
           </div>
@@ -176,11 +186,27 @@
             <section class="module journal-index" aria-label="Saved journal entries">
               <div class="journal-index-header"><h2>Your entries</h2><span class="result-label" id="journal-count">—</span></div>
               <label class="journal-search-field"><span data-icon="search"></span><span class="sr-only">Search journal entries</span><input id="journal-search" type="search" placeholder="Search writing and tags" autocomplete="off"></label>
+              <label class="journal-kind-filter">Show
+                <select id="journal-kind-filter" aria-label="Filter journal entries by type">
+                  <option value="all">All writing</option>
+                  <option value="reflection">Self-reflection</option>
+                  <option value="story">Story practice</option>
+                  <option value="dream">Dream log</option>
+                  <option value="gratitude">Gratitude</option>
+                  <option value="freewrite">Free writing</option>
+                </select>
+              </label>
               <div class="journal-entry-list" id="journal-entry-list" aria-live="polite">Sign in to read your journal.</div>
             </section>
             <section class="module journal-editor" aria-label="Journal editor">
-              <div class="journal-editor-header"><h2>Write an entry</h2><span id="journal-selected-label">Private journal</span></div>
+              <div class="journal-editor-header"><h2 id="journal-editor-title">Free writing</h2><span id="journal-selected-label">Private journal</span></div>
+              <p id="journal-mode-hint" class="journal-mode-hint">Choose a mode to begin.</p>
               <form id="journal-form">
+                <section class="journal-prompt-panel" id="journal-prompt-panel" hidden aria-label="Writing prompt">
+                  <div class="journal-prompt-top"><strong id="journal-prompt-heading">Writing prompt</strong><button id="journal-prompt-next" class="quiet-pill" type="button">Another prompt <span data-icon="refresh-cw"></span></button></div>
+                  <p id="journal-prompt-text"></p>
+                  <small>The question or story challenge stays attached to this entry when you save it.</small>
+                </section>
                 <fieldset id="journal-fields" class="journal-fields" disabled>
                   <div class="journal-form-grid">
                     <label>Title <input type="text" name="title" maxlength="180" placeholder="Give this entry a name (optional)" autocomplete="off"></label>
