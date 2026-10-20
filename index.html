@@ -211,6 +211,67 @@
               <section class="module" aria-label="Recent achievements"><div class="module-head"><div><span class="eyebrow small">MILESTONES</span><h2>Recent unlocks</h2></div></div><div id="trophy-recent"><p class="trophy-empty">Recently unlocked achievements will appear here.</p></div></section>
             </aside>
           </div>
+
+          <section id="trophy-game-view" class="trophy-game-view" hidden aria-label="Game completion details">
+            <div class="trophy-game-nav">
+              <button type="button" class="quiet-pill" id="trophy-game-back"><span data-icon="arrow-left"></span> All games</button>
+              <span class="eyebrow small">TROPHY / GAME FILE</span>
+            </div>
+            <header id="trophy-game-hero" class="trophy-game-hero">
+              <img id="trophy-game-hero-art" class="trophy-game-hero-art" alt="" loading="eager">
+              <div class="trophy-game-hero-content">
+                <span class="trophy-game-hero-overline">STEAM LIBRARY / PERSONAL PROGRESS</span>
+                <h2 id="trophy-game-title">Game title</h2>
+                <p id="trophy-game-subtitle">Your achievement journey</p>
+                <div class="trophy-game-hero-progress">
+                  <span id="trophy-game-progress-label">Not yet scanned</span>
+                  <div class="trophy-game-progress-track" role="progressbar" aria-label="Steam achievement completion" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="trophy-game-progress-track"><div id="trophy-game-progress-fill"></div></div>
+                </div>
+              </div>
+            </header>
+            <div class="trophy-game-metrics" aria-label="Game progress summary">
+              <div><strong id="trophy-game-percentage">—</strong><small>Steam completion</small></div>
+              <div><strong id="trophy-game-unlocked">—</strong><small>Unlocked achievements</small></div>
+              <div><strong id="trophy-game-remaining">—</strong><small>Remaining achievements</small></div>
+              <div><strong id="trophy-game-playtime">—</strong><small>Hours played</small></div>
+              <div><strong id="trophy-game-lastplayed">—</strong><small>Last played</small></div>
+            </div>
+            <div class="trophy-game-content">
+              <section class="module trophy-game-achievement-section" aria-label="Achievements for selected game">
+                <div class="module-head trophy-game-achievements-head">
+                  <div><span class="eyebrow small">YOUR PROGRESS</span><h3>Achievements <span id="trophy-game-achievement-count" class="result-label"></span></h3></div>
+                  <button type="button" class="quiet-pill" id="trophy-game-rescan">Rescan game</button>
+                </div>
+                <div class="trophy-game-achievements-tools">
+                  <label><span class="sr-only">Find an achievement</span><input id="trophy-game-achievement-search" type="search" placeholder="Search achievements" autocomplete="off"></label>
+                  <select id="trophy-game-achievement-filter" aria-label="Filter achievements">
+                    <option value="remaining">Still to unlock</option>
+                    <option value="all">All achievements</option>
+                    <option value="unlocked">Unlocked</option>
+                  </select>
+                </div>
+                <div id="trophy-game-achievement-list" class="trophy-game-achievement-list" aria-live="polite"><p class="trophy-empty">Select a game to see its achievements.</p></div>
+              </section>
+              <aside class="trophy-game-right">
+                <section class="module trophy-game-next">
+                  <div class="eyebrow small">COMPLETION STATUS</div>
+                  <h3 id="trophy-game-status-title">Your next milestone</h3>
+                  <p id="trophy-game-status-copy">See what's still left to unlock.</p>
+                </section>
+                <section class="module">
+                  <div class="eyebrow small">RECENTLY EARNED</div>
+                  <h3>Achievement timeline</h3>
+                  <div id="trophy-game-timeline" class="trophy-game-timeline"></div>
+                </section>
+                <section class="module trophy-game-steam-links">
+                  <div class="eyebrow small">GAME LINKS</div>
+                  <h3>Steam</h3>
+                  <a id="trophy-game-steam-link" class="subtle-link" href="#" target="_blank" rel="noopener noreferrer">Open Steam store page <span data-icon="arrow-up-right"></span></a>
+                  <p class="trophy-connect-help">Steam achievements are synchronized automatically when available. Story progress and collectibles require separate manual tracking.</p>
+                </section>
+              </aside>
+            </div>
+          </section>
         </section>
         <section data-panel="journal" class="view-panel journal-view" id="journal-panel" hidden aria-label="MUSE personal journal">
           <div class="eyebrow"><span class="eyebrow-line"></span> ORBIT / MUSE · PERSONAL JOURNAL</div>
