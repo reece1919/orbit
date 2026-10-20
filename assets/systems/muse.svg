@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-labelledby="muse-icon-title">
+  <title id="muse-icon-title">MUSE — open journal and guiding star, rose-bronze and silver metal</title>
+  <defs>
+    <linearGradient id="muse-metal" x1=".05" y1=".05" x2=".95" y2="1">
+      <stop offset="0" stop-color="#fff6e9"/>
+      <stop offset=".16" stop-color="#e9d3c8"/>
+      <stop offset=".35" stop-color="#ae7f80"/>
+      <stop offset=".49" stop-color="#fae2ce"/>
+      <stop offset=".68" stop-color="#ac7574"/>
+      <stop offset=".86" stop-color="#e0b49f"/>
+      <stop offset="1" stop-color="#73464f"/>
+    </linearGradient>
+    <linearGradient id="muse-page" x1="0" y1="0" x2=".9" y2="1">
+      <stop offset="0" stop-color="#b8c5d3"/>
+      <stop offset=".4" stop-color="#e9edf0"/>
+      <stop offset=".7" stop-color="#a7b7c5"/>
+      <stop offset="1" stop-color="#687e91"/>
+    </linearGradient>
+    <linearGradient id="muse-wine" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#482737"/>
+      <stop offset=".55" stop-color="#261927"/>
+      <stop offset="1" stop-color="#61383f"/>
+    </linearGradient>
+    <filter id="muse-depth" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="3" stdDeviation="2.5" flood-color="#090d18" flood-opacity=".65"/>
+    </filter>
+  </defs>
+  <g stroke-linejoin="round" stroke-linecap="round" filter="url(#muse-depth)">
+    <!-- Forged-metal covers form an open M-shaped volume, with no square backing. -->
+    <path d="M60 43C46 30 31 27 14 31V96C33 93 47 99 60 109C73 99 87 93 106 96V31C89 27 74 30 60 43Z"
+      fill="url(#muse-wine)" stroke="url(#muse-metal)" stroke-width="5.4"/>
+    <path d="M60 44C46 34 32 31 20 35V90C35 88 49 95 60 102Z"
+      fill="url(#muse-page)" stroke="#f6d9cc" stroke-width="1.4"/>
+    <path d="M60 44C74 34 88 31 100 35V90C85 88 71 95 60 102Z"
+      fill="url(#muse-page)" stroke="#f6d9cc" stroke-width="1.4"/>
+    <!-- Embossed interior panels suggest reflection and many stories. -->
+    <path d="M60 48V100M27 49C37 49 46 52 53 58M27 60C37 60 46 63 53 69M27 71C37 71 46 74 53 80M67 58C75 52 84 49 93 49M67 69C75 63 84 60 93 60M67 80C75 74 84 71 93 71"
+      fill="none" stroke="#687b91" stroke-width="2" opacity=".55"/>
+    <path d="M60 43V106" stroke="#4b2d39" stroke-width="3"/>
+    <path d="M60 43V103" stroke="url(#muse-metal)" stroke-width="1.3"/>
+    <!-- A single celestial spark links dream-work, reflection, and tarot. -->
+    <path d="M60 4L65 15L76 20L65 25L60 37L55 25L44 20L55 15Z"
+      fill="url(#muse-metal)" stroke="#fcead9" stroke-width="1"/>
+    <circle cx="38" cy="17" r="2.1" fill="#efc9b0"/>
+    <circle cx="83" cy="17" r="2.1" fill="#efc9b0"/>
+    <path d="M16 101C29 100 44 102 60 114C76 102 91 100 104 101" fill="none" stroke="url(#muse-metal)" stroke-width="3.2"/>
+  </g>
+</svg>
