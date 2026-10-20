@@ -1,4 +1,4 @@
-/* ORBIT Journal v1.1 — multi-mode private writing with private MFA-gated Supabase storage.
+/* ORBIT Journal v1.2 — multi-mode private writing with private MFA-gated Supabase storage.
  * Separate from PULSE and ORBIT local workspace sync. Never caches journal text in localStorage. */
 (() => {
   "use strict";
@@ -14,6 +14,14 @@
   const promptNext = $("journal-prompt-next");
   const modeHint = $("journal-mode-hint");
   const editorTitle = $("journal-editor-title");
+  const tarotPanel = $("journal-tarot");
+  const tarotCardsHost = $("journal-tarot-cards");
+  const tarotSpread = $("journal-tarot-spread");
+  const tarotAdd = $("journal-tarot-add");
+  const bodyLabel = $("journal-body-label");
+  const feedbackCopy = $("journal-feedback-copy");
+  const feedbackFocus = $("journal-feedback-focus");
+  const feedbackStatus = $("journal-feedback-status");
   const list = $("journal-entry-list");
   const count = $("journal-count");
   const feedback = $("journal-status");
@@ -117,8 +125,170 @@
       hint:"No format, no prompt, no expectations. You decide what belongs here.",
       placeholder:"What's on your mind? Write as much or as little as you like…",
       prompts:[]
+    },
+    tarot: {
+      label:"Tarot journal", heading:"",
+      hint:"Record a spread, the cards and your personal interpretation. Tarot is a reflection tool, not a factual prediction.",
+      placeholder:"What stands out in these cards? How does the reading connect with your question, feelings or choices?",
+      prompts:[]
     }
   };
+
+  // Rider–Waite–Smith-style naming is used for a searchable 78-card log.
+  // Cards are manually selected: no draws, predictions, account connections or AI costs.
+  const TAROT_MAJOR = [
+    "The Fool","The Magician","The High Priestess","The Empress","The Emperor",
+    "The Hierophant","The Lovers","The Chariot","Strength","The Hermit",
+    "Wheel of Fortune","Justice","The Hanged Man","Death","Temperance",
+    "The Devil","The Tower","The Star","The Moon","The Sun","Judgement","The World"
+  ];
+  const TAROT_RANKS = ["Ace","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten","Page","Knight","Queen","King"];
+  const TAROT_CARDS = TAROT_MAJOR.concat(["Wands","Cups","Swords","Pentacles"]
+    .flatMap(suit => TAROT_RANKS.map(rank => rank + " of " + suit)));
+  const TAROT_SPREADS = {
+    single:["Single card"],
+    past_present_future:["Past","Present","Future"],
+    situation_action_outcome:["Situation","Action","Outcome"],
+    five_card:["Situation","Challenge","Underlying influence","Guidance","Possible direction"],
+    custom:["Card 1"]
+  };
+  const safeSpread = value => Object.hasOwn(TAROT_SPREADS, value) ? value : "single";
+  const safeTarotData = data => data && typeof data === "object" && !Array.isArray(data) ? data : {};
+  const tarotLabel = (tag, title) => {
+    const label = document.createElement("label");
+    label.textContent = title;
+    const field = document.createElement(tag);
+    label.append(field);
+    return [label,field];
+  };
+  function readTarotCards() {
+    return [...tarotCardsHost.querySelectorAll(".journal-tarot-card")].map(row => ({
+      position:row.querySelector('[data-tarot-field="position"]').value,
+      card:row.querySelector('[data-tarot-field="card"]').value,
+      orientation:row.querySelector('[data-tarot-field="orientation"]').value,
+      meaning:row.querySelector('[data-tarot-field="meaning"]').value
+    }));
+  }
+  function addTarotCard(card, index, spread) {
+    const row = document.createElement("div");
+    row.className = "journal-tarot-card";
+    const head = document.createElement("div");
+    head.className = "journal-tarot-card-head";
+    const number = document.createElement("strong");
+    number.textContent = "Card " + (index + 1);
+    head.append(number);
+    if (spread === "custom") {
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.className = "journal-tarot-remove";
+      remove.textContent = "Remove";
+      remove.dataset.tarotRemove = String(index);
+      head.append(remove);
+    }
+    const grid = document.createElement("div");
+    grid.className = "journal-tarot-card-grid";
+    const [positionLabel,position] = tarotLabel("input","Position");
+    position.dataset.tarotField = "position";
+    position.maxLength = 100;
+    position.value = spread === "custom" ? (card?.position || "Card " + (index + 1)) : TAROT_SPREADS[spread][index];
+    position.readOnly = spread !== "custom";
+    const [cardLabel,cardSelect] = tarotLabel("select","Card drawn");
+    cardSelect.dataset.tarotField = "card";
+    const blank = new Option("Select card…","");
+    cardSelect.add(blank);
+    for (const name of TAROT_CARDS) cardSelect.add(new Option(name,name));
+    cardSelect.value = TAROT_CARDS.includes(card?.card) ? card.card : "";
+    const [orientationLabel,orientation] = tarotLabel("select","Orientation");
+    orientation.dataset.tarotField = "orientation";
+    orientation.add(new Option("Upright","upright"));
+    orientation.add(new Option("Reversed","reversed"));
+    orientation.value = card?.orientation === "reversed" ? "reversed" : "upright";
+    const [meaningLabel,meaning] = tarotLabel("textarea","Your interpretation (optional)");
+    meaning.dataset.tarotField = "meaning";
+    meaning.rows = 2;
+    meaning.maxLength = 700;
+    meaning.placeholder = "What does this card mean to you in this position?";
+    meaning.value = card?.meaning || "";
+    grid.append(positionLabel,cardLabel,orientationLabel);
+    meaningLabel.className = "journal-tarot-card-meaning";
+    row.append(head,grid,meaningLabel);
+    tarotCardsHost.append(row);
+  }
+  function renderTarot(data, keepCards = false) {
+    const saved = safeTarotData(data);
+    const spread = safeSpread(form.elements.tarot_spread.value);
+    const previous = keepCards ? readTarotCards() : (Array.isArray(saved.cards) ? saved.cards : []);
+    const positions = spread === "custom"
+      ? previous.slice(0,7).length ? previous.slice(0,7) : [{position:"Card 1"}]
+      : TAROT_SPREADS[spread].map((position,i) => ({...previous[i],position}));
+    tarotCardsHost.replaceChildren();
+    positions.forEach((item,i) => addTarotCard(item,i,spread));
+    tarotAdd.hidden = spread !== "custom";
+    tarotAdd.disabled = busy || !owner || positions.length >= 7;
+  }
+  function populateTarot(data) {
+    const saved = safeTarotData(data);
+    form.elements.tarot_question.value = typeof saved.question === "string" ? saved.question : "";
+    form.elements.tarot_deck.value = typeof saved.deck === "string" ? saved.deck : "";
+    form.elements.tarot_spread.value = safeSpread(saved.spread);
+    renderTarot(saved);
+  }
+  function collectTarot() {
+    if (activeKind !== "tarot") return {};
+    const spread = safeSpread(form.elements.tarot_spread.value);
+    const question = form.elements.tarot_question.value.trim();
+    const deck = form.elements.tarot_deck.value.trim();
+    const cards = readTarotCards().map(x => ({
+      position:x.position.trim(),card:x.card,orientation:x.orientation,meaning:x.meaning.trim()
+    }));
+    if (!cards.length || cards.length > 7) throw new Error("Choose between one and seven cards.");
+    if (cards.some(x => !x.position || !TAROT_CARDS.includes(x.card)))
+      throw new Error("Choose a tarot card and position for every slot.");
+    return {spread,question,deck,cards};
+  }
+  function feedbackRequestText() {
+    const writing = form.elements.body.value.trim();
+    if (!writing) throw new Error("Write something before requesting feedback.");
+    const choices = {
+      story:"Evaluate narrative craft, character motivation, pacing, imagery and what holds attention.",
+      style:"Focus on clarity, sentence-level style, rhythm and flow.",
+      dialogue:"Focus on dialogue realism, subtext, voice and characterization.",
+      structure:"Focus on progression, organization, transitions and overall coherence.",
+      reflective:"Ask two or three thoughtful, nonjudgmental questions. Do not diagnose, interpret dreams as fact, or predict the future."
+    };
+    const request = choices[feedbackFocus.value] || choices.style;
+    const tarotSummary = activeKind === "tarot"
+      ? "\nTarot cards (for reflection only):\n" + readTarotCards().map(x =>
+          x.position + ": " + (x.card || "(not selected)") + " (" + x.orientation + ")" +
+          (x.meaning.trim() ? " — " + x.meaning.trim() : "")).join("\n")
+      : "";
+    return [
+      "Please give me constructive, specific feedback on this piece of writing.",
+      request,
+      "Start with two strengths. Then give up to three actionable improvements with examples. Preserve my voice, do not rewrite the entire piece without asking, and keep feedback encouraging but substantive.",
+      "This is a writing critique, not therapy, prophecy or a request to diagnose me.",
+      "",
+      "Journal type: " + MODES[activeKind].label,
+      "Title: " + (form.elements.title.value.trim() || "Untitled"),
+      activePrompt ? "Original writing prompt: " + activePrompt : "",
+      tarotSummary,
+      "My writing:",
+      writing
+    ].filter(line => line !== "").join("\n");
+  }
+  async function copyFeedbackRequest() {
+    if (!owner || busy) return;
+    feedbackStatus.textContent = "";
+    try {
+      const message = feedbackRequestText();
+      if (!navigator.clipboard?.writeText) throw new Error("Clipboard unavailable in this browser.");
+      await navigator.clipboard.writeText(message);
+      feedbackStatus.textContent = "Copied. Paste into ChatGPT only if you want to share this writing for feedback. Nothing has been sent automatically.";
+    } catch (error) {
+      feedbackStatus.textContent = error.message || "Could not copy. Try a different browser.";
+    }
+  }
+
   const normalizeKind = value => Object.hasOwn(MODES,value) ? value : "freewrite";
   function firstPrompt(kind) {
     const bank = MODES[kind]?.prompts || [];
@@ -142,6 +312,8 @@
     promptText.textContent = activePrompt;
     promptNext.disabled = !owner || busy || !config.prompts.length;
     promptNext.hidden = !config.prompts.length;
+    tarotPanel.hidden = activeKind !== "tarot";
+    bodyLabel.textContent = activeKind === "tarot" ? "Reading reflection / personal interpretation" : "Journal entry";
   }
 
   let owner = "", db = null, entries = [], activeId = null, version = null;
@@ -163,7 +335,8 @@
     const q = search.value.trim().toLowerCase();
     const onlyKind = kindFilter.value;
     const matches = entries.filter(e => (onlyKind === "all" || normalizeKind(e.entry_kind) === onlyKind) &&
-      (!q || [e.title, e.body, e.writing_prompt, MODES[normalizeKind(e.entry_kind)].label, (e.tags || []).join(" ")]
+      (!q || [e.title, e.body, e.writing_prompt, MODES[normalizeKind(e.entry_kind)].label,
+        e.feedback_notes || "", JSON.stringify(e.tarot_data || {}), (e.tags || []).join(" ")]
         .join(" ").toLowerCase().includes(q)));
     count.textContent = matches.length + (q ? " matching" : " entries") + (!fullyLoaded && loaded ? " (recent only)" : "");
     list.replaceChildren();
@@ -203,6 +376,8 @@
     deleteButton.disabled = !owner || busy || !activeId;
     exportButton.disabled = !owner || !loaded || busy || !fullyLoaded;
     promptNext.disabled = !owner || busy || !MODES[activeKind].prompts.length;
+    tarotAdd.disabled = !owner || busy || readTarotCards().length >= 7;
+    feedbackCopy.disabled = !owner || busy;
   }
   function warnIfDirty() {
     return dirty && !window.confirm("You have unsaved journal changes. Discard them?");
@@ -217,6 +392,10 @@
     form.elements.title.value = entry?.title || "";
     form.elements.body.value = entry?.body || "";
     form.elements.tags.value = (entry?.tags || []).join(", ");
+    form.elements.feedback_notes.value = entry?.feedback_notes || "";
+    feedbackFocus.value = activeKind === "story" ? "story" : "reflective";
+    feedbackStatus.textContent = "Nothing is sent automatically. Copy a request only if you choose to share your writing.";
+    populateTarot(entry?.tarot_data);
     dirty = false;
     selectedLabel.textContent = entry ? "Editing " + displayDate(entry.entry_date) : "New " + MODES[activeKind].label.toLowerCase() + " entry";
     deleteButton.hidden = !entry;
@@ -248,7 +427,7 @@
       let complete = false;
       for (let page = 0; page < 25; page++) {
         const {data, error} = await client.from("orbit_journal_entries")
-          .select("id,entry_date,title,body,tags,entry_kind,writing_prompt,created_at,updated_at")
+          .select("id,entry_date,title,body,tags,entry_kind,writing_prompt,feedback_notes,tarot_data,created_at,updated_at")
           .eq("owner_id", id)
           .order("entry_date", {ascending:false})
           .order("updated_at", {ascending:false})
@@ -306,11 +485,15 @@
     status("Saving privately…");
     try {
       await ensureMfa();
-      const payload = {entry_date:entryDate, title, body, tags, entry_kind:activeKind, writing_prompt:activePrompt};
+      let tarotData;
+      try { tarotData = collectTarot(); }
+      catch (error) { status(error.message, true); return; }
+      const payload = {entry_date:entryDate, title, body, tags, entry_kind:activeKind,
+        writing_prompt:activePrompt,feedback_notes:form.elements.feedback_notes.value,tarot_data:tarotData};
       const query = selected
         ? client.from("orbit_journal_entries").update(payload).eq("id", selected).eq("owner_id", id).eq("updated_at", lastVersion)
         : client.from("orbit_journal_entries").insert({...payload, owner_id:id});
-      const {data, error} = await query.select("id,entry_date,title,body,tags,entry_kind,writing_prompt,created_at,updated_at").maybeSingle();
+      const {data, error} = await query.select("id,entry_date,title,body,tags,entry_kind,writing_prompt,feedback_notes,tarot_data,created_at,updated_at").maybeSingle();
       if (error) throw error;
       if (!data) throw new Error("This entry changed on another device. Copy your unsaved text, then reload the journal before saving.");
       if (owner !== id || db !== client || stamp !== epoch) return;
@@ -357,9 +540,11 @@
   }
   function downloadBackup() {
     if (!loaded || !fullyLoaded || !owner) return;
-    const data = {format:"orbit-journal-v2", exported_at:new Date().toISOString(),
+    const data = {format:"orbit-journal-v3", exported_at:new Date().toISOString(),
       entries:entries.map(e => ({entry_date:e.entry_date, entry_kind:normalizeKind(e.entry_kind),
-        writing_prompt:e.writing_prompt || "", title:e.title, body:e.body, tags:e.tags, created_at:e.created_at, updated_at:e.updated_at}))};
+        writing_prompt:e.writing_prompt || "", title:e.title, body:e.body, tags:e.tags,
+        feedback_notes:e.feedback_notes || "",tarot_data:e.tarot_data || {},
+        created_at:e.created_at, updated_at:e.updated_at}))};
     const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], {type:"application/json"}));
     const a = document.createElement("a");
     a.href = url;
@@ -417,6 +602,26 @@
   exportButton.addEventListener("click", downloadBackup);
   search.addEventListener("input", renderList);
   kindFilter.addEventListener("change", renderList);
+  feedbackCopy.addEventListener("click", () => { void copyFeedbackRequest(); });
+  tarotSpread.addEventListener("change", () => { renderTarot({},true); dirty = true; status("Spread changed — save to keep it."); });
+  tarotAdd.addEventListener("click", () => {
+    if (form.elements.tarot_spread.value !== "custom" || busy) return;
+    const prev = readTarotCards();
+    if (prev.length >= 7) return;
+    renderTarot({cards:[...prev,{position:"Card " + (prev.length + 1)}]},false);
+    dirty = true;
+    status("Card added — save to keep this spread.");
+  });
+  tarotCardsHost.addEventListener("click", event => {
+    const remove = event.target.closest("[data-tarot-remove]");
+    if (!remove || form.elements.tarot_spread.value !== "custom" || busy) return;
+    const prev = readTarotCards();
+    if (prev.length <= 1) return;
+    const index = Number(remove.dataset.tarotRemove);
+    renderTarot({cards:prev.filter((_,i) => i !== index)},false);
+    dirty = true;
+    status("Card removed — save to keep this spread.");
+  });
   list.addEventListener("click", event => {
     const button = event.target.closest("[data-journal-id]");
     if (!button) return;
