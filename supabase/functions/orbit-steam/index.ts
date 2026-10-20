@@ -2,7 +2,7 @@
 // Configure STEAM_WEB_API_KEY as a Supabase Edge Function secret. Never put it in browser code.
 import { createClient } from "npm:@supabase/supabase-js@2.75.0";
 const ORIGIN = "https://reece1919.github.io";
-const URL = Deno.env.get("SUPABASE_URL") || "https://zdurujqwhxqrwbhwzzxg.supabase.co";
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "https://zdurujqwhxqrwbhwzzxg.supabase.co";
 const PUBLIC_KEY = Deno.env.get("SUPABASE_ANON_KEY") || "sb_publishable_Xa0DTx_PbvtynbiQN6_xNQ_l1D55vzK";
 const CORS = {"Access-Control-Allow-Origin":ORIGIN,"Access-Control-Allow-Headers":"authorization,apikey,content-type,x-client-info","Access-Control-Allow-Methods":"POST,OPTIONS","Content-Type":"application/json","Cache-Control":"no-store","Vary":"Origin"};
 const reply=(value,status=200)=>new Response(JSON.stringify(value),{status,headers:CORS});
@@ -10,7 +10,7 @@ const error=(message,status=400)=>reply({error:message},status);
 const safeInt=n=>Number.isSafeInteger(Number(n)) && Number(n)>=0 ? Math.min(Number(n),2147483647) : 0;
 const asTime=seconds=>Number(seconds)>0 && Number.isFinite(Number(seconds)) ? new Date(Number(seconds)*1000).toISOString() : null;
 function steamUrl(service,method,version,params,key){
-  const url=new URL("https://api.steampowered.com/"+service+"/"+method+"/v"+version+"/");
+  const url=new globalThis.URL("https://api.steampowered.com/"+service+"/"+method+"/v"+version+"/");
   url.searchParams.set("key",key);
   for(const [k,v] of Object.entries(params))url.searchParams.set(k,String(v));
   return url;
@@ -120,7 +120,7 @@ Deno.serve(async req=>{
   if(req.headers.get("origin")!==ORIGIN)return error("Origin not allowed",403);
   const bearer=(req.headers.get("Authorization")||"").replace(/^Bearer\s+/i,"");
   if(!bearer || bearer.split(".").length!==3)return error("Sign into ORBIT first.",401);
-  const db=createClient(URL,PUBLIC_KEY,{auth:{persistSession:false,autoRefreshToken:false},global:{headers:{Authorization:"Bearer "+bearer}}});
+  const db=createClient(SUPABASE_URL,PUBLIC_KEY,{auth:{persistSession:false,autoRefreshToken:false},global:{headers:{Authorization:"Bearer "+bearer}}});
   try{
     const {data:{user},error:authError}=await db.auth.getUser(bearer);
     if(authError || !user)return error("Session expired; sign in again.",401);
@@ -141,5 +141,5 @@ Deno.serve(async req=>{
     if(body.action==="sync_library")return await library(db,user.id,account.steam_id,key);
     if(body.action==="sync_batch"||body.action==="sync_game")return await batch(db,user.id,account.steam_id,key,body);
     return error("Unsupported action.");
-  }catch(ex){console.error("TROPHY sync:",String(ex?.message||ex).slice(0,160));return error("Steam sync failed. Check your library visibility and try again.",502);}
+  }catch(ex){console.error("TROPHY sync:",String(ex?.message||ex).slice(0,160));return error("TROPHY server encountered an unexpected error. Steam privacy is not necessarily the cause.",502);}
 });
