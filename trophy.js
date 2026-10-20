@@ -145,7 +145,11 @@
   state.account=null;state.games=[];state.achievements=[];state.selected=null;state.busy=false;
   status(owner?"Loading TROPHY…":"Sign in to ORBIT to open TROPHY.");render();
   if(!owner)return;
-  try{await load();status("");}catch(e){status("Unable to load Steam data. Complete ORBIT two-factor authentication.",true);}
+  try{
+    await load();status("");
+    const synced=state.account?.last_synced_at?Date.parse(state.account.last_synced_at):0;
+    if(state.account && (!synced || Date.now()-synced>24*60*60*1000))void sync(false);
+  }catch(e){status("Unable to load Steam data. Complete ORBIT two-factor authentication.",true);}
  }
  $("trophy-connect-form").addEventListener("submit",e=>{
   e.preventDefault();const id=$("trophy-steamid").value.trim();
