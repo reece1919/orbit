@@ -125,18 +125,18 @@
   if(!force&&loaded&&rangeStart<=start&&rangeEnd>=end)return;
   if(busy)return;
   const current=owner;
-  busy=true;error='';renderConnection();
+  busy=true;error='';renderConnection();let successful=false;
   try{
    const begin=new Date(start+'T00:00:00'),finish=new Date(end+'T00:00:00');
    const result=await request('events',{start:begin.toISOString(),end:finish.toISOString()});
    if(owner!==current)return;
-   items=Array.isArray(result.items)?result.items:[];rangeStart=start;rangeEnd=end;loaded=true;lastSync=result.synced_at||new Date().toISOString();
+   items=Array.isArray(result.items)?result.items:[];rangeStart=start;rangeEnd=end;loaded=true;successful=true;lastSync=result.synced_at||new Date().toISOString();
    if(result.incomplete)error='Google Calendar returned a partial result. Some events may be missing.';
   }catch(e){if(owner===current)error=e.message||'Calendar refresh failed.'}
   finally{
    if(owner===current){
     busy=false;renderConnection();emit();
-    if(needsRange&&(rangeStart>needsRange[0]||rangeEnd<needsRange[1]))void ensureRange(...needsRange);
+    if(successful&&needsRange&&(rangeStart>needsRange[0]||rangeEnd<needsRange[1]))void ensureRange(...needsRange);
    }
   }
  }
