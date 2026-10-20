@@ -6,15 +6,21 @@ const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
 const esc=v=>String(v??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
 const MODULES=["gmail_unread","chatgpt_recurring"];
+const MAILBOXES=[
+ {email:"reece1919@gmail.com",label:"Personal"},
+ {email:"controlleddriftonline@gmail.com",label:"Controlled Drift"},
+ {email:"passporter19@gmail.com",label:"Passporter"}
+];
 const REFRESH_PROMPT=[
 "Refresh the private Inbox and Automations snapshots for my ORBIT dashboard at https://reece1919.github.io/orbit/.",
-"Use my connected Gmail account to search in:inbox is:unread. Retrieve the latest 10 unread inbox messages and the unread inbox count. Save ONLY id, from (if available), subject, snippet (max 185 characters), date, and Gmail message URL; never store full email bodies or attachments.",
+"Use EACH connected Gmail account independently: reece1919@gmail.com, controlleddriftonline@gmail.com and passporter19@gmail.com. Verify the profile, search in:inbox is:unread, paginate all results, and record actual counts. Save ONLY id, from, subject, snippet (max 185 chars), date, and actual account-specific Gmail display URL; no email bodies or attachments.",
+"Store ONE private gmail_unread row with items=[{type:'mailbox',account:'reece1919@gmail.com',total_count:N,refreshed_at:ISO,items:[message metadata]}, similarly for the other two addresses]. Set total_count to sum of all mailbox totals. Preserve each mailbox's last good nested snapshot on failure.",
 "Use my ChatGPT Scheduled Tasks to list ONLY enabled recurring tasks. Exclude disabled, paused, completed, and one-time tasks. Save id, title, human-readable schedule, last_run, and url set to https://chatgpt.com/schedules. Do not save task instruction prompts.",
 "Update the two existing owner-private rows in Supabase project zdurujqwhxqrwbhwzzxg, public.orbit_external_snapshots, with modules gmail_unread and chatgpt_recurring. Use owner_id from the exact GAIA/ORBIT Supabase auth.users account whose email matches the connected Gmail account. If ambiguous, stop and ask. Set items to JSON arrays, total_count appropriately, source to the actual connected source, and refreshed_at=now(). Use an upsert. Keep other users' rows untouched.",
 "This is a read-only dashboard synchronization: do NOT mark email read, archive, send email, change labels, or create/update/pause/delete ChatGPT tasks. Report the two counts, or explain any blocker. Do not claim automation or direct Gmail integration was established."
 ].join("\n\n");
 const snap={gmail_unread:null,chatgpt_recurring:null};
-let account="",loading=false,lastLoaded=0;
+let account="",loading=false,lastLoaded=0,inboxFilter="all";
 const dateFormat=v=>{
  const d=new Date(v);
  return Number.isNaN(d.valueOf())?"Unknown":d.toLocaleString(undefined,{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"});
@@ -41,10 +47,11 @@ function emailRow(e){
  const link=safeUrl(e.url,"gmail");
  const title=esc(e.subject||"(No subject)");
  const sender=esc(e.from||"Gmail message");
+ const mailbox=e.account_label?esc(e.account_label)+" · ":"";
  const snippet=esc(String(e.snippet||"").slice(0,190));
- const text='<div class="signal-item-copy"><strong>'+title+'</strong><small>'+sender+(e.date?" · "+esc(String(e.date).slice(0,10)):"")+'</small>'+(snippet?'<p>'+snippet+'</p>':'')+'</div>';
- return link?'<a class="signal-item signal-item-email" href="'+esc(link)+'" target="_blank" rel="noopener noreferrer">'+text+'<span class="signal-external" aria-hidden="true">↗</span></a>':
- '<article class="signal-item signal-item-email">'+text+'</article>';
+ const copy='<div class="signal-item-copy"><strong>'+title+'</strong><small>'+mailbox+sender+(e.date?" · "+esc(String(e.date).slice(0,10)):"")+'</small>'+(snippet?'<p>'+snippet+'</p>':"")+'</div>';
+ return link?'<a class="signal-item signal-item-email" href="'+esc(link)+'" target="_blank" rel="noopener noreferrer">'+copy+'<span class="signal-external" aria-hidden="true">↗</span></a>':
+ '<article class="signal-item signal-item-email">'+copy+'</article>';
 }
 function automationRow(t){
  const link=safeUrl(t.url,"tasks");
@@ -55,24 +62,50 @@ function automationRow(t){
  return link?'<a class="signal-item signal-item-task" href="'+esc(link)+'" target="_blank" rel="noopener noreferrer">'+text+'<span class="signal-external" aria-hidden="true">↗</span></a>':
  '<article class="signal-item signal-item-task">'+text+'</article>';
 }
+function mailboxes(gmail){
+ const nested=Array.isArray(gmail?.items)&&gmail.items.some(e=>e?.type==="mailbox");
+ return MAILBOXES.map(config=>{
+  const entry=nested?gmail.items.find(e=>e?.type==="mailbox"&&e.account===config.email):null;
+  const legacy=!nested&&config.email===MAILBOXES[0].email&&gmail;
+  const data=entry||legacy;
+  return {...config,total_count:data?Number(data.total_count)||0:null,refreshed_at:data?.refreshed_at||null,
+   items:Array.isArray(data?.items)?data.items:[]};
+ });
+}
+function filterButtons(boxes,total){
+ let el=$("#inbox-account-switcher");
+ if(!el){
+  const list=$("#inbox-panel-list");
+  if(!list)return;
+  el=document.createElement("div");
+  el.id="inbox-account-switcher";el.className="signal-mailbox-filters";
+  list.before(el);
+ }
+ const opts=[{email:"all",label:"All inboxes",total_count:total},...boxes];
+ el.innerHTML=opts.map(b=>'<button type="button" class="quiet-pill signal-mailbox-filter'+(inboxFilter===b.email?" selected":"")+'" data-inbox-filter="'+esc(b.email)+'" aria-pressed="'+(inboxFilter===b.email)+'">'+esc(b.label)+' <span>'+(b.total_count==null?"—":String(b.total_count))+'</span></button>').join("");
+}
 function render(){
  const gmail=snap.gmail_unread,auto=snap.chatgpt_recurring;
- const messages=Array.isArray(gmail?.items)?gmail.items:[];
+ const boxes=mailboxes(gmail);
+ const allMessages=boxes.flatMap(box=>box.items.map(e=>({...e,account_label:box.label,account_email:box.email})))
+  .sort((a,b)=>(Date.parse(b.date)||0)-(Date.parse(a.date)||0));
+ const chosen=inboxFilter==="all"?allMessages:allMessages.filter(e=>e.account_email===inboxFilter);
  const tasks=Array.isArray(auto?.items)?auto.items:[];
  const gmailN=gmail?gmail.total_count:null,taskN=auto?auto.total_count:null;
  const counts=[
-  ["#home-inbox-count",gmailN],["#inbox-panel-count",gmailN],["#nav-inbox-count",gmailN],
+  ["#home-inbox-count",gmailN],["#inbox-panel-count",inboxFilter==="all"?gmailN:boxes.find(b=>b.email===inboxFilter)?.total_count],["#nav-inbox-count",gmailN],
   ["#automations-panel-count",taskN],["#nav-automations-count",taskN]
  ];
  counts.forEach(([selector,value])=>{const el=$(selector);if(el)el.textContent=value==null?"—":String(value)});
+ filterButtons(boxes,gmailN);
  const gmailEmpty="No unread inbox messages in the saved snapshot.";
  const autoEmpty="No active recurring tasks in the saved snapshot.";
- const boxes=[
-  ["#home-inbox-list",gmail,messages.slice(0,3),emailRow,gmailEmpty],
-  ["#inbox-panel-list",gmail,messages,emailRow,gmailEmpty],
+ const views=[
+  ["#home-inbox-list",gmail,allMessages.slice(0,3),emailRow,gmailEmpty],
+  ["#inbox-panel-list",gmail,chosen,emailRow,gmailEmpty],
   ["#automations-panel-list",auto,tasks,automationRow,autoEmpty]
  ];
- boxes.forEach(([selector,obj,rows,fn,message])=>{
+ views.forEach(([selector,obj,rows,fn,message])=>{
   const el=$(selector);if(!el)return;
   el.innerHTML=!account?empty("Sign into ORBIT to view private snapshots."):
    !obj?empty("No private snapshot yet. Ask ChatGPT to sync this source."):
@@ -81,7 +114,12 @@ function render(){
  [
   ["#home-inbox-synced","gmail_unread"],["#inbox-panel-synced","gmail_unread"],
   ["#automations-panel-synced","chatgpt_recurring"]
- ].forEach(([selector,module])=>{const el=$(selector);if(el)el.textContent=stamp(module)});
+ ].forEach(([selector,module])=>{
+  const el=$(selector);
+  if(!el)return;
+  const pending=module==="gmail_unread"&&gmail?boxes.filter(b=>!b.refreshed_at).length:0;
+  el.textContent=stamp(module)+(pending?" · "+pending+" mailbox"+(pending===1?"":"es")+" pending sync":"");
+ });
 }
 async function refresh(){
  if(!account||!window.ORBITAuth?.client){render();return}
@@ -118,6 +156,8 @@ async function copyInstructions(){
  }
 }
 document.addEventListener("click",e=>{
+ const filter=e.target.closest("[data-inbox-filter]");
+ if(filter){inboxFilter=filter.getAttribute("data-inbox-filter")||"all";render();return}
  if(e.target.closest("[data-signals-reload]")){void refresh();return}
  if(e.target.closest("[data-signals-copy]")){void copyInstructions();return}
 });
