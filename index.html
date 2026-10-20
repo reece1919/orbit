@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="celestial.css?v=1.4.0" />
   <link rel="stylesheet" href="assets/todoist-system.css?v=1.1.0" />
   <link rel="stylesheet" href="pulse.css?v=1.0.0" />
-  <link rel="stylesheet" href="signals.css?v=1.2.0" /><link rel="stylesheet" href="compact-systems.css?v=2.1.0" /><link rel="stylesheet" href="specialist-themes.css?v=1.1.0" />
+  <link rel="stylesheet" href="signals.css?v=1.2.0" /><link rel="stylesheet" href="compact-systems.css?v=2.2.0" /><link rel="stylesheet" href="specialist-themes.css?v=1.1.0" />
   <link rel="stylesheet" href="wellness.css?v=1.0.0" />
   <link rel="stylesheet" href="vita.css?v=2.0.0" />
   <link rel="stylesheet" href="fuel-inbox.css?v=1.0.0" />
@@ -22,7 +22,7 @@
   <link rel="stylesheet" href="orbit-brand.css?v=4.0.0" />
   <link rel="stylesheet" href="agenda-overdue.css?v=1.2.1" />
   <link rel="stylesheet" href="calendar.css?v=1.1.0" />
-  <link rel="stylesheet" href="journal.css?v=1.2.0" />
+  <link rel="stylesheet" href="journal.css?v=1.3.0" />
   <link rel="manifest" href="pulse.webmanifest?v=4.0.0" />
   <link rel="icon" type="image/png" href="assets/orbit-emblem-cutout.png?v=4.0.0" />
   <link rel="apple-touch-icon" sizes="160x160" href="apple-touch-icon.png?v=4.0.0" />
@@ -75,9 +75,10 @@
       <nav aria-label="Primary navigation" class="main-nav">
         <div class="nav-label">WORKSPACE</div>
         <button type="button" class="nav-item active" data-view="home"><span data-icon="layout-dashboard"></span> Overview <span class="nav-indicator"></span></button>
+        <button type="button" class="nav-item" data-view="journal"><img class="nav-system-emblem" src="assets/systems/muse.svg?v=1.0.0" alt="" width="22" height="22"> MUSE <span class="nav-indicator"></span></button>
         <button type="button" class="nav-item" data-view="focus"><span data-icon="check-circle"></span> Todoist &amp; Tasks <span class="nav-count" id="nav-task-count">0</span></button>
         <button type="button" class="nav-item" data-view="calendar"><span data-icon="calendar"></span> Calendar <span class="nav-indicator"></span></button>
-        <button type="button" class="nav-item" data-view="journal"><span data-icon="book-open"></span> Journal <span class="nav-indicator"></span></button>
+        
         <span id="nav-gaia-count" hidden aria-hidden="true">—</span>
         <button type="button" class="nav-item" data-view="vita"><img class="nav-system-emblem" src="assets/systems/vita-metal.webp?v=2.0.0" width="21" height="21" alt=""> VITA <span class="nav-indicator"></span></button>
         <span id="nav-fuel-count" hidden aria-hidden="true">—</span>
@@ -103,7 +104,8 @@
           <section class="system-launch-bar" aria-label="System navigation"><img class="orbit-home-logo" src="assets/orbit-emblem-cutout.png?v=4.0.0" width="52" height="52" alt="ORBIT logo"><div class="system-launch-heading"><span class="eyebrow small">SYSTEMS</span><span id="home-date"></span><span id="home-greeting" class="visually-hidden">Welcome.</span></div><div class="system-launch-items"><a class="system-launch" href="https://reece1919.github.io/gaia/" target="_blank" rel="noopener noreferrer" aria-label="Open GAIA"><img src="assets/systems/gaia.svg?v=2.0.0" alt="" width="34" height="34"><span>GAIA</span></a>
 <a class="system-launch" href="https://reece1919.github.io/echo/" target="_blank" rel="noopener noreferrer" aria-label="Open ECHO"><img src="https://reece1919.github.io/echo/echo-metal-logo.png?v=2.0.0" alt="" width="34" height="34"><span>ECHO</span></a>
 <a class="system-launch" href="https://reece1919.github.io/rune-web/" target="_blank" rel="noopener noreferrer" aria-label="Open RUNE"><img src="assets/systems/rune-metal.png?v=2.0.0" alt="" width="34" height="34"><span>RUNE</span></a>
-<a class="system-launch" href="driftmark/" aria-label="Open QUILL"><img src="assets/systems/quill-blue-metal.png?v=2.0.0" alt="" width="34" height="34"><span>QUILL</span></a></div></section>
+<a class="system-launch" href="driftmark/" aria-label="Open QUILL"><img src="assets/systems/quill-blue-metal.png?v=2.0.0" alt="" width="34" height="34"><span>QUILL</span></a>
+<button class="system-launch" type="button" data-view="journal" aria-label="Open MUSE personal journal"><img src="assets/systems/muse.svg?v=1.0.0" alt="" width="34" height="34"><span>MUSE</span></button></div></section>
 
           <div class="home-signals-grid home-signals-grid-single" aria-label="Latest unread Gmail activity">
             <section class="module home-signal home-signal-mail">
@@ -162,10 +164,10 @@
             <section class="module note-module"><div class="module-head"><div><div class="eyebrow small">NOTES</div><h3>Scratchpad</h3></div><span data-icon="pen-line" class="muted-icon"></span></div><textarea id="scratchpad" placeholder="An idea, a reminder, something to remember…" aria-label="Scratchpad notes"></textarea><div class="note-bottom"><span data-icon="hard-drive"></span> Saved on this device · cloud optional <span id="note-saved" aria-live="polite"></span></div></section>
           </div>
         </section>
-        <section data-panel="journal" class="view-panel journal-view" id="journal-panel" hidden aria-label="Personal Journal">
-          <div class="eyebrow"><span class="eyebrow-line"></span> ORBIT / PRIVATE WRITING</div>
+        <section data-panel="journal" class="view-panel journal-view" id="journal-panel" hidden aria-label="MUSE personal journal">
+          <div class="eyebrow"><span class="eyebrow-line"></span> ORBIT / MUSE · PERSONAL JOURNAL</div>
           <div class="page-head">
-            <div class="journal-heading"><span class="journal-heading-mark" aria-hidden="true"><span data-icon="book-open"></span></span><div><h1>Journal<span class="accent-period">.</span></h1><p>Personal reflections, memories, ideas, and whatever else you want to keep.</p></div></div>
+            <div class="journal-heading"><span class="journal-heading-mark" aria-hidden="true"><img src="assets/systems/muse.svg?v=1.0.0" width="56" height="56" alt=""></span><div><h1>MUSE<span class="accent-period">.</span></h1><p>Your journal for reflection, stories, dreams, gratitude, tarot, and free writing.</p></div></div>
           </div>
           <section class="journal-modes" aria-label="Journal writing modes">
             <div class="journal-mode-heading"><h2>What would you like to write?</h2><p>Pick a style to start a new entry, or open something you've already written.</p></div>
@@ -598,7 +600,7 @@
           <a class="mobile-system-link" href="https://reece1919.github.io/echo/" target="_blank" rel="noopener noreferrer"><img src="https://reece1919.github.io/echo/echo-metal-logo.png?v=2.0.0" width="32" height="32" alt=""><span>ECHO</span></a>
           <a class="mobile-system-link" href="https://reece1919.github.io/rune-web/" target="_blank" rel="noopener noreferrer"><img src="assets/systems/rune-metal.png?v=2.0.0" width="32" height="32" alt=""><span>RUNE</span></a>
           <button class="mobile-system-link" type="button" data-view="vita"><img src="assets/systems/vita-metal.webp?v=2.0.0" width="32" height="32" alt=""><span>VITA</span></button>
-          <button class="mobile-system-link journal-mobile-launch" type="button" data-view="journal"><span data-icon="book-open"></span><span>Journal</span></button>
+          <button class="mobile-system-link journal-mobile-launch" type="button" data-view="journal"><img src="assets/systems/muse.svg?v=1.0.0" width="34" height="34" alt=""><span>MUSE</span></button>
           <a class="mobile-system-link" href="driftmark/"><img src="assets/systems/quill-blue-metal.png?v=2.0.0" width="32" height="32" alt=""><span>QUILL</span></a>
         </div>
       </section>
