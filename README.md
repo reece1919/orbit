@@ -267,3 +267,8 @@ The standalone Journal module is now branded **MUSE**. Its page, desktop sidebar
 - Added MUSE to the top **Systems** quick-launch strip on the ORBIT Overview page. The five icons use a five-column responsive layout and the new MUSE button opens the local Journal panel instead of an external site.
 - MUSE sits directly under Overview in the desktop sidebar and remains accessible in the mobile Systems sheet with the same emblem.
 - Existing journal entries, authentication, MFA/RLS, exports and prompts are unchanged. This is a visual/navigation change only and needs no database migration.
+
+
+## MUSE icon update (October 20, 2026)
+
+The MUSE icon now uses the **third approved tarot-card and celestial spark design**, rather than the original open-book SVG. The transparent source image was resized into a compact palette-optimized 128 × 128 PNG at `assets/systems/muse-tarot.png`. The high-resolution image was the user's selected third icon from the MUSE design alternatives. All four existing image references in `index.html` (sidebar, home Systems strip, Journal header and mobile Systems sheet) now use the new PNG with a versioned URL. The previous `assets/systems/muse.svg` remains in the repository as a fallback, and no journal data, routes or database policies were modified.
