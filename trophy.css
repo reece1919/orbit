@@ -55,3 +55,78 @@
 #trophy-status:not(:empty){margin:12px 0}
 @media(max-width:900px){.trophy-main{grid-template-columns:1fr}.trophy-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:500px){.trophy-game{grid-template-columns:76px minmax(0,1fr) 32px;gap:8px}.trophy-game img{width:76px;height:38px}.trophy-game-info strong{font-size:12px}.trophy-stat{padding:13px}.trophy-heading-emblem{width:46px;height:46px}.trophy-tools select{max-width:none;flex:1 1 100%}}
+
+
+/* TROPHY gallery and immersive per-game completion experience */
+.trophy-panel .trophy-game-view[hidden],
+.trophy-panel .trophy-stats[hidden],
+.trophy-panel .trophy-connect-card[hidden],
+.trophy-panel .trophy-main[hidden]{display:none!important}
+.trophy-game-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,240px),1fr));gap:16px;max-height:none;overflow:visible;padding:1px}
+.trophy-game.trophy-game-gallery-card{display:flex;flex-direction:column;gap:0;min-width:0;padding:0;overflow:hidden;position:relative;border-radius:14px;text-align:left;border:1px solid rgba(174,192,209,.22);background:linear-gradient(160deg,var(--trophy-game-shade,#242b37),#10192a);color:#f5f6f8;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.trophy-game-gallery-card:hover,.trophy-game-gallery-card:focus-visible{transform:translateY(-3px);border-color:var(--trophy-game-accent,#c7a05c);box-shadow:0 14px 35px #0006}
+.trophy-gallery-cover{display:block;position:relative;width:100%;height:auto;aspect-ratio:460/215;overflow:hidden;background:var(--trophy-game-shade,#283442)}
+.trophy-gallery-cover img{width:100%;height:100%;object-fit:cover;border-radius:0;display:block;transition:transform .24s ease}
+.trophy-game-gallery-card:hover .trophy-gallery-cover img{transform:scale(1.045)}
+.trophy-gallery-shade{position:absolute;inset:0;background:linear-gradient(0deg,#0308107f,transparent 65%);pointer-events:none}
+.trophy-gallery-complete{position:absolute;right:9px;top:9px;display:inline-flex;background:#121b23e0;border:1px solid var(--trophy-game-accent);border-radius:5px;padding:5px 7px;color:var(--trophy-game-accent);font-size:10px;font-weight:800;letter-spacing:.065em}
+.trophy-gallery-info{display:flex;flex-direction:column;gap:8px;flex:1;padding:14px 15px 12px;width:100%;min-width:0}
+.trophy-gallery-info strong{font-size:15px;line-height:1.3;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;min-height:1.3em}
+.trophy-gallery-info small{font-size:10px;letter-spacing:.035em;line-height:1.4;color:#d2d9e2}
+.trophy-gallery-info .trophy-bar{margin-top:auto;height:5px;background:#020911aa}
+.trophy-gallery-info .trophy-bar i{background:linear-gradient(90deg,var(--trophy-game-accent),#f0e3c7)}
+.trophy-gallery-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:10px;color:#d6dde8;letter-spacing:.025em}
+.trophy-gallery-footer b{font-size:13px;color:var(--trophy-game-accent)}
+.trophy-game-view{--trophy-game-accent:#dab975;--trophy-game-shade:#28344d;display:grid;gap:18px;animation:trophy-game-reveal .2s ease}
+@keyframes trophy-game-reveal{from{opacity:.6;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.trophy-game-nav{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.trophy-game-nav .quiet-pill{display:inline-flex;align-items:center;gap:6px}
+.trophy-game-nav .quiet-pill svg{width:14px;height:14px}
+.trophy-game-hero{isolation:isolate;position:relative;display:flex;align-items:flex-end;min-height:330px;overflow:hidden;border:1px solid color-mix(in srgb,var(--trophy-game-accent) 36%,transparent);border-radius:18px;background:linear-gradient(150deg,var(--trophy-game-shade),#090f1e);box-shadow:0 18px 48px #0003}
+.trophy-game-hero-art{position:absolute;z-index:-2;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 38%;opacity:.83}
+.trophy-game-hero:after{content:"";position:absolute;z-index:-1;inset:0;pointer-events:none;background:linear-gradient(0deg,#050913 0%,#050913df 19%,#0509135f 64%,transparent 100%),linear-gradient(90deg,var(--trophy-game-shade) 0%,transparent 90%)}
+.trophy-game-hero-content{padding:clamp(18px,3.3vw,36px);width:100%;display:grid;gap:9px}
+.trophy-game-hero-overline{font-size:11px;letter-spacing:.14em;font-weight:700;color:var(--trophy-game-accent)}
+.trophy-game-hero h2{font-size:clamp(28px,4.5vw,54px);line-height:1.08;letter-spacing:-.025em;max-width:80%;color:#fff;text-shadow:0 2px 15px #0009}
+.trophy-game-hero p{font-size:14px;line-height:1.5;color:#e8e9ed;margin:0}
+.trophy-game-hero-progress{display:grid;gap:8px;margin-top:12px;width:min(100%,525px);font-size:12px;font-weight:700;color:#fff}
+.trophy-game-progress-track{height:9px;border:1px solid #ffffff44;overflow:hidden;background:#071220b8;border-radius:99px}
+.trophy-game-progress-track>div{height:100%;width:0;background:var(--trophy-game-accent);border-radius:inherit;transition:width .26s}
+.trophy-game-metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.trophy-game-metrics>div{min-width:0;border:1px solid #ffffff24;border-radius:12px;padding:16px 13px;background:linear-gradient(145deg,color-mix(in srgb,var(--trophy-game-shade) 48%,#101729),#121d2b)}
+.trophy-game-metrics strong{display:block;color:var(--trophy-game-accent);font-size:clamp(19px,2.3vw,28px);font-variant-numeric:tabular-nums;line-height:1.1;overflow-wrap:anywhere}
+.trophy-game-metrics small{display:block;color:#c6ccd8;font-size:11px;line-height:1.4;margin-top:8px}
+.trophy-game-content{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(250px,.85fr);align-items:start;gap:16px}
+.trophy-game-content .module{min-width:0;border-color:color-mix(in srgb,var(--trophy-game-accent) 16%,#26364d)}
+.trophy-game-achievements-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.trophy-game-achievements-head .eyebrow{color:var(--trophy-game-accent)}
+.trophy-game-achievements-tools{display:flex;gap:9px;align-items:center;margin:12px 0 15px;flex-wrap:wrap}
+.trophy-game-achievements-tools label{flex:1 1 200px}
+.trophy-game-achievements-tools input,.trophy-game-achievements-tools select{min-height:40px;border-radius:9px;padding:9px 11px;background:#0b1220;border:1px solid #4c5672;color:#f4f6fa;font:inherit;max-width:100%}
+.trophy-game-achievements-tools input{width:100%}
+.trophy-game-achievement-list{display:grid;gap:8px}
+.trophy-game-achievement{display:flex;align-items:center;gap:13px;padding:13px;border:1px solid #ffffff15;border-radius:11px;background:rgba(255,255,255,.025)}
+.trophy-game-achievement.is-unlocked{border-color:color-mix(in srgb,var(--trophy-game-accent) 25%,transparent);background:color-mix(in srgb,var(--trophy-game-accent) 6%,#111a2a)}
+.trophy-game-achievement-art{display:grid;place-items:center;width:48px;height:48px;flex:0 0 48px;background:#060b15;border:1px solid #ffffff22;border-radius:8px;color:var(--trophy-game-accent);font-size:25px;overflow:hidden}
+.trophy-game-achievement-art img{width:48px;height:48px;object-fit:contain}
+.trophy-game-achievement-text{min-width:0;flex:1}
+.trophy-game-achievement-text strong{font-size:13px;color:#f1f4fa}
+.trophy-game-achievement-text p{font-size:12px;color:#b8c3d3;line-height:1.5;margin:5px 0}
+.trophy-game-achievement-text small{font-size:10px;color:var(--trophy-game-accent);letter-spacing:.035em;font-weight:700}
+.trophy-game-achievement-symbol{font-size:20px;color:var(--trophy-game-accent)}
+.trophy-game-right{display:grid;gap:16px}
+.trophy-game-right h3{font-size:17px;line-height:1.3;margin:7px 0}
+.trophy-game-right .eyebrow{color:var(--trophy-game-accent)}
+.trophy-game-next{background:linear-gradient(145deg,color-mix(in srgb,var(--trophy-game-shade) 48%,#141e2b),#101827)}
+.trophy-game-next p{line-height:1.65;font-size:13px;color:#c5cddd;margin-bottom:0}
+.trophy-game-timeline-item{display:flex;gap:11px;align-items:start;border-bottom:1px solid #ffffff17;padding:11px 0}
+.trophy-game-timeline-item:last-child{border-bottom:0}
+.trophy-game-timeline-dot{width:9px;height:9px;flex:0 0 9px;border-radius:50%;background:var(--trophy-game-accent);margin-top:5px;box-shadow:0 0 0 3px color-mix(in srgb,var(--trophy-game-accent) 13%,transparent)}
+.trophy-game-timeline-item strong,.trophy-game-timeline-item small{display:block}
+.trophy-game-timeline-item strong{font-size:12px;line-height:1.4}
+.trophy-game-timeline-item small{font-size:11px;color:#c8d0dd;margin-top:5px}
+.trophy-game-steam-links .subtle-link{display:inline-flex;align-items:center;gap:6px}
+@media(max-width:1050px){.trophy-game-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}.trophy-game-content{grid-template-columns:1fr}}
+@media(max-width:700px){.trophy-game-hero{min-height:260px}.trophy-game-hero h2{max-width:100%}.trophy-game-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.trophy-game-metrics>div:last-child{grid-column:span 2}.trophy-game-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.trophy-gallery-info{padding:10px}.trophy-gallery-info strong{font-size:12px}.trophy-gallery-info small{font-size:9px}.trophy-game-achievement{padding:10px;gap:9px}.trophy-game-achievement-art{width:42px;height:42px;flex-basis:42px}.trophy-game-achievement-art img{width:42px;height:42px}}
+@media(max-width:380px){.trophy-game-list{grid-template-columns:1fr}.trophy-game-hero h2{font-size:28px}.trophy-game-metrics>div{padding:12px}}
+@media(prefers-reduced-motion:reduce){.trophy-game-view{animation:none}.trophy-game-gallery-card,.trophy-gallery-cover img{transition:none}}
