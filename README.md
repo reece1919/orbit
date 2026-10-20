@@ -236,3 +236,15 @@ Journal is a standalone, freeform writing module in the ORBIT sidebar and the mo
 - Writing is **not** end-to-end encrypted: Supabase project administrators with database permissions can technically access it. JSON exports are unencrypted and should be stored privately.
 - A new database migration is required: `supabase/migrations/20261020_orbit_journal_entries.sql`. The module requires no extra service or paid API.
 - Entries are saved explicitly, not autosaved. The browser warns before unloading a changed entry.
+
+
+## ORBIT Journal writing modes — October 20, 2026
+
+The Journal has five entry types chosen from a dedicated mode grid: **Self-reflection**, **Story practice**, **Dream log**, **Gratitude** and **Free writing**. Starting a type creates a new draft with tailored help and a different body placeholder. Choosing another mode prompts before discarding unsaved writing.
+
+- Self-reflection (20 prompts), story practice (20 original writing challenges), and gratitude (12 prompts) offer a local, deterministic daily prompt plus an **Another prompt** button. No AI call or paid generation is required.
+- Dream log and Free writing open without a prompt. Dream log provides gentle recall cues. None of the prompts or cues interprets dreams, diagnoses conditions or automatically produces story text.
+- The type and the exact selected prompt are saved to `orbit_journal_entries` along with date/title/body/tags. Historical entries default to the Free writing type. PULSE records are unaffected.
+- Search covers title, body, tags, type, and saved prompts; a **Show** dropdown filters by entry type. The full JSON backup also includes type and prompt (v2 format).
+- The additive database migration is `supabase/migrations/20261020_orbit_journal_modes.sql`. The private RLS/MFA policies continue to apply unchanged.
+- No changes to ORBIT cloud workspace sync, calendar, Todoist or the auth system.
