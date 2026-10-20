@@ -1,0 +1,57 @@
+/* TROPHY: Steam library and achievement tracking within ORBIT */
+.trophy-panel{--trophy-accent:#c7a05c}
+.trophy-intro{max-width:66ch}
+.trophy-heading{display:flex;align-items:center;gap:16px}
+.trophy-heading-emblem{display:grid;place-items:center;width:58px;height:58px;border-radius:16px;background:linear-gradient(145deg,#786043,#2b3241);color:#f0d39a;border:1px solid #b59c68;box-shadow:inset 0 1px 3px #e6d5aa60,0 8px 24px #0004}
+.trophy-heading-emblem svg{width:29px;height:29px}
+.trophy-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:18px 0 22px}
+.trophy-stat{padding:17px 18px;border-radius:14px;background:var(--surface-card,#131d30);border:1px solid var(--border,#29384b)}
+.trophy-stat small{display:block;font-size:12px;color:var(--text-muted,#9aa7ba);margin-top:7px}
+.trophy-stat strong{display:block;font-size:clamp(22px,2.4vw,32px);line-height:1.1;color:var(--text-main,#e7eefc)}
+.trophy-main{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(280px,1fr);gap:16px;align-items:start}
+.trophy-panel .module{min-width:0}
+.trophy-connect-card{margin-bottom:20px}
+.trophy-connect-card h2{font-size:20px}
+.trophy-connect-form{display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin:14px 0 7px}
+.trophy-connect-form label{flex:1 1 230px;display:grid;gap:5px;color:var(--text-muted,#afbdd0);font-size:12px}
+.trophy-connect-form input,.trophy-tools input,.trophy-tools select{background:#0a1220;color:#e7eefc;border:1px solid #45516b;border-radius:9px;padding:10px 12px;min-height:42px;max-width:100%;font:inherit}
+.trophy-connect-form input{width:100%}
+.trophy-connect-help,.trophy-status,.trophy-connected-note{font-size:13px;color:var(--text-muted,#9baec3);line-height:1.6}
+.trophy-error{color:#ffb2a5!important}
+.trophy-connected-actions{display:flex;align-items:center;flex-wrap:wrap;gap:9px;margin:12px 0}
+.trophy-connected-note{margin:7px 0}
+.trophy-connected-note strong{color:var(--text-main,#fff);font-variant-numeric:tabular-nums}
+.trophy-tools{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin:12px 0}
+.trophy-tools label{flex:1 1 170px}
+.trophy-tools input{width:100%}
+.trophy-tools select{max-width:205px}
+.trophy-game-list{display:grid;gap:9px;max-height:720px;overflow:auto;padding-right:5px}
+.trophy-game{display:grid;grid-template-columns:94px minmax(0,1fr) 44px;align-items:center;gap:12px;width:100%;padding:9px;text-align:left;color:inherit;background:rgba(255,255,255,.025);border:1px solid rgba(165,189,223,.14);border-radius:11px;cursor:pointer}
+.trophy-game:hover,.trophy-game:focus-visible,.trophy-selected{background:rgba(204,161,86,.09);border-color:rgba(211,175,114,.6)}
+.trophy-game img{width:94px;height:44px;object-fit:cover;border-radius:5px;background:#121d32}
+.trophy-game-info{display:block;min-width:0}
+.trophy-game-info strong{display:block;font-size:13px;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
+.trophy-game-info small{display:block;margin:4px 0 7px;color:var(--text-muted,#a7b7cc);font-size:11px}
+.trophy-game-percent{font-weight:700;color:#d9b77b;text-align:right;font-size:12px}
+.trophy-bar{display:block;height:4px;background:#334057;border-radius:999px;overflow:hidden}
+.trophy-bar i{display:block;height:100%;background:linear-gradient(90deg,#a47a3c,#ecc88b);border-radius:999px}
+.trophy-detail-heading{display:flex;align-items:start;justify-content:space-between;gap:8px}
+.trophy-detail-heading h3{overflow-wrap:anywhere}
+.trophy-details p{font-size:12px;color:var(--text-muted,#a7b7cc)}
+.trophy-achievements{max-height:410px;overflow:auto;display:grid;gap:5px;margin-top:12px}
+.trophy-achievement{display:flex;gap:10px;align-items:start;padding:9px;border-radius:8px;background:rgba(255,255,255,.02);opacity:.75}
+.trophy-achievement.is-unlocked{background:rgba(219,176,99,.085);opacity:1}
+.trophy-achievement strong,.trophy-achievement small{display:block;line-height:1.35}
+.trophy-achievement strong{font-size:12px}
+.trophy-achievement small{font-size:11px;color:var(--text-muted,#a7b7cc);margin-top:3px}
+.trophy-achievement-mark{width:20px;height:20px;flex:0 0 20px;text-align:center;font-size:18px;color:#e0ba78}
+.trophy-side{display:grid;gap:16px}
+.trophy-recent-item{padding:9px 0;border-bottom:1px solid rgba(165,189,223,.14)}
+.trophy-recent-item:last-child{border-bottom:0}
+.trophy-recent-item strong,.trophy-recent-item span{display:block}
+.trophy-recent-item strong{font-size:12px}
+.trophy-recent-item span{font-size:11px;color:var(--text-muted,#a7b7cc);margin-top:4px}
+.trophy-empty{padding:18px 5px;color:var(--text-muted,#a7b7cc);font-size:13px}
+#trophy-status:not(:empty){margin:12px 0}
+@media(max-width:900px){.trophy-main{grid-template-columns:1fr}.trophy-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:500px){.trophy-game{grid-template-columns:76px minmax(0,1fr) 32px;gap:8px}.trophy-game img{width:76px;height:38px}.trophy-game-info strong{font-size:12px}.trophy-stat{padding:13px}.trophy-heading-emblem{width:46px;height:46px}.trophy-tools select{max-width:none;flex:1 1 100%}}

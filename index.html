@@ -23,6 +23,7 @@
   <link rel="stylesheet" href="agenda-overdue.css?v=1.2.1" />
   <link rel="stylesheet" href="calendar.css?v=1.1.0" />
   <link rel="stylesheet" href="journal.css?v=1.3.0" />
+  <link rel="stylesheet" href="trophy.css?v=1.0.0" />
   <link rel="manifest" href="pulse.webmanifest?v=4.0.0" />
   <link rel="icon" type="image/png" href="assets/orbit-emblem-cutout.png?v=4.0.0" />
   <link rel="apple-touch-icon" sizes="160x160" href="apple-touch-icon.png?v=4.0.0" />
@@ -36,6 +37,7 @@
   <script src="google-calendar.js?v=1.0.1" defer></script>
   <script src="calendar.js?v=1.1.0" defer></script>
   <script src="journal.js?v=1.2.0" defer></script>
+  <script src="trophy.js?v=1.0.0" defer></script>
   <script src="assets/todoist-system.js?v=1.4.0" defer></script>
   <script src="fuel.js?v=0.6.5" defer></script>
   <script src="fuel-inbox.js?v=1.0.0" defer></script>
@@ -104,7 +106,8 @@
 <a class="system-launch" href="https://reece1919.github.io/rune-web/" target="_blank" rel="noopener noreferrer" aria-label="Open RUNE"><img src="assets/systems/rune-metal.png?v=2.0.0" alt="" width="34" height="34"><span>RUNE</span></a>
 <a class="system-launch" href="driftmark/" aria-label="Open QUILL"><img src="assets/systems/quill-blue-metal.png?v=2.0.0" alt="" width="34" height="34"><span>QUILL</span></a>
 <button class="system-launch" type="button" data-view="vita" aria-label="Open VITA wellness dashboard"><img src="assets/systems/vita-metal.webp?v=2.0.0" alt="" width="34" height="34"><span>VITA</span></button>
-<button class="system-launch" type="button" data-view="journal" aria-label="Open MUSE personal journal"><img src="assets/systems/muse-tarot.png?v=2.0.0" alt="" width="34" height="34"><span>MUSE</span></button></div></section>
+<button class="system-launch" type="button" data-view="journal" aria-label="Open MUSE personal journal"><img src="assets/systems/muse-tarot.png?v=2.0.0" alt="" width="34" height="34"><span>MUSE</span></button>
+<button class="system-launch" type="button" data-view="trophy" aria-label="Open TROPHY Steam achievements"><span data-icon="trophy"></span><span>TROPHY</span></button></div></section>
 
           <div class="home-signals-grid home-signals-grid-single" aria-label="Latest unread Gmail activity">
             <section class="module home-signal home-signal-mail">
@@ -161,6 +164,52 @@
           </div>
           <div class="dashboard-lower home-capture">
             <section class="module note-module"><div class="module-head"><div><div class="eyebrow small">NOTES</div><h3>Scratchpad</h3></div><span data-icon="pen-line" class="muted-icon"></span></div><textarea id="scratchpad" placeholder="An idea, a reminder, something to remember…" aria-label="Scratchpad notes"></textarea><div class="note-bottom"><span data-icon="hard-drive"></span> Saved on this device · cloud optional <span id="note-saved" aria-live="polite"></span></div></section>
+          </div>
+        </section>
+        <section data-panel="trophy" id="trophy-panel" class="view-panel trophy-panel" hidden aria-label="TROPHY Steam achievements tracker">
+          <div class="eyebrow"><span class="eyebrow-line"></span> ORBIT / TROPHY · STEAM GAME COMPLETION</div>
+          <div class="page-head">
+            <div class="trophy-heading"><span class="trophy-heading-emblem" aria-hidden="true"><span data-icon="trophy"></span></span><div><h1>TROPHY<span class="accent-period">.</span></h1><p class="trophy-intro">Your Steam game library, achievements and 100% completions in one place.</p></div></div>
+          </div>
+          <div class="trophy-stats" aria-label="Steam progress">
+            <div class="trophy-stat"><strong id="trophy-count-complete">0</strong><small>100% completions</small></div>
+            <div class="trophy-stat"><strong id="trophy-count-unlocked">0 / 0</strong><small>Achievements unlocked / available</small></div>
+            <div class="trophy-stat"><strong id="trophy-count-games">0</strong><small>Games in Steam library</small></div>
+            <div class="trophy-stat"><strong id="trophy-count-hours">0</strong><small>Total hours played</small></div>
+          </div>
+          <section class="module trophy-connect-card" aria-label="Steam connection">
+            <div id="trophy-connection">
+              <div class="eyebrow small">CONNECT STEAM</div>
+              <h2>Link your Steam library</h2>
+              <p class="watch-detail">Enter your 17-digit SteamID64. No Steam password is needed. Your Steam profile must allow Game details to be viewed to synchronize.</p>
+              <form class="trophy-connect-form" id="trophy-connect-form">
+                <label>SteamID64 <input id="trophy-steamid" type="text" inputmode="numeric" pattern="[0-9]{17}" maxlength="17" minlength="17" autocomplete="off" placeholder="7656119XXXXXXXXXX" required></label>
+                <button id="trophy-connect" type="submit" class="primary-button">Link Steam</button>
+              </form>
+              <p class="trophy-connect-help">You can find your ID under Steam Account Details or in a numeric Steam profile URL. Steam data remains read-only. The integration uses a server-side Steam Web API key.</p>
+            </div>
+            <div id="trophy-connected" hidden>
+              <div class="eyebrow small">STEAM CONNECTED</div>
+              <p class="trophy-connected-note"><strong id="trophy-connected-id"></strong> · <span id="trophy-last-sync">Not synchronized</span></p>
+              <div class="trophy-connected-actions"><button id="trophy-sync" type="button" class="primary-button">Sync Steam</button><button id="trophy-disconnect" type="button" class="quiet-pill">Disconnect</button></div>
+              <p class="trophy-connect-help">Sync Steam refreshes your library and scans achievements. A 100% completion means every reported Steam achievement is unlocked; it does not measure story completion.</p>
+            </div>
+            <p id="trophy-status" class="trophy-status" role="status" aria-live="polite"></p>
+          </section>
+          <div id="trophy-library" class="trophy-main" hidden>
+            <section class="module" aria-label="Steam game library">
+              <div class="module-head"><div><div class="eyebrow small">STEAM LIBRARY</div><h2>Your games <span id="trophy-game-count" class="result-label"></span></h2></div></div>
+              <div class="trophy-tools">
+                <label><span class="sr-only">Search games</span><input id="trophy-search" type="search" placeholder="Search games" autocomplete="off"></label>
+                <select id="trophy-filter" aria-label="Filter games"><option value="all">All games</option><option value="complete">100% complete</option><option value="progress">In progress</option><option value="unchecked">Awaiting scan</option></select>
+                <select id="trophy-sort" aria-label="Sort games"><option value="playtime">Most played</option><option value="progress">Highest completion</option><option value="recent">Recently played</option><option value="name">Alphabetical</option></select>
+              </div>
+              <div id="trophy-game-list" class="trophy-game-list" aria-live="polite"><p class="trophy-empty">Sync Steam to see your games.</p></div>
+            </section>
+            <aside class="trophy-side">
+              <section class="module trophy-details" id="trophy-details" aria-label="Game achievement details"><p class="trophy-empty">Select a game to see its achievements.</p></section>
+              <section class="module" aria-label="Recent achievements"><div class="module-head"><div><span class="eyebrow small">MILESTONES</span><h2>Recent unlocks</h2></div></div><div id="trophy-recent"><p class="trophy-empty">Recently unlocked achievements will appear here.</p></div></section>
+            </aside>
           </div>
         </section>
         <section data-panel="journal" class="view-panel journal-view" id="journal-panel" hidden aria-label="MUSE personal journal">
@@ -598,6 +647,7 @@
           <a class="mobile-system-link" href="https://reece1919.github.io/echo/" target="_blank" rel="noopener noreferrer"><img src="https://reece1919.github.io/echo/echo-metal-logo.png?v=2.0.0" width="32" height="32" alt=""><span>ECHO</span></a>
           <a class="mobile-system-link" href="https://reece1919.github.io/rune-web/" target="_blank" rel="noopener noreferrer"><img src="assets/systems/rune-metal.png?v=2.0.0" width="32" height="32" alt=""><span>RUNE</span></a>
           <a class="mobile-system-link" href="driftmark/"><img src="assets/systems/quill-blue-metal.png?v=2.0.0" width="32" height="32" alt=""><span>QUILL</span></a>
+          <button class="mobile-system-link" type="button" data-view="trophy"><span data-icon="trophy"></span><span>TROPHY</span></button>
         </div>
       </section>
     </div>
