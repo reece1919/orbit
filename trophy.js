@@ -3,11 +3,28 @@
  "use strict";
  const $=id=>document.getElementById(id);
  if(!$("trophy-panel"))return;
- const state={db:null,owner:"",account:null,games:[],selected:null,achievements:[],filter:"all",sort:"playtime",search:"",busy:false,epoch:0};
+ const state={db:null,owner:"",account:null,games:[],selected:null,achievements:[],filter:"all",sort:"playtime",search:"",achievementFilter:"remaining",achievementSearch:"",gameLoading:false,busy:false,epoch:0};
  const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
  const date=s=>{if(!s)return "Not yet";const d=new Date(s);return Number.isNaN(d.getTime())?"Unknown":d.toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});};
  const hours=m=>Math.round((Number(m)||0)/60).toLocaleString();
  const image=app=>Number.isSafeInteger(Number(app))&&Number(app)>0?"https://cdn.cloudflare.steamstatic.com/steam/apps/"+Number(app)+"/header.jpg":"";
+ const heroImage=app=>Number.isSafeInteger(Number(app))&&Number(app)>0?"https://cdn.cloudflare.steamstatic.com/steam/apps/"+Number(app)+"/library_hero.jpg":"";
+ const palettes=[
+   ["#c3a17a","#402534"],["#73b4bf","#123b50"],["#e0b85a","#3e334d"],
+   ["#a7c568","#254437"],["#d49075","#482a30"],["#93a7d9","#27365a"],
+   ["#dcbb84","#393e50"],["#8dc8b4","#154c4b"],["#d3a5d4","#3e2b5a"]
+ ];
+ function palette(g){
+   const id=String(g.app_id),name=String(g.name||"").toLowerCase();
+   if(/hogwarts/.test(name))return ["#cfb189","#2c2643"];
+   if(/cyberpunk/.test(name))return ["#f0da55","#343b21"];
+   if(/witcher/.test(name))return ["#c3b7b1","#382c35"];
+   if(/stardew/.test(name))return ["#aad58a","#285b4b"];
+   if(/elden ring/.test(name))return ["#d0ac70","#353027"];
+   const n=[...id].reduce((acc,c)=>acc*31+c.charCodeAt(0),7);
+   return palettes[n%palettes.length];
+ }
+ function artStyle(g){const [accent,shade]=palette(g);return "--trophy-game-accent:"+accent+";--trophy-game-shade:"+shade+";";}
  const progress=g=>g.achievements_total>0?Math.round(100*g.achievements_unlocked/g.achievements_total):0;
  const done=g=>g.achievements_total>0&&g.achievements_unlocked===g.achievements_total;
  const checked=g=>g.achievements_checked_at!==null;
@@ -17,22 +34,25 @@
    for(const id of ["trophy-connect","trophy-sync","trophy-disconnect"]){const el=$(id);if(el)el.disabled=busy;}
  }
  function renderSummary(){
-  const games=state.games;const doneCount=games.filter(done).length;
+  const games=state.games, game=games.find(x=>x.app_id===state.selected),isGame=!!game;
   const achieved=games.reduce((n,g)=>n+(g.achievements_unlocked||0),0);
   const available=games.reduce((n,g)=>n+(g.achievements_total||0),0);
   $("trophy-count-games").textContent=String(games.length);
-  $("trophy-count-complete").textContent=String(doneCount);
+  $("trophy-count-complete").textContent=String(games.filter(done).length);
   $("trophy-count-unlocked").textContent=achieved.toLocaleString()+" / "+available.toLocaleString();
   $("trophy-count-hours").textContent=hours(games.reduce((n,g)=>n+g.playtime_minutes,0));
   $("trophy-connection").hidden=!!state.account;
   $("trophy-connected").hidden=!state.account;
-  $("trophy-library").hidden=!state.account;
+  $("trophy-stats").hidden=isGame;
+  $("trophy-connection-card").hidden=isGame;
+  $("trophy-library").hidden=!state.account||isGame;
+  $("trophy-game-view").hidden=!isGame;
   $("trophy-connected-id").textContent=state.account?.steam_id||"";
   $("trophy-last-sync").textContent=state.account?.last_synced_at?"Library synced "+date(state.account.last_synced_at):"Library not yet synced";
  }
  function renderGames(){
   const target=$("trophy-game-list");
-  let all=state.games.filter(g=>{
+  const all=state.games.filter(g=>{
     if(state.filter==="complete"&&!done(g))return false;
     if(state.filter==="progress"&&!(g.achievements_total>0&&!done(g)))return false;
     if(state.filter==="unchecked"&&checked(g))return false;
@@ -47,8 +67,15 @@
   all.sort(sorters[state.sort]||sorters.playtime);
   $("trophy-game-count").textContent=all.length+" game"+(all.length===1?"":"s");
   target.innerHTML=all.length?all.map(g=>{
-    const label=done(g)?"100% COMPLETE":g.achievements_total>0?(g.achievements_unlocked+" / "+g.achievements_total+" unlocked"):(checked(g)?"No achievement data":"Awaiting scan");
-    return '<button type="button" class="trophy-game'+(state.selected===g.app_id?' trophy-selected':'')+'" data-trophy-app="'+g.app_id+'"><img loading="lazy" alt="" src="'+image(g.app_id)+'"><span class="trophy-game-info"><strong>'+esc(g.name)+'</strong><small>'+esc(label)+' · '+hours(g.playtime_minutes)+' hr</small><span class="trophy-bar"><i style="width:'+progress(g)+'%"></i></span></span><span class="trophy-game-percent">'+(g.achievements_total>0?progress(g)+"%":"—")+'</span></button>';
+    const label=done(g)?"100% COMPLETE":g.achievements_total>0?(g.achievements_unlocked+" / "+g.achievements_total+" ACHIEVEMENTS"):(checked(g)?"ACHIEVEMENTS UNAVAILABLE":"AWAITING SCAN");
+    const pct=g.achievements_total>0?progress(g):0;
+    return '<button type="button" class="trophy-game trophy-game-gallery-card" data-trophy-app="'+g.app_id+'" style="'+artStyle(g)+'" aria-label="Open '+esc(g.name)+' game details">'
+      +'<span class="trophy-gallery-cover"><img loading="lazy" alt="" src="'+image(g.app_id)+'"><span class="trophy-gallery-shade"></span>'
+      +(done(g)?'<span class="trophy-gallery-complete">100% COMPLETE</span>':'')+'</span>'
+      +'<span class="trophy-gallery-info"><strong>'+esc(g.name)+'</strong><small>'+esc(label)+'</small>'
+      +'<span class="trophy-bar"><i style="width:'+pct+'%"></i></span>'
+      +'<span class="trophy-gallery-footer"><span>'+hours(g.playtime_minutes)+' HOURS PLAYED</span><b>'+(g.achievements_total>0?pct+"%":"—")+'</b></span></span>'
+      +'</button>';
   }).join(""):'<p class="trophy-empty">'+(state.games.length?"No games match this filter.":"Your Steam library will appear here after your first sync.")+"</p>";
  }
  function renderRecent(){
@@ -60,16 +87,67 @@
     return '<div class="trophy-recent-item"><strong>'+esc(a.display_name||a.api_name)+'</strong><span>'+esc(g?.name||"Steam game")+' · '+date(a.unlocked_at)+'</span></div>';
   }).join(""):'<p class="trophy-empty">Recently unlocked achievements will appear as game scans complete.</p>';
  }
- function renderDetails(){
-  const host=$("trophy-details");
-  const game=state.games.find(x=>x.app_id===state.selected);
-  if(!game){host.innerHTML='<p class="trophy-empty">Choose a game to inspect its achievements.</p>';return;}
-  const list=state.achievements.filter(x=>x.app_id===game.app_id)
-    .sort((a,b)=>Number(b.unlocked)-Number(a.unlocked)||new Date(b.unlocked_at||0)-new Date(a.unlocked_at||0)||a.display_name.localeCompare(b.display_name));
-  host.innerHTML='<div class="trophy-detail-heading"><h3>'+esc(game.name)+'</h3><button type="button" class="quiet-pill" data-trophy-reload="'+game.app_id+'" '+(state.busy?"disabled":"")+'>Rescan game</button></div><p>'+ (game.achievements_total===null?"Achievement data has not been retrieved yet.":game.achievements_total+" achievements · "+game.achievements_unlocked+" unlocked")+'</p>'
-   +(list.length?'<div class="trophy-achievements">'+list.map(a=>'<div class="trophy-achievement '+(a.unlocked?"is-unlocked":"")+'"><span class="trophy-achievement-mark">'+(a.unlocked?"✓":"○")+'</span><div><strong>'+esc(a.hidden&&!a.unlocked?"Hidden achievement":a.display_name||a.api_name)+'</strong><small>'+esc(a.hidden&&!a.unlocked?"Unlock to reveal details":a.description||"")+(a.unlocked_at?" · "+date(a.unlocked_at):"")+'</small></div></div>').join("")+'</div>':'<p class="trophy-empty">No individual achievements available.</p>');
+ function renderGamePage(){
+  const host=$("trophy-game-achievement-list"),g=state.games.find(x=>x.app_id===state.selected);
+  if(!g)return;
+  const [accent,shade]=palette(g),hero=$("trophy-game-hero"),art=$("trophy-game-hero-art");
+  hero.style.setProperty("--trophy-game-accent",accent);
+  hero.style.setProperty("--trophy-game-shade",shade);
+  $("trophy-game-view").style.setProperty("--trophy-game-accent",accent);
+  $("trophy-game-view").style.setProperty("--trophy-game-shade",shade);
+  if(art.dataset.appId!==String(g.app_id)){
+    art.dataset.appId=String(g.app_id);art.dataset.fallback="";
+    art.hidden=false;art.src=heroImage(g.app_id);
+  }
+  $("trophy-game-title").textContent=g.name;
+  $("trophy-game-subtitle").textContent=done(g)?"100% Steam achievements completed":g.achievements_total>0
+    ?(g.achievements_unlocked+" of "+g.achievements_total+" Steam achievements unlocked")
+    :"Achievement progress not available yet";
+  $("trophy-game-percentage").textContent=g.achievements_total>0?progress(g)+"%":"—";
+  $("trophy-game-unlocked").textContent=g.achievements_total===null?"—":String(g.achievements_unlocked);
+  $("trophy-game-remaining").textContent=g.achievements_total===null?"—":String(g.achievements_total-g.achievements_unlocked);
+  $("trophy-game-playtime").textContent=hours(g.playtime_minutes);
+  $("trophy-game-lastplayed").textContent=g.last_played_at?date(g.last_played_at):"Unknown";
+  const pct=progress(g);
+  const prog=$("trophy-game-progress-track");
+  prog.setAttribute("aria-valuenow",String(pct));
+  $("trophy-game-progress-fill").style.width=pct+"%";
+  $("trophy-game-progress-label").textContent=g.achievements_total>0?pct+"% Achievement Completion":"Not yet scanned";
+  $("trophy-game-steam-link").href="https://store.steampowered.com/app/"+g.app_id+"/";
+  const list=state.achievements.filter(x=>x.app_id===g.app_id);
+  const remaining=g.achievements_total===null?null:g.achievements_total-g.achievements_unlocked;
+  const statusTitle=remaining===null?"Waiting for Steam data":remaining===0&&g.achievements_total>0?"Every achievement unlocked!":g.achievements_total===0?"No achievements listed":remaining+" achievements to go";
+  $("trophy-game-status-title").textContent=statusTitle;
+  $("trophy-game-status-copy").textContent=remaining===null?"Sync this game to check whether Steam reports achievements.":remaining===0&&g.achievements_total>0
+    ?"You have completed the full Steam achievement list for this game."
+    :g.achievements_total===0?"Steam has not exposed any achievements for this game."
+    :"Filter by 'Still to unlock' to focus on your remaining Steam milestones.";
+  $("trophy-game-rescan").disabled=state.busy;
+  const earned=list.filter(x=>x.unlocked&&x.unlocked_at).sort((a,b)=>new Date(b.unlocked_at)-new Date(a.unlocked_at)).slice(0,6);
+  $("trophy-game-timeline").innerHTML=earned.length?earned.map(a=>'<div class="trophy-game-timeline-item"><span class="trophy-game-timeline-dot"></span><div><strong>'+esc(a.display_name||a.api_name)+'</strong><small>'+date(a.unlocked_at)+'</small></div></div>').join(""):'<p class="trophy-empty">No dated unlocks available yet.</p>';
+  if(state.gameLoading){
+    $("trophy-game-achievement-count").textContent="Loading…";
+    host.innerHTML='<p class="trophy-empty">Loading this game\'s achievements…</p>';
+    return;
+  }
+  const filtered=list.filter(a=>
+    (state.achievementFilter==="all"||(state.achievementFilter==="remaining"?!a.unlocked:a.unlocked))
+    &&(a.display_name+" "+(a.hidden&&!a.unlocked?"":a.description)+" "+a.api_name).toLowerCase().includes(state.achievementSearch.toLowerCase())
+  ).sort((a,b)=>Number(a.unlocked)-Number(b.unlocked)||new Date(b.unlocked_at||0)-new Date(a.unlocked_at||0)||String(a.display_name).localeCompare(String(b.display_name)));
+  $("trophy-game-achievement-count").textContent=filtered.length+" shown";
+  const safeIcon=x=>{
+    try{const u=new URL(String(x||""));return u.protocol==="https:"&&["steamcdn-a.akamaihd.net","cdn.cloudflare.steamstatic.com","community.akamai.steamstatic.com","steamcommunity-a.akamaihd.net"].includes(u.hostname)?u.href:"";}catch{return ""}
+  };
+  host.innerHTML=filtered.length?filtered.map(a=>{
+    const hidden=a.hidden&&!a.unlocked, icon=hidden?"":safeIcon(a.icon_url);
+    return '<article class="trophy-game-achievement '+(a.unlocked?"is-unlocked":"")+'"><span class="trophy-game-achievement-art">'
+      +(icon?'<img alt="" loading="lazy" src="'+esc(icon)+'">':'<span aria-hidden="true">'+(a.unlocked?"★":"◇")+'</span>')+'</span>'
+      +'<div class="trophy-game-achievement-text"><strong>'+esc(hidden?"Hidden achievement":a.display_name||a.api_name)+'</strong><p>'+esc(hidden?"Unlock it to reveal its details.":a.description||"No description provided by Steam.")+'</p>'
+      +(a.unlocked_at?'<small>UNLOCKED '+date(a.unlocked_at)+'</small>':(a.unlocked?'<small>UNLOCKED</small>':'<small>NOT YET UNLOCKED</small>'))
+      +'</div><span class="trophy-game-achievement-symbol" aria-hidden="true">'+(a.unlocked?"✓":"○")+'</span></article>';
+  }).join(""):'<p class="trophy-empty">'+(g.achievements_total===null?"Achievement data has not been scanned. Choose Rescan game.":list.length?"No achievements match these filters.":"This game has no available individual achievement records.")+"</p>";
  }
- function render(){renderSummary();renderGames();renderDetails();renderRecent();}
+ function render(){renderSummary();renderGames();renderGamePage();renderRecent();}
  async function load(){
   if(!state.db||!state.owner)return;
   const ep=state.epoch, db=state.db;
@@ -105,7 +183,7 @@
   lock(true);status(label);
   try{await fn();}
   catch(e){status(e.message||"TROPHY request failed.",true);}
-  finally{lock(false);renderDetails();}
+  finally{lock(false);renderGamePage();}
  }
  async function sync(full){
   await task("Refreshing your Steam library…",async()=>{
@@ -128,12 +206,17 @@
   });
  }
  async function loadGame(appid){
-  state.selected=appid;
-  $("trophy-details").innerHTML='<p class="trophy-empty">Loading achievements…</p>';
+  if(!state.db||!state.owner)return;
+  state.selected=appid;state.achievementFilter="remaining";state.achievementSearch="";
+  $("trophy-game-achievement-filter").value="remaining";
+  $("trophy-game-achievement-search").value="";
+  state.gameLoading=true;render();
+  window.scrollTo({top:0,behavior:"instant"});
   const ep=state.epoch;
   const {data,error}=await state.db.from("orbit_steam_achievements").select("*").eq("owner_id",state.owner).eq("app_id",appid).order("unlocked",{ascending:false}).limit(1500);
-  if(error){status(error.message,true);return;}
   if(ep!==state.epoch||state.selected!==appid)return;
+  state.gameLoading=false;
+  if(error){status(error.message,true);render();return;}
   state.achievements=state.achievements.filter(x=>x.app_id!==appid).concat(data||[]);
   render();
  }
@@ -142,7 +225,7 @@
   if(owner===state.owner&&state.db)return;
   ++state.epoch;
   state.owner=owner;state.db=owner?window.ORBITAuth?.client:null;
-  state.account=null;state.games=[];state.achievements=[];state.selected=null;state.busy=false;
+  state.account=null;state.games=[];state.achievements=[];state.selected=null;state.busy=false;state.gameLoading=false;
   status(owner?"Loading TROPHY…":"Sign in to ORBIT to open TROPHY.");render();
   if(!owner)return;
   try{
@@ -171,6 +254,24 @@
   if(!b)return;
   const app=Number(b.dataset.trophyReload);
   void task("Checking this game's achievements…",async()=>{await invoke("sync_game",{app_id:app});await load();await loadGame(app);status("Game refreshed.");});
+ });
+ $("trophy-game-back").addEventListener("click",()=>{
+   state.selected=null;state.gameLoading=false;state.achievementSearch="";render();window.scrollTo({top:0,behavior:"instant"});
+ });
+ $("trophy-game-rescan").addEventListener("click",()=>{
+   if(state.selected===null)return;
+   const app=state.selected;
+   void task("Refreshing "+(state.games.find(g=>g.app_id===app)?.name||"game")+"…",async()=>{
+     await invoke("sync_game",{app_id:app});await load();await loadGame(app);
+     status("Game achievements refreshed.");
+   });
+ });
+ $("trophy-game-achievement-filter").addEventListener("change",e=>{state.achievementFilter=e.target.value;renderGamePage();});
+ $("trophy-game-achievement-search").addEventListener("input",e=>{state.achievementSearch=e.target.value;renderGamePage();});
+ $("trophy-game-hero-art").addEventListener("error",()=>{
+   const art=$("trophy-game-hero-art");
+   if(!art.dataset.fallback){art.dataset.fallback="1";art.src=image(state.selected);}
+   else art.hidden=true;
  });
  document.addEventListener("orbit:auth-changed",e=>void reset(e.detail?.user));
  if(window.ORBITAuth?.ready)void window.ORBITAuth.ready.then(()=>reset(window.ORBITAuth.user));else void reset(null);
