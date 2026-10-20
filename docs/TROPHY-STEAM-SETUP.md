@@ -22,6 +22,18 @@ TROPHY is a private ORBIT module for a Steam library, achievement progress and g
 - A library sync preserves existing achievement records until they are refreshed. A full sync may take a while on large libraries because each game requires individual Steam API calls.
 - There is no Steam OAuth/SSO yet. The first version uses SteamID64 entry plus Steam public Game details. Never enter a Steam password into TROPHY.
 
+
+## Immersive game view (TROPHY v1.1)
+
+TROPHY's library is an artwork-led gallery. Selecting any game opens a full detail screen inside TROPHY, with its own Steam library hero art, game-specific accent palette, completion meter, playtime, last-played date, unlocked and remaining counts, achievement cards, recently earned timeline, and a direct Steam store link.
+
+- The per-game theme is deterministic and tied to the Steam app ID, with special curated palettes for recognizable games; each game's own Steam artwork gives it a distinct visual identity. Artwork falls back to the standard Steam header if hero art is unavailable.
+- Locked achievements can be prioritized using **Still to unlock**, or filtered by **All achievements** and **Unlocked**, with search within each game. Hidden locked achievements keep their descriptions concealed.
+- All displayed counts and timestamps come from stored Steam API responses. A missing achievement count is unknown, never treated as a completed game.
+- The **All games** action returns to the gallery without losing current library filters.
+- The new per-game view is mobile responsive and follows ORBIT's existing navigation and sign-in.
+- **Future enhancement, not included yet:** separate manual completion goals such as quests, collectibles and story completion, distinct from Steam achievements. This must not be inferred from achievement percentages.
+
 ## Verification
 - Run JS syntax checks for trophy.js and app.js.
 - Verify the three orbit_steam tables have RLS enabled and owner/MFA policies.
