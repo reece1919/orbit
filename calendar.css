@@ -72,3 +72,21 @@
  .cal-form-grid{grid-template-columns:1fr}
 }
 @media(max-width:360px){.cal-cell{min-height:60px}.cal-date{width:20px;height:20px}}
+
+/* Secure Google Calendar read-only connection and source markers. */
+.cal-google-connection{border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:15px 16px;margin:12px 0 17px}
+.cal-google-heading{display:flex;justify-content:space-between;gap:15px;align-items:center;flex-wrap:wrap}
+.cal-google-heading h3{font-size:16px;margin:5px 0 0;color:var(--text)}
+.cal-google-heading p{font-size:11px;color:var(--muted);margin:7px 0 0;line-height:1.5;max-width:650px}
+.cal-google-actions{display:flex;flex-wrap:wrap;align-items:center;gap:7px}
+#cal-google-calendars{padding-top:14px}
+.cal-google-pick-title{display:block;margin-bottom:8px;color:var(--muted);font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
+.cal-google-cal-list{display:flex;gap:8px 16px;flex-wrap:wrap;margin-bottom:10px}
+.cal-google-cal-choice{display:flex;align-items:center;gap:7px;color:var(--text);font-size:12px}
+.cal-google-cal-choice input{accent-color:var(--accent);width:15px;height:15px}
+.cal-chip-google{background:color-mix(in srgb,#519cea 23%,transparent)}
+.cal-google-icon,.cal-google-agenda-icon{display:grid;place-items:center;flex:none;border-radius:5px;color:white;font-weight:900;background:#417dd0;font-family:system-ui, sans-serif}
+.cal-google-icon{width:15px;height:15px;font-size:10px}
+.cal-google-agenda-icon{width:23px;height:23px;font-size:14px}
+.cal-agenda-google{border-left:2px solid #417dd0}
+@media(max-width:610px){.cal-google-connection{padding:12px}.cal-google-heading{align-items:stretch}.cal-google-actions{width:100%}.cal-google-actions .cal-button{flex:1}.cal-google-icon{width:12px;height:12px;font-size:8px}}
