@@ -272,3 +272,11 @@ The standalone Journal module is now branded **MUSE**. Its page, desktop sidebar
 ## MUSE icon update (October 20, 2026)
 
 The MUSE icon now uses the **third approved tarot-card and celestial spark design**, rather than the original open-book SVG. The transparent source image was resized into a compact palette-optimized 128 × 128 PNG at `assets/systems/muse-tarot.png`. The high-resolution image was the user's selected third icon from the MUSE design alternatives. All four existing image references in `index.html` (sidebar, home Systems strip, Journal header and mobile Systems sheet) now use the new PNG with a versioned URL. The previous `assets/systems/muse.svg` remains in the repository as a fallback, and no journal data, routes or database policies were modified.
+
+
+## ORBIT navigation cleanup — VITA and MUSE at the top (October 20, 2026)
+
+- VITA and MUSE now appear **only in the Overview page's top Systems launcher**, with the other four systems (GAIA, ECHO, RUNE and QUILL). The six top icons form one row on desktop/tablet and two rows of three on phones.
+- Removed their duplicate top-level buttons from the desktop sidebar and mobile Systems sheet; removed VITA from the mobile bottom toolbar, which is now **Home / Systems / More**. The Systems sheet retains GAIA, ECHO, RUNE and QUILL.
+- The VITA and MUSE panels, deep links inside VITA, and saved data remain intact. From another page, open **Home / Overview** to use the top icons.
+- Adjusted the mobile More active indicator for VITA and MUSE, and bumped the stylesheet cache versions. No database or account changes.
