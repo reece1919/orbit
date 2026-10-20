@@ -246,7 +246,7 @@
     }else if(next==='vita'){
       vitaSection='overview';
     }
-    if(!['home','projects','focus','calendar','journal','gaia','vita','inbox','automations','routines','settings'].includes(next))return;
+    if(!['home','projects','focus','calendar','journal','trophy','gaia','vita','inbox','automations','routines','settings'].includes(next))return;
     view=next;
     closeSystemsMenu();
     // Only top-level workspace panels are switched here. The three nested
@@ -264,7 +264,7 @@
     document.querySelectorAll('.main-nav [data-view], .mobile-nav [data-view]').forEach(x=>{x.classList.toggle('active',x.dataset.view===view);if(x.dataset.view===view)x.setAttribute('aria-current','page');else x.removeAttribute('aria-current')});
     const more=$('#mobile-more');
     more.classList.toggle('active',!['home','vita'].includes(view));
-    $('#current-crumb').textContent=({home:'OVERVIEW',projects:'PROJECTS',focus:'TASKS',calendar:'CALENDAR',journal:'MUSE',gaia:'GAIA',vita:'VITA',inbox:'INBOX',automations:'AUTOMATIONS',routines:'ROUTINES',settings:'SETTINGS'})[view];
+    $('#current-crumb').textContent=({home:'OVERVIEW',projects:'PROJECTS',focus:'TASKS',calendar:'CALENDAR',journal:'MUSE',trophy:'TROPHY',gaia:'GAIA',vita:'VITA',inbox:'INBOX',automations:'AUTOMATIONS',routines:'ROUTINES',settings:'SETTINGS'})[view];
     closeNavigation();if(view==='calendar')window.ORBITCalendar?.render();window.scrollTo({top:0,behavior:'instant'});
   }
   const field = (name,label,value='',type='text',other='') => `<label class="dialog-field">${label}<input name="${name}" type="${type}" value="${esc(value)}" ${other}></label>`;
