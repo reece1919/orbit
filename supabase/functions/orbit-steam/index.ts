@@ -99,13 +99,13 @@ async function batch(db,owner,steamid,key,body){
   if(body.action==="sync_game"){
     const id=Number(body.app_id);
     if(!Number.isSafeInteger(id)||id<=0)return error("Invalid Steam app ID.");
-    const {data,e}=await db.from("orbit_steam_games").select("app_id").eq("owner_id",owner).eq("app_id",id).maybeSingle();
+    const {data,error:e}=await db.from("orbit_steam_games").select("app_id").eq("owner_id",owner).eq("app_id",id).maybeSingle();
     if(e)throw e;if(!data)return error("This game is not in your connected Steam library.",404);
     ids=[id];
   }else{
     const cutoff=String(body.before||"");
     if(!/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d+)?Z$/.test(cutoff))return error("Invalid sync cutoff.");
-    const {data,e}=await db.from("orbit_steam_games").select("app_id").eq("owner_id",owner)
+    const {data,error:e}=await db.from("orbit_steam_games").select("app_id").eq("owner_id",owner)
       .or("achievements_checked_at.is.null,achievements_checked_at.lt."+cutoff)
       .order("achievements_checked_at",{ascending:true,nullsFirst:true}).limit(6);
     if(e)throw e;ids=(data||[]).map(x=>x.app_id);
@@ -124,7 +124,8 @@ Deno.serve(async req=>{
   try{
     const {data:{user},error:authError}=await db.auth.getUser(bearer);
     if(authError || !user)return error("Session expired; sign in again.",401);
-    const token=JSON.parse(atob(bearer.split(".")[1].replace(/-/g,"+").replace(/_/g,"/")));
+    const part=bearer.split(".")[1].replace(/-/g,"+").replace(/_/g,"/");
+    const token=JSON.parse(atob(part+"=".repeat((4-part.length%4)%4)));
     if(token.aal!=="aal2")return error("MFA_REQUIRED: Verify your authenticator in ORBIT.",403);
     const body=await req.json();
     if(!body || typeof body!=="object")return error("Invalid request.");
