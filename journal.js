@@ -1,4 +1,4 @@
-/* ORBIT Journal v1.0 — standalone freeform writing with private MFA-gated Supabase storage.
+/* ORBIT Journal v1.1 — multi-mode private writing with private MFA-gated Supabase storage.
  * Separate from PULSE and ORBIT local workspace sync. Never caches journal text in localStorage. */
 (() => {
   "use strict";
@@ -7,6 +7,13 @@
   if (!form) return;
 
   const search = $("journal-search");
+  const kindFilter = $("journal-kind-filter");
+  const promptPanel = $("journal-prompt-panel");
+  const promptHeading = $("journal-prompt-heading");
+  const promptText = $("journal-prompt-text");
+  const promptNext = $("journal-prompt-next");
+  const modeHint = $("journal-mode-hint");
+  const editorTitle = $("journal-editor-title");
   const list = $("journal-entry-list");
   const count = $("journal-count");
   const feedback = $("journal-status");
@@ -23,7 +30,122 @@
     const d = new Date(value + "T12:00:00");
     return Number.isNaN(d.getTime()) ? value : d.toLocaleDateString(undefined, {year:"numeric", month:"short", day:"numeric"});
   };
+
+  // Hand-authored, deterministic prompts: no external AI or API key is required.
+  const MODES = {
+    reflection: {
+      label: "Self-reflection", heading:"A question to explore",
+      hint:"A place to be curious about yourself. Answer only what feels useful.",
+      placeholder:"Start wherever the question takes you. You don't need a perfect answer.",
+      prompts:[
+        "What has been taking up the most space in your mind lately, and why?",
+        "When did you feel most like yourself recently?",
+        "What is something you handled differently than you would have a year ago?",
+        "What emotion have you been avoiding, and what might it be asking for?",
+        "What has been easier lately? What has been harder?",
+        "Where did you set a boundary that mattered to you?",
+        "What is a belief about yourself you might be ready to reconsider?",
+        "What part of your day felt genuinely satisfying?",
+        "What do you wish you had said in a recent conversation?",
+        "Where are you spending energy that you would rather spend elsewhere?",
+        "What is one thing you want to stop measuring yourself against?",
+        "What small change would make the next week feel more intentional?",
+        "What does feeling safe and settled look like to you right now?",
+        "When did curiosity lead you somewhere unexpected?",
+        "What have you learned from a recent disappointment?",
+        "What are you proud of that might go unnoticed by anyone else?",
+        "What do you need more of in your everyday life?",
+        "What would you tell the version of yourself from six months ago?",
+        "What feels unfinished, and what would taking one step look like?",
+        "What has surprised you about yourself this month?"
+      ]
+    },
+    story: {
+      label:"Story practice", heading:"Your writing challenge",
+      hint:"Try a scene, dialogue, or opening paragraph. The prompt belongs to this entry even if you change it later.",
+      placeholder:"Write the scene. Follow the interesting detail; editing can come later.",
+      prompts:[
+        "A stranger leaves a key on your table and says, 'You already know which door.' Begin the scene.",
+        "Write a conversation in which both people want the same thing, but neither will admit it.",
+        "Describe a city where everyone must tell the truth after sunset. Show someone trying not to.",
+        "A character receives a letter addressed to their childhood imaginary friend.",
+        "Write a scene with a major betrayal, but never use the word 'betrayal.'",
+        "Someone inherits a house where every room is a different season.",
+        "Open a story with the sentence: 'The last train arrived carrying only one passenger.'",
+        "Write about a person who discovers their reflection has been practicing different expressions.",
+        "Two rivals are trapped together during a storm. Let the dialogue reveal their history.",
+        "A shop sells memories but refuses to purchase one particular memory. Show why.",
+        "Write a scene set at a dinner party where every guest has a secret agenda.",
+        "A detective finds evidence that points to a crime that will happen tomorrow.",
+        "Describe an ordinary walk that slowly becomes unsettling, without showing anything supernatural.",
+        "An apprentice mage accidentally casts a spell that makes a town forget one word.",
+        "Write from the viewpoint of a creature who has mistaken a human for a mythical being.",
+        "A person wakes in a borrowed body with a note reading, 'Do not trust the owner.'",
+        "Write the same argument twice: once from each character's point of view.",
+        "At a market, a merchant offers to trade you a single extra hour of life. What is the price?",
+        "A warrior returns home to find the war has been erased from everyone's memory.",
+        "Write a scene where an unexpected act of kindness changes the stakes of a conflict."
+      ]
+    },
+    dream: {
+      label:"Dream log", heading:"",
+      hint:"Capture fragments quickly: people, places, feelings, strange details, or how it ended. It doesn't have to make sense.",
+      placeholder:"I remember... Where was I? Who was there? What happened? How did it feel when I woke?",
+      prompts:[]
+    },
+    gratitude: {
+      label:"Gratitude", heading:"A small thing worth keeping",
+      hint:"Notice something good without forcing a positive spin on the whole day.",
+      placeholder:"What is something you'd like to remember or appreciate?",
+      prompts:[
+        "What ordinary comfort are you grateful to have today?",
+        "Who did something thoughtful for you recently, even something small?",
+        "What moment made today a little better?",
+        "What ability or skill are you glad you have developed?",
+        "What part of your home feels most comforting right now?",
+        "What is something in nature you noticed and appreciated?",
+        "What challenge has shown you a strength you didn't know you had?",
+        "What small freedom in your life do you appreciate?",
+        "What made you laugh unexpectedly?",
+        "What is one thing your past self did that you can thank them for?",
+        "What experience are you glad you said yes to?",
+        "What is something good you can look forward to?"
+      ]
+    },
+    freewrite: {
+      label:"Free writing", heading:"",
+      hint:"No format, no prompt, no expectations. You decide what belongs here.",
+      placeholder:"What's on your mind? Write as much or as little as you like…",
+      prompts:[]
+    }
+  };
+  const normalizeKind = value => Object.hasOwn(MODES,value) ? value : "freewrite";
+  function firstPrompt(kind) {
+    const bank = MODES[kind]?.prompts || [];
+    if (!bank.length) return "";
+    // Local-calendar-day rotation. Prompts repeat only after their category's full cycle.
+    const day = Math.floor(Date.parse(today()+"T00:00:00Z") / 86400000);
+    return bank[((day % bank.length) + bank.length) % bank.length];
+  }
+  function renderMode() {
+    const config = MODES[activeKind];
+    document.querySelectorAll("[data-journal-mode]").forEach(button => {
+      const selected = button.dataset.journalMode === activeKind;
+      button.classList.toggle("active", selected);
+      button.setAttribute("aria-current", selected ? "true" : "false");
+    });
+    editorTitle.textContent = activeId ? "Edit " + config.label.toLowerCase() : config.label;
+    modeHint.textContent = config.hint;
+    form.elements.body.placeholder = config.placeholder;
+    promptPanel.hidden = !activePrompt;
+    promptHeading.textContent = config.heading || "Writing prompt";
+    promptText.textContent = activePrompt;
+    promptNext.disabled = !owner || busy || !config.prompts.length;
+    promptNext.hidden = !config.prompts.length;
+  }
+
   let owner = "", db = null, entries = [], activeId = null, version = null;
+  let activeKind = "freewrite", activePrompt = "";
   let dirty = false, busy = false, loaded = false, fullyLoaded = false, epoch = 0;
 
   function status(message, error) {
@@ -39,7 +161,10 @@
   }
   function renderList() {
     const q = search.value.trim().toLowerCase();
-    const matches = entries.filter(e => !q || [e.title, e.body, (e.tags || []).join(" ")].join(" ").toLowerCase().includes(q));
+    const onlyKind = kindFilter.value;
+    const matches = entries.filter(e => (onlyKind === "all" || normalizeKind(e.entry_kind) === onlyKind) &&
+      (!q || [e.title, e.body, e.writing_prompt, MODES[normalizeKind(e.entry_kind)].label, (e.tags || []).join(" ")]
+        .join(" ").toLowerCase().includes(q)));
     count.textContent = matches.length + (q ? " matching" : " entries") + (!fullyLoaded && loaded ? " (recent only)" : "");
     list.replaceChildren();
     if (!owner) {
@@ -51,7 +176,7 @@
       return;
     }
     if (!matches.length) {
-      list.textContent = q ? "No entries match your search." : "No entries yet. Create your first entry.";
+      list.textContent = q || onlyKind !== "all" ? "No entries match your filters." : "No entries yet. Pick a writing mode to get started.";
       return;
     }
     const fragment = document.createDocumentFragment();
@@ -62,7 +187,7 @@
       button.dataset.journalId = entry.id;
       button.setAttribute("aria-current", entry.id === activeId ? "true" : "false");
       const date = document.createElement("small");
-      date.textContent = displayDate(entry.entry_date);
+      date.textContent = displayDate(entry.entry_date) + " · " + MODES[normalizeKind(entry.entry_kind)].label;
       const title = document.createElement("strong");
       title.textContent = entry.title || "Untitled entry";
       const sample = document.createElement("span");
@@ -77,22 +202,26 @@
     saveButton.disabled = !owner || busy;
     deleteButton.disabled = !owner || busy || !activeId;
     exportButton.disabled = !owner || !loaded || busy || !fullyLoaded;
+    promptNext.disabled = !owner || busy || !MODES[activeKind].prompts.length;
   }
   function warnIfDirty() {
     return dirty && !window.confirm("You have unsaved journal changes. Discard them?");
   }
-  function openEntry(entry) {
+  function openEntry(entry, requestedKind = "freewrite") {
     if (warnIfDirty()) return;
     activeId = entry?.id || null;
     version = entry?.updated_at || null;
+    activeKind = normalizeKind(entry?.entry_kind || requestedKind);
+    activePrompt = entry ? (entry.writing_prompt || "") : firstPrompt(activeKind);
     form.elements.entry_date.value = entry?.entry_date || today();
     form.elements.title.value = entry?.title || "";
     form.elements.body.value = entry?.body || "";
     form.elements.tags.value = (entry?.tags || []).join(", ");
     dirty = false;
-    selectedLabel.textContent = entry ? "Editing " + displayDate(entry.entry_date) : "New private entry";
+    selectedLabel.textContent = entry ? "Editing " + displayDate(entry.entry_date) : "New " + MODES[activeKind].label.toLowerCase() + " entry";
     deleteButton.hidden = !entry;
-    status(entry ? "Saved in your private journal. Make changes, then select Save." : "Write freely. Select Save entry when you are ready.");
+    status(entry ? "Saved privately. Make changes, then select Save." : "Choose what to write. Select Save entry when ready.");
+    renderMode();
     renderFields();
     renderList();
   }
@@ -105,6 +234,7 @@
   async function refresh() {
     if (!owner || !db) return;
     if (warnIfDirty()) return;
+    dirty = false;
     const id = owner, client = db, stamp = ++epoch;
     busy = true;
     loaded = false;
@@ -118,7 +248,7 @@
       let complete = false;
       for (let page = 0; page < 25; page++) {
         const {data, error} = await client.from("orbit_journal_entries")
-          .select("id,entry_date,title,body,tags,created_at,updated_at")
+          .select("id,entry_date,title,body,tags,entry_kind,writing_prompt,created_at,updated_at")
           .eq("owner_id", id)
           .order("entry_date", {ascending:false})
           .order("updated_at", {ascending:false})
@@ -176,11 +306,11 @@
     status("Saving privately…");
     try {
       await ensureMfa();
-      const payload = {entry_date:entryDate, title, body, tags};
+      const payload = {entry_date:entryDate, title, body, tags, entry_kind:activeKind, writing_prompt:activePrompt};
       const query = selected
         ? client.from("orbit_journal_entries").update(payload).eq("id", selected).eq("owner_id", id).eq("updated_at", lastVersion)
         : client.from("orbit_journal_entries").insert({...payload, owner_id:id});
-      const {data, error} = await query.select("id,entry_date,title,body,tags,created_at,updated_at").maybeSingle();
+      const {data, error} = await query.select("id,entry_date,title,body,tags,entry_kind,writing_prompt,created_at,updated_at").maybeSingle();
       if (error) throw error;
       if (!data) throw new Error("This entry changed on another device. Copy your unsaved text, then reload the journal before saving.");
       if (owner !== id || db !== client || stamp !== epoch) return;
@@ -190,6 +320,7 @@
       version = data.updated_at;
       dirty = false;
       selectedLabel.textContent = "Editing " + displayDate(data.entry_date);
+      renderMode();
       deleteButton.hidden = false;
       status("Saved securely · " + new Date(data.updated_at).toLocaleString());
       renderList();
@@ -226,8 +357,9 @@
   }
   function downloadBackup() {
     if (!loaded || !fullyLoaded || !owner) return;
-    const data = {format:"orbit-journal-v1", exported_at:new Date().toISOString(),
-      entries:entries.map(e => ({entry_date:e.entry_date, title:e.title, body:e.body, tags:e.tags, created_at:e.created_at, updated_at:e.updated_at}))};
+    const data = {format:"orbit-journal-v2", exported_at:new Date().toISOString(),
+      entries:entries.map(e => ({entry_date:e.entry_date, entry_kind:normalizeKind(e.entry_kind),
+        writing_prompt:e.writing_prompt || "", title:e.title, body:e.body, tags:e.tags, created_at:e.created_at, updated_at:e.updated_at}))};
     const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], {type:"application/json"}));
     const a = document.createElement("a");
     a.href = url;
@@ -248,6 +380,8 @@
     activeId = null;
     version = null;
     dirty = false;
+    activeKind = "freewrite";
+    activePrompt = "";
     busy = false;
     loaded = false;
     fullyLoaded = false;
@@ -256,6 +390,8 @@
     form.elements.entry_date.value = today();
     deleteButton.hidden = true;
     selectedLabel.textContent = id ? "Private journal" : "Sign in to open the Journal";
+    kindFilter.value = "all";
+    renderMode();
     status(id ? "Checking your private journal…" : "Sign in with your ORBIT account to access private entries.");
     renderFields();
     renderList();
@@ -263,11 +399,24 @@
   }
   form.addEventListener("submit", save);
   form.addEventListener("input", () => { if (owner && !busy) { dirty = true; status("Unsaved changes · select Save entry to keep them."); } });
-  $("journal-new").addEventListener("click", () => openEntry(null));
+  $("journal-new").addEventListener("click", () => openEntry(null, "freewrite"));
+  document.querySelectorAll("[data-journal-mode]").forEach(button => {
+    button.addEventListener("click", () => openEntry(null, normalizeKind(button.dataset.journalMode)));
+  });
+  promptNext.addEventListener("click", () => {
+    const bank = MODES[activeKind].prompts;
+    if (!bank.length || busy) return;
+    const index = bank.indexOf(activePrompt);
+    activePrompt = bank[(index + 1 + bank.length) % bank.length];
+    dirty = true;
+    renderMode();
+    status("New prompt selected. It will be saved together with your entry.");
+  });
   $("journal-reload").addEventListener("click", () => { if (!busy) void refresh(); });
   deleteButton.addEventListener("click", remove);
   exportButton.addEventListener("click", downloadBackup);
   search.addEventListener("input", renderList);
+  kindFilter.addEventListener("change", renderList);
   list.addEventListener("click", event => {
     const button = event.target.closest("[data-journal-id]");
     if (!button) return;
