@@ -21,7 +21,7 @@
   <link rel="stylesheet" href="mobile-nav.css?v=1.1.0" />
   <link rel="stylesheet" href="orbit-brand.css?v=4.0.0" />
   <link rel="stylesheet" href="agenda-overdue.css?v=1.2.1" />
-  <link rel="stylesheet" href="calendar.css?v=1.0.0" />
+  <link rel="stylesheet" href="calendar.css?v=1.1.0" />
   <link rel="manifest" href="pulse.webmanifest?v=4.0.0" />
   <link rel="icon" type="image/png" href="assets/orbit-emblem-cutout.png?v=4.0.0" />
   <link rel="apple-touch-icon" sizes="160x160" href="apple-touch-icon.png?v=4.0.0" />
@@ -32,7 +32,8 @@
   <script src="app.js?v=1.5.0" defer></script>
   <script src="orbit-cloud-sync.js?v=1.2.2" defer></script>
   <script src="integrations.js?v=1.8.0" defer></script>
-  <script src="calendar.js?v=1.0.1" defer></script>
+  <script src="google-calendar.js?v=1.0.0" defer></script>
+  <script src="calendar.js?v=1.1.0" defer></script>
   <script src="assets/todoist-system.js?v=1.4.0" defer></script>
   <script src="fuel.js?v=0.6.5" defer></script>
   <script src="fuel-inbox.js?v=1.0.0" defer></script>
@@ -160,7 +161,7 @@
         </section>
         <section data-panel="calendar" class="view-panel orbit-calendar-view" id="orbit-calendar" hidden aria-label="Calendar and dated Todoist tasks">
           <div class="eyebrow"><span class="eyebrow-line"></span> ORBIT / PLANNING</div>
-          <div class="page-head"><div><h1>Calendar<span class="accent-period">.</span></h1><p>ORBIT events and Todoist due dates in one place.</p></div><button class="primary-button" type="button" data-cal-new-event><span data-icon="plus"></span> New event</button></div>
+          <div class="page-head"><div><h1>Calendar<span class="accent-period">.</span></h1><p>ORBIT events, Google Calendar, and Todoist due dates in one place.</p></div><button class="primary-button" type="button" data-cal-new-event><span data-icon="plus"></span> New event</button></div>
           <div class="cal-toolbar">
             <div class="cal-navigation">
               <button type="button" class="cal-button" data-cal-prev aria-label="Previous calendar period">‹</button>
@@ -174,6 +175,17 @@
             </div>
           </div>
           <p class="cal-status" id="calendar-status" role="status">Checking your calendar…</p>
+          <section class="cal-google-connection" aria-label="Google Calendar connection">
+            <div class="cal-google-heading">
+              <div><div class="eyebrow small">GOOGLE CALENDAR / READ ONLY</div><h3>Connected calendars</h3><p id="cal-google-status" role="status">Checking Google Calendar connection…</p></div>
+              <div class="cal-google-actions">
+                <button type="button" class="cal-button cal-primary" id="cal-google-connect" disabled>Connect Google Calendar</button>
+                <button type="button" class="cal-button" id="cal-google-refresh" hidden>Refresh events</button>
+                <button type="button" class="cal-button" id="cal-google-disconnect" hidden>Disconnect</button>
+              </div>
+            </div>
+            <div id="cal-google-calendars" hidden></div>
+          </section>
           <div class="cal-layout">
             <section class="cal-month-card" aria-label="Calendar dates">
               <div class="cal-grid" id="calendar-grid"></div>
