@@ -225,3 +225,14 @@ No separate Supabase project or database table is needed. The ORBIT login form c
 Account-specific local data is saved under `orbit-v04-user-<user-id>`. Import older browser data using **Settings → Import older ORBIT browser data** after confirming the correct account. Any legacy money or health entries remain in legacy browser storage and are not visible in ORBIT.
 
 No signup, reset-password email links, or new account management is included in v0.4; use the established GAIA account to manage your password. For new email-link flows returning to ORBIT, add `https://reece1919.github.io/orbit/**` to Supabase Auth redirect allowlist in the dashboard before enabling those flows.
+## ORBIT Journal (October 20, 2026)
+
+Journal is a standalone, freeform writing module in the ORBIT sidebar and the mobile Systems sheet. It is intentionally separate from VITA → Mind (PULSE), where existing mood ratings, reflection prompts and journal records remain unchanged.
+
+- New dated entries with optional title and comma-separated tags; private long-form body text.
+- Search, edit, delete, refresh, and download a JSON backup of the loaded collection. Confirm unsaved changes before changing entries or leaving the page.
+- The source of truth is `public.orbit_journal_entries` in the shared ORBIT/GAIA Supabase project. It is protected by owner-only RLS and the same AAL2 authenticator requirement as other ORBIT private modules.
+- Data is shared across browsers immediately after saving; Journal never participates in ORBIT's opt-in local-workspace cloud snapshot. It also never writes into `pulse_journals`.
+- Writing is **not** end-to-end encrypted: Supabase project administrators with database permissions can technically access it. JSON exports are unencrypted and should be stored privately.
+- A new database migration is required: `supabase/migrations/20261020_orbit_journal_entries.sql`. The module requires no extra service or paid API.
+- Entries are saved explicitly, not autosaved. The browser warns before unloading a changed entry.
