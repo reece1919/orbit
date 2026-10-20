@@ -1,9 +1,8 @@
-/* ORBIT mobile navigation: Home / Systems / VITA / More.
-   Desktop/sidebar navigation and dashboard modules are unchanged. */
+/* ORBIT mobile navigation: Home / Systems / More. VITA and MUSE are in the top launch row. */
 @media (max-width: 980px) {
   .topbar .menu-button { display: none !important; }
   .mobile-nav {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
   .mobile-nav-item {
     min-height: 55px;

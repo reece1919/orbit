@@ -263,7 +263,7 @@
     });
     document.querySelectorAll('.main-nav [data-view], .mobile-nav [data-view]').forEach(x=>{x.classList.toggle('active',x.dataset.view===view);if(x.dataset.view===view)x.setAttribute('aria-current','page');else x.removeAttribute('aria-current')});
     const more=$('#mobile-more');
-    more.classList.toggle('active',!['home','vita'].includes(view));
+    more.classList.toggle('active',!['home','vita','journal'].includes(view));
     $('#current-crumb').textContent=({home:'OVERVIEW',projects:'PROJECTS',focus:'TASKS',calendar:'CALENDAR',journal:'MUSE',gaia:'GAIA',vita:'VITA',inbox:'INBOX',automations:'AUTOMATIONS',routines:'ROUTINES',settings:'SETTINGS'})[view];
     closeNavigation();if(view==='calendar')window.ORBITCalendar?.render();window.scrollTo({top:0,behavior:'instant'});
   }

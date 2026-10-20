@@ -13,12 +13,12 @@
   <link rel="stylesheet" href="celestial.css?v=1.4.0" />
   <link rel="stylesheet" href="assets/todoist-system.css?v=1.1.0" />
   <link rel="stylesheet" href="pulse.css?v=1.0.0" />
-  <link rel="stylesheet" href="signals.css?v=1.2.0" /><link rel="stylesheet" href="compact-systems.css?v=2.2.0" /><link rel="stylesheet" href="specialist-themes.css?v=1.1.0" />
+  <link rel="stylesheet" href="signals.css?v=1.2.0" /><link rel="stylesheet" href="compact-systems.css?v=2.3.0" /><link rel="stylesheet" href="specialist-themes.css?v=1.1.0" />
   <link rel="stylesheet" href="wellness.css?v=1.0.0" />
   <link rel="stylesheet" href="vita.css?v=2.0.0" />
   <link rel="stylesheet" href="fuel-inbox.css?v=1.0.0" />
   <link rel="stylesheet" href="nutrition-week.css?v=1.0.0" />
-  <link rel="stylesheet" href="mobile-nav.css?v=1.1.0" />
+  <link rel="stylesheet" href="mobile-nav.css?v=1.2.0" />
   <link rel="stylesheet" href="orbit-brand.css?v=4.0.0" />
   <link rel="stylesheet" href="agenda-overdue.css?v=1.2.1" />
   <link rel="stylesheet" href="calendar.css?v=1.1.0" />
@@ -75,12 +75,10 @@
       <nav aria-label="Primary navigation" class="main-nav">
         <div class="nav-label">WORKSPACE</div>
         <button type="button" class="nav-item active" data-view="home"><span data-icon="layout-dashboard"></span> Overview <span class="nav-indicator"></span></button>
-        <button type="button" class="nav-item" data-view="journal"><img class="nav-system-emblem" src="assets/systems/muse-tarot.png?v=2.0.0" alt="" width="22" height="22"> MUSE <span class="nav-indicator"></span></button>
         <button type="button" class="nav-item" data-view="focus"><span data-icon="check-circle"></span> Todoist &amp; Tasks <span class="nav-count" id="nav-task-count">0</span></button>
         <button type="button" class="nav-item" data-view="calendar"><span data-icon="calendar"></span> Calendar <span class="nav-indicator"></span></button>
         
         <span id="nav-gaia-count" hidden aria-hidden="true">—</span>
-        <button type="button" class="nav-item" data-view="vita"><img class="nav-system-emblem" src="assets/systems/vita-metal.webp?v=2.0.0" width="21" height="21" alt=""> VITA <span class="nav-indicator"></span></button>
         <span id="nav-fuel-count" hidden aria-hidden="true">—</span>
         <button type="button" class="nav-item" data-view="inbox"><span data-icon="mail"></span> Inbox <span class="nav-count" id="nav-inbox-count">—</span></button>
         <button type="button" class="nav-item" data-view="automations"><span data-icon="clock"></span> Automations <span class="nav-count" id="nav-automations-count">—</span></button>
@@ -105,6 +103,7 @@
 <a class="system-launch" href="https://reece1919.github.io/echo/" target="_blank" rel="noopener noreferrer" aria-label="Open ECHO"><img src="https://reece1919.github.io/echo/echo-metal-logo.png?v=2.0.0" alt="" width="34" height="34"><span>ECHO</span></a>
 <a class="system-launch" href="https://reece1919.github.io/rune-web/" target="_blank" rel="noopener noreferrer" aria-label="Open RUNE"><img src="assets/systems/rune-metal.png?v=2.0.0" alt="" width="34" height="34"><span>RUNE</span></a>
 <a class="system-launch" href="driftmark/" aria-label="Open QUILL"><img src="assets/systems/quill-blue-metal.png?v=2.0.0" alt="" width="34" height="34"><span>QUILL</span></a>
+<button class="system-launch" type="button" data-view="vita" aria-label="Open VITA wellness dashboard"><img src="assets/systems/vita-metal.webp?v=2.0.0" alt="" width="34" height="34"><span>VITA</span></button>
 <button class="system-launch" type="button" data-view="journal" aria-label="Open MUSE personal journal"><img src="assets/systems/muse-tarot.png?v=2.0.0" alt="" width="34" height="34"><span>MUSE</span></button></div></section>
 
           <div class="home-signals-grid home-signals-grid-single" aria-label="Latest unread Gmail activity">
@@ -589,7 +588,6 @@
       <nav class="mobile-nav" aria-label="Mobile navigation">
         <button class="mobile-nav-item active" type="button" data-view="home"><span data-icon="layout-dashboard"></span><span>Home</span></button>
         <button class="mobile-nav-item" type="button" id="mobile-systems" aria-controls="mobile-system-sheet" aria-expanded="false" aria-haspopup="true"><span data-icon="grid"></span><span>Systems</span></button>
-        <button class="mobile-nav-item" type="button" data-view="vita"><img src="assets/systems/vita-metal.webp?v=2.0.0" width="21" height="21" alt=""><span>VITA</span></button>
         <button class="mobile-nav-item" type="button" id="mobile-more" aria-controls="sidebar" aria-expanded="false"><span data-icon="menu"></span><span>More</span></button>
       </nav>
       <button id="mobile-systems-backdrop" class="mobile-systems-backdrop" type="button" aria-label="Close systems menu" hidden></button>
@@ -599,8 +597,6 @@
           <a class="mobile-system-link" href="https://reece1919.github.io/gaia/" target="_blank" rel="noopener noreferrer"><img src="assets/systems/gaia.svg?v=2.0.0" width="32" height="32" alt=""><span>GAIA</span></a>
           <a class="mobile-system-link" href="https://reece1919.github.io/echo/" target="_blank" rel="noopener noreferrer"><img src="https://reece1919.github.io/echo/echo-metal-logo.png?v=2.0.0" width="32" height="32" alt=""><span>ECHO</span></a>
           <a class="mobile-system-link" href="https://reece1919.github.io/rune-web/" target="_blank" rel="noopener noreferrer"><img src="assets/systems/rune-metal.png?v=2.0.0" width="32" height="32" alt=""><span>RUNE</span></a>
-          <button class="mobile-system-link" type="button" data-view="vita"><img src="assets/systems/vita-metal.webp?v=2.0.0" width="32" height="32" alt=""><span>VITA</span></button>
-          <button class="mobile-system-link journal-mobile-launch" type="button" data-view="journal"><img src="assets/systems/muse-tarot.png?v=2.0.0" width="34" height="34" alt=""><span>MUSE</span></button>
           <a class="mobile-system-link" href="driftmark/"><img src="assets/systems/quill-blue-metal.png?v=2.0.0" width="32" height="32" alt=""><span>QUILL</span></a>
         </div>
       </section>
