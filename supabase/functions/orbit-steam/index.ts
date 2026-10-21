@@ -42,6 +42,19 @@ async function steamCall(service,method,version,params,key){
     throw steamFailure("HTTP_403","Steam denied the achievement request (HTTP 403) without a definitive reason.");
   }
   if(res.status===401)throw steamFailure("HTTP_401","Steam refused this API key (HTTP 401).");
+  if(res.status===400 && service==="ISteamUserStats" && method==="GetPlayerAchievements"){
+    // Valve returns HTTP 400 with {playerstats:{error:"Requested app has no stats",success:false}}
+    // for many games without Steam achievements. This is not a transport failure.
+    let reason="";
+    try{
+      const body=await res.json();
+      reason=String(body?.playerstats?.error||body?.error||"").toLowerCase().slice(0,160);
+    }catch(_){}
+    if(reason.includes("requested app has no stats")){
+      throw steamFailure("NO_STATS","Steam reports that this game has no accessible achievement stats.");
+    }
+    throw steamFailure("HTTP_400","Steam returned HTTP 400 for this game's achievement request.");
+  }
   if(!res.ok)throw steamFailure("HTTP_"+res.status,"Steam returned HTTP "+res.status+".");
   try{return await res.json();}catch(_){throw steamFailure("INVALID_JSON","Steam returned a response that could not be decoded.");}
 }
@@ -100,11 +113,42 @@ async function checkPublicVisibility(steamid,appid,key){
   }catch(_){}
   return {profile,gameVisibility};
 }
+// A no-stats response is frequently a normal game without achievements.
+// Confirm from the game's public schema before storing a zero-achievement result.
+async function handleNoStats(db,owner,appid,key){
+  let schema;
+  try{
+    schema=await steamCall("ISteamUserStats","GetSchemaForGame","2",{appid,l:"english"},key);
+  }catch(_){
+    const message="Steam has no accessible achievement stats for this title. Achievement support could not be verified.";
+    const {error:e}=await db.from("orbit_steam_games").update({
+      achievement_error:message,achievements_checked_at:new Date().toISOString()
+    }).eq("owner_id",owner).eq("app_id",appid);
+    if(e)throw e;
+    return {app_id:appid,ok:false,code:"STATS_UNVERIFIED",message};
+  }
+  const achievements=schema?.game?.availableGameStats?.achievements;
+  if(schema?.game && (!Array.isArray(achievements)||achievements.length===0)){
+    const {error:e}=await db.from("orbit_steam_games").update({
+      achievements_total:0,achievements_unlocked:0,achievement_error:null,
+      achievements_checked_at:new Date().toISOString()
+    }).eq("owner_id",owner).eq("app_id",appid);
+    if(e)throw e;
+    return {app_id:appid,ok:true,noAchievements:true,total:0,unlocked:0};
+  }
+  const message="Steam lists achievements for this game, but player achievement stats were not available.";
+  const {error:e}=await db.from("orbit_steam_games").update({
+    achievement_error:message,achievements_checked_at:new Date().toISOString()
+  }).eq("owner_id",owner).eq("app_id",appid);
+  if(e)throw e;
+  return {app_id:appid,ok:false,code:"STATS_UNAVAILABLE",message};
+}
 async function achievements(db,owner,steamid,appid,key){
   let result;
   try{
     result=await steamCall("ISteamUserStats","GetPlayerAchievements","0001",{steamid,appid,l:"english"},key);
   }catch(ex){
+    if(ex?.code==="NO_STATS")return await handleNoStats(db,owner,appid,key);
     let code=typeof ex?.code==="string"&&/^(HTTP_[0-9]{3}|NETWORK|INVALID_JSON|PROFILE_PRIVATE|NO_STATS)$/.test(ex.code)?ex.code:"UNKNOWN";
     let message=code==="UNKNOWN"?"Unexpected Steam achievement request failure.":String(ex.message);
     if(code==="PROFILE_PRIVATE" || code==="HTTP_403"){
@@ -135,6 +179,9 @@ async function achievements(db,owner,steamid,appid,key){
   }
   const player=result?.playerstats;
   if(!player?.success || !Array.isArray(player.achievements)){
+    if(String(player?.error||"").toLowerCase().includes("requested app has no stats")){
+      return await handleNoStats(db,owner,appid,key);
+    }
     const message="Steam returned no achievement data for this title.";
     const {error:e}=await db.from("orbit_steam_games").update({achievement_error:message,achievements_checked_at:new Date().toISOString()}).eq("owner_id",owner).eq("app_id",appid);
     if(e)throw e;
@@ -179,9 +226,14 @@ async function batch(db,owner,steamid,key,body){
   }else{
     const cutoff=String(body.before||"");
     if(!/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d+)?Z$/.test(cutoff))return error("Invalid sync cutoff.");
-    const {data,error:e}=await db.from("orbit_steam_games").select("app_id").eq("owner_id",owner)
-      .or("achievements_checked_at.is.null,achievements_checked_at.lt."+cutoff)
-      .order("achievements_checked_at",{ascending:true,nullsFirst:true}).limit(6);
+    let q=db.from("orbit_steam_games").select("app_id").eq("owner_id",owner);
+    if(body.action==="sync_failed"){
+      // Retry only previously failed games, each no more than once per run.
+      q=q.not("achievement_error","is",null).lt("achievements_checked_at",cutoff);
+    }else{
+      q=q.or("achievements_checked_at.is.null,achievements_checked_at.lt."+cutoff);
+    }
+    const {data,error:e}=await q.order("achievements_checked_at",{ascending:true,nullsFirst:true}).limit(6);
     if(e)throw e;ids=(data||[]).map(x=>x.app_id);
   }
   const processed=[];
@@ -226,7 +278,7 @@ Deno.serve(async req=>{
     const key=Deno.env.get("STEAM_WEB_API_KEY")||"";
     if(!key)return error("Steam sync is not configured on the ORBIT server yet. Add STEAM_WEB_API_KEY in Supabase Edge Function secrets.",503);
     if(body.action==="sync_library")return await library(db,user.id,account.steam_id,key);
-    if(body.action==="sync_batch"||body.action==="sync_game")return await batch(db,user.id,account.steam_id,key,body);
+    if(body.action==="sync_batch"||body.action==="sync_game"||body.action==="sync_failed")return await batch(db,user.id,account.steam_id,key,body);
     return error("Unsupported action.");
   }catch(ex){console.error("TROPHY sync:",String(ex?.message||ex).slice(0,160));return error("TROPHY server encountered an unexpected error. Steam privacy is not necessarily the cause.",502);}
 });
