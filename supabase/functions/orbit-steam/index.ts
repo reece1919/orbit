@@ -15,12 +15,20 @@ function steamUrl(service,method,version,params,key){
   for(const [k,v] of Object.entries(params))url.searchParams.set(k,String(v));
   return url;
 }
+// Never include the Steam API key, request URL or raw provider responses in diagnostics.
+function steamFailure(code,message){
+  const e=new Error(message);e.code=code;return e;
+}
 async function steamCall(service,method,version,params,key){
-  const res=await fetch(steamUrl(service,method,version,params,key),{headers:{"Accept":"application/json"},signal:AbortSignal.timeout(12000)});
-  if(res.status===429)throw new Error("Steam is rate-limiting requests. Retry later.");
-  if(res.status===403||res.status===401)throw new Error("Steam rejected this API key or the profile is private.");
-  if(!res.ok)throw new Error("Steam API returned HTTP "+res.status);
-  return res.json();
+  let res;
+  try{
+    res=await fetch(steamUrl(service,method,version,params,key),{headers:{"Accept":"application/json"},signal:AbortSignal.timeout(12000)});
+  }catch(_){throw steamFailure("NETWORK","Steam could not be reached (network error or timeout).");}
+  if(res.status===429)throw steamFailure("HTTP_429","Steam rate limit (HTTP 429). Try again later.");
+  if(res.status===403)throw steamFailure("HTTP_403","Steam refused access (HTTP 403). This can indicate private achievement visibility or an API restriction.");
+  if(res.status===401)throw steamFailure("HTTP_401","Steam refused this API key (HTTP 401).");
+  if(!res.ok)throw steamFailure("HTTP_"+res.status,"Steam returned HTTP "+res.status+".");
+  try{return await res.json();}catch(_){throw steamFailure("INVALID_JSON","Steam returned a response that could not be decoded.");}
 }
 async function connected(db,owner){
   const {data,error:e}=await db.from("orbit_steam_connections").select("steam_id,last_synced_at").eq("owner_id",owner).maybeSingle();
@@ -58,13 +66,19 @@ async function achievements(db,owner,steamid,appid,key){
   try{
     result=await steamCall("ISteamUserStats","GetPlayerAchievements","0001",{steamid,appid,l:"english"},key);
   }catch(ex){
-    await db.from("orbit_steam_games").update({achievement_error:"Unavailable from Steam",achievements_checked_at:new Date().toISOString()}).eq("owner_id",owner).eq("app_id",appid);
-    return {app_id:appid,ok:false,message:String(ex.message).includes("rate-limiting")?"Steam rate limit":"Achievements unavailable"};
+    const code=typeof ex?.code==="string"&&/^(HTTP_[0-9]{3}|NETWORK|INVALID_JSON)$/.test(ex.code)?ex.code:"UNKNOWN";
+    const message=code==="UNKNOWN"?"Unexpected Steam achievement request failure.":String(ex.message);
+    const {error:e}=await db.from("orbit_steam_games").update({achievement_error:message,achievements_checked_at:new Date().toISOString()}).eq("owner_id",owner).eq("app_id",appid);
+    if(e)throw e;
+    // Return only sanitized error codes and descriptions, never credentials or URLs.
+    return {app_id:appid,ok:false,code,message};
   }
   const player=result?.playerstats;
   if(!player?.success || !Array.isArray(player.achievements)){
-    await db.from("orbit_steam_games").update({achievement_error:"Not exposed by Steam",achievements_checked_at:new Date().toISOString()}).eq("owner_id",owner).eq("app_id",appid);
-    return {app_id:appid,ok:false,message:"No achievement data"};
+    const message="Steam returned no achievement data for this title.";
+    const {error:e}=await db.from("orbit_steam_games").update({achievement_error:message,achievements_checked_at:new Date().toISOString()}).eq("owner_id",owner).eq("app_id",appid);
+    if(e)throw e;
+    return {app_id:appid,ok:false,code:"NO_ACHIEVEMENTS",message};
   }
   const achieved=new Map(player.achievements.map(a=>[String(a.apiname||""),a]));
   let schema=[];
@@ -111,8 +125,21 @@ async function batch(db,owner,steamid,key,body){
     if(e)throw e;ids=(data||[]).map(x=>x.app_id);
   }
   const processed=[];
-  for(const appid of ids)processed.push(await achievements(db,owner,steamid,appid,key));
-  return reply({processed,more:body.action!=="sync_game" && ids.length===6});
+  let blocked=null;
+  for(const appid of ids){
+    const item=await achievements(db,owner,steamid,appid,key);
+    processed.push(item);
+    // Do not send hundreds of doomed requests after an identical account-wide
+    // auth/rate-limit failure. Not all HTTP failures are account-wide.
+    if(body.action!=="sync_game" && processed.length>=2){
+      const a=processed[processed.length-1],b=processed[processed.length-2];
+      if(!a.ok && !b.ok && a.code===b.code && ["HTTP_401","HTTP_403","HTTP_429","NETWORK"].includes(a.code)){
+        blocked={code:a.code,message:a.message};
+        break;
+      }
+    }
+  }
+  return reply({processed,blocked,more:!blocked&&body.action!=="sync_game"&&ids.length===6});
 }
 Deno.serve(async req=>{
   if(req.method==="OPTIONS")return new Response(null,{status:204,headers:CORS});
