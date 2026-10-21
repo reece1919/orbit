@@ -37,7 +37,7 @@
   <script src="google-calendar.js?v=1.0.1" defer></script>
   <script src="calendar.js?v=1.1.0" defer></script>
   <script src="journal.js?v=1.2.0" defer></script>
-  <script src="trophy.js?v=1.0.4" defer></script>
+  <script src="trophy.js?v=1.0.5" defer></script>
   <script src="assets/todoist-system.js?v=1.4.0" defer></script>
   <script src="fuel.js?v=0.6.5" defer></script>
   <script src="fuel-inbox.js?v=1.0.0" defer></script>
@@ -191,7 +191,7 @@
             <div id="trophy-connected" hidden>
               <div class="eyebrow small">STEAM CONNECTED</div>
               <p class="trophy-connected-note"><strong id="trophy-connected-id"></strong> · <span id="trophy-last-sync">Not synchronized</span></p>
-              <div class="trophy-connected-actions"><button id="trophy-sync" type="button" class="primary-button">Sync Steam</button><button id="trophy-disconnect" type="button" class="quiet-pill">Disconnect</button></div>
+              <div class="trophy-connected-actions"><button id="trophy-sync" type="button" class="primary-button">Sync Steam</button><button id="trophy-retry-failed" type="button" class="quiet-pill" hidden>Retry unavailable achievements</button><button id="trophy-disconnect" type="button" class="quiet-pill">Disconnect</button></div>
               <p class="trophy-connect-help">Sync Steam refreshes your library and scans achievements. A 100% completion means every reported Steam achievement is unlocked; it does not measure story completion.</p>
             </div>
             <p id="trophy-status" class="trophy-status" role="status" aria-live="polite"></p>
