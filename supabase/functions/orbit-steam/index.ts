@@ -179,7 +179,10 @@ async function achievements(db,owner,steamid,appid,key){
   }
   const player=result?.playerstats;
   if(!player?.success || !Array.isArray(player.achievements)){
-    if(String(player?.error||"").toLowerCase().includes("requested app has no stats")){
+    // A 200 response with success:false or no achievements may also be a
+    // legitimate title without Steam stats (e.g., standalone older games).
+    // Confirm against the game's schema rather than claiming sync success.
+    if(player?.success===false || (player && !Array.isArray(player.achievements))){
       return await handleNoStats(db,owner,appid,key);
     }
     const message="Steam returned no achievement data for this title.";
