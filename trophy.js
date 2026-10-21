@@ -125,6 +125,7 @@
     ?"You have completed the full Steam achievement list for this game."
     :g.achievements_total===0?"Steam has not exposed any achievements for this game."
     :"Filter by 'Still to unlock' to focus on your remaining Steam milestones.";
+  $("trophy-game-privacy-link").hidden=!g.achievement_error||!/profile|privacy|403|game details/i.test(g.achievement_error);
   $("trophy-game-rescan").disabled=state.busy;
   const earned=list.filter(x=>x.unlocked&&x.unlocked_at).sort((a,b)=>new Date(b.unlocked_at)-new Date(a.unlocked_at)).slice(0,6);
   $("trophy-game-timeline").innerHTML=earned.length?earned.map(a=>'<div class="trophy-game-timeline-item"><span class="trophy-game-timeline-dot"></span><div><strong>'+esc(a.display_name||a.api_name)+'</strong><small>'+date(a.unlocked_at)+'</small></div></div>').join(""):'<p class="trophy-empty">No dated unlocks available yet.</p>';
