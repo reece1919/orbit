@@ -28,7 +28,11 @@
  const progress=g=>g.achievements_total>0?Math.round(100*g.achievements_unlocked/g.achievements_total):0;
  const done=g=>g.achievements_total>0&&g.achievements_unlocked===g.achievements_total;
  const checked=g=>g.achievements_checked_at!==null && !g.achievement_error;
- function status(text,bad=false){const el=$("trophy-status");el.textContent=text||"";el.classList.toggle("trophy-error",bad);}
+ function status(text,bad=false){
+   const el=$("trophy-status");el.textContent=text||"";el.classList.toggle("trophy-error",bad);
+   const gameEl=$("trophy-game-scan-status");
+   if(gameEl&&state.selected!==null){gameEl.textContent=text||"";gameEl.classList.toggle("trophy-error",bad);}
+ }
  function lock(busy){
    state.busy=busy;
    for(const id of ["trophy-connect","trophy-sync","trophy-disconnect"]){const el=$(id);if(el)el.disabled=busy;}
@@ -126,6 +130,9 @@
     :g.achievements_total===0?"Steam has not exposed any achievements for this game."
     :"Filter by 'Still to unlock' to focus on your remaining Steam milestones.";
   $("trophy-game-privacy-link").hidden=!g.achievement_error||!/profile|privacy|403|game details/i.test(g.achievement_error);
+  $("trophy-game-last-check").textContent=g.achievements_checked_at
+    ?"Steam achievements last checked: "+new Date(g.achievements_checked_at).toLocaleString()
+    :"Steam achievements have not been checked for this game.";
   $("trophy-game-rescan").disabled=state.busy;
   const earned=list.filter(x=>x.unlocked&&x.unlocked_at).sort((a,b)=>new Date(b.unlocked_at)-new Date(a.unlocked_at)).slice(0,6);
   $("trophy-game-timeline").innerHTML=earned.length?earned.map(a=>'<div class="trophy-game-timeline-item"><span class="trophy-game-timeline-dot"></span><div><strong>'+esc(a.display_name||a.api_name)+'</strong><small>'+date(a.unlocked_at)+'</small></div></div>').join(""):'<p class="trophy-empty">No dated unlocks available yet.</p>';
@@ -218,6 +225,8 @@
  async function loadGame(appid){
   if(!state.db||!state.owner)return;
   state.selected=appid;state.achievementFilter="remaining";state.achievementSearch="";
+  $("trophy-game-scan-status").textContent="";
+  $("trophy-game-scan-status").classList.remove("trophy-error");
   $("trophy-game-achievement-filter").value="remaining";
   $("trophy-game-achievement-search").value="";
   state.gameLoading=true;render();
