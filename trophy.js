@@ -35,12 +35,13 @@
  }
  function lock(busy){
    state.busy=busy;
-   for(const id of ["trophy-connect","trophy-sync","trophy-disconnect"]){const el=$(id);if(el)el.disabled=busy;}
+   for(const id of ["trophy-connect","trophy-sync","trophy-retry-failed","trophy-disconnect"]){const el=$(id);if(el)el.disabled=busy;}
  }
  function renderSummary(){
   const games=state.games, game=games.find(x=>x.app_id===state.selected),isGame=!!game;
   const achieved=games.reduce((n,g)=>n+(g.achievements_unlocked||0),0);
   const available=games.reduce((n,g)=>n+(g.achievements_total||0),0);
+  $("trophy-retry-failed").hidden=!state.account||!games.some(g=>g.achievement_error);
   $("trophy-count-games").textContent=String(games.length);
   $("trophy-count-complete").textContent=String(games.filter(done).length);
   $("trophy-count-unlocked").textContent=available>0?achieved.toLocaleString()+" / "+available.toLocaleString():"— / —";
@@ -109,7 +110,7 @@
   $("trophy-game-title").textContent=g.name;
   $("trophy-game-subtitle").textContent=g.achievement_error?g.achievement_error:done(g)?"100% Steam achievements completed":g.achievements_total>0
     ?(g.achievements_unlocked+" of "+g.achievements_total+" Steam achievements unlocked")
-    :"Achievement progress not available yet";
+    :g.achievements_total===0?"This game does not expose Steam achievements":"Achievement progress not available yet";
   $("trophy-game-percentage").textContent=g.achievements_total>0?progress(g)+"%":"—";
   $("trophy-game-unlocked").textContent=g.achievements_total===null?"—":String(g.achievements_unlocked);
   $("trophy-game-remaining").textContent=g.achievements_total===null?"—":String(g.achievements_total-g.achievements_unlocked);
@@ -119,7 +120,7 @@
   const prog=$("trophy-game-progress-track");
   prog.setAttribute("aria-valuenow",String(pct));
   $("trophy-game-progress-fill").style.width=pct+"%";
-  $("trophy-game-progress-label").textContent=g.achievements_total>0?pct+"% Achievement Completion":"Not yet scanned";
+  $("trophy-game-progress-label").textContent=g.achievements_total>0?pct+"% Achievement Completion":g.achievements_total===0?"No Steam achievements":"Achievement status unknown";
   $("trophy-game-steam-link").href="https://store.steampowered.com/app/"+g.app_id+"/";
   const list=state.achievements.filter(x=>x.app_id===g.app_id);
   const remaining=g.achievements_total===null?null:g.achievements_total-g.achievements_unlocked;
@@ -222,6 +223,31 @@
    }else status("Steam scan finished: "+checked+" games checked. Achievements are up to date.");
   });
  }
+ async function retryFailed(){
+  await task("Retrying games with unavailable achievements…",async()=>{
+    const count=state.games.filter(g=>g.achievement_error).length;
+    if(!count){status("No achievement errors to retry.");return;}
+    const before=new Date().toISOString();
+    let processed=0,recovered=0,noStats=0,failed=0,blocked=null;
+    const max=Math.ceil(count/6)+1;
+    for(let i=0;i<max;i++){
+      const result=await invoke("sync_failed",{before});
+      if(!result.processed?.length)break;
+      for(const item of result.processed){
+        processed++;
+        if(item.ok)recovered++;
+        if(item.noAchievements)noStats++;
+        if(!item.ok)failed++;
+      }
+      status("Rechecking "+processed+" of "+count+" games…");
+      if(result.blocked){blocked=result.blocked;break;}
+      if(!result.more)break;
+    }
+    await load();
+    if(blocked)status("Achievement retry paused: "+blocked.message,true);
+    else status("Retry complete: "+processed+" checked · "+recovered+" resolved"+(noStats?" ("+noStats+" with no Steam achievements)":"")+(failed?" · "+failed+" still unavailable":"")+".",failed>0);
+  });
+ }
  async function loadGame(appid){
   if(!state.db||!state.owner)return;
   state.selected=appid;state.achievementFilter="remaining";state.achievementSearch="";
@@ -258,6 +284,7 @@
   void task("Linking Steam profile…",async()=>{await invoke("connect",{steam_id:id});await load();status("SteamID saved. Select Sync Steam to import your game library.");});
  });
  $("trophy-sync").addEventListener("click",()=>void sync(true));
+ $("trophy-retry-failed").addEventListener("click",()=>void retryFailed());
  $("trophy-disconnect").addEventListener("click",()=>{
   if(!confirm("Disconnect Steam and delete all cached TROPHY games and achievements?"))return;
   void task("Disconnecting Steam…",async()=>{await invoke("disconnect");await load();status("Steam disconnected.");});
