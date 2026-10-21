@@ -25,7 +25,22 @@ async function steamCall(service,method,version,params,key){
     res=await fetch(steamUrl(service,method,version,params,key),{headers:{"Accept":"application/json"},signal:AbortSignal.timeout(12000)});
   }catch(_){throw steamFailure("NETWORK","Steam could not be reached (network error or timeout).");}
   if(res.status===429)throw steamFailure("HTTP_429","Steam rate limit (HTTP 429). Try again later.");
-  if(res.status===403)throw steamFailure("HTTP_403","Steam refused access (HTTP 403). This can indicate private achievement visibility or an API restriction.");
+  if(res.status===403){
+    // Steam may include a stable reason in the 403 JSON body. Inspect only
+    // known provider phrases; never return arbitrary remote HTML or response text.
+    let reason="";
+    try{
+      const body=await res.json();
+      reason=String(body?.playerstats?.error||body?.error||"").toLowerCase().slice(0,160);
+    }catch(_){}
+    if(reason.includes("profile is not public")||reason.includes("profile not public")){
+      throw steamFailure("PROFILE_PRIVATE","Steam reports that the profile is not public. To share achievements, set My Profile and Game details to Public in Steam privacy settings.");
+    }
+    if(reason.includes("requested app has no stats")){
+      throw steamFailure("NO_STATS","Steam reports no accessible achievement stats for this game. This may be a game without achievements or a visibility restriction.");
+    }
+    throw steamFailure("HTTP_403","Steam denied the achievement request (HTTP 403) without a definitive reason.");
+  }
   if(res.status===401)throw steamFailure("HTTP_401","Steam refused this API key (HTTP 401).");
   if(!res.ok)throw steamFailure("HTTP_"+res.status,"Steam returned HTTP "+res.status+".");
   try{return await res.json();}catch(_){throw steamFailure("INVALID_JSON","Steam returned a response that could not be decoded.");}
@@ -61,13 +76,29 @@ async function library(db,owner,steamid,key){
   if(e)throw e;
   return reply({games:games.length,updated_at:now});
 }
+async function profileVisibility(steamid,key){
+  try{
+    const summary=await steamCall("ISteamUser","GetPlayerSummaries","2",{steamids:steamid},key);
+    const item=summary?.response?.players?.find(p=>String(p.steamid)===String(steamid));
+    return item?.communityvisibilitystate===3?"public":item?.communityvisibilitystate?"private":"unknown";
+  }catch(_){return "unknown";}
+}
 async function achievements(db,owner,steamid,appid,key){
   let result;
   try{
     result=await steamCall("ISteamUserStats","GetPlayerAchievements","0001",{steamid,appid,l:"english"},key);
   }catch(ex){
-    const code=typeof ex?.code==="string"&&/^(HTTP_[0-9]{3}|NETWORK|INVALID_JSON)$/.test(ex.code)?ex.code:"UNKNOWN";
-    const message=code==="UNKNOWN"?"Unexpected Steam achievement request failure.":String(ex.message);
+    let code=typeof ex?.code==="string"&&/^(HTTP_[0-9]{3}|NETWORK|INVALID_JSON|PROFILE_PRIVATE|NO_STATS)$/.test(ex.code)?ex.code:"UNKNOWN";
+    let message=code==="UNKNOWN"?"Unexpected Steam achievement request failure.":String(ex.message);
+    if(code==="HTTP_403"){
+      const visibility=await profileVisibility(steamid,key);
+      if(visibility==="private"){
+        code="PROFILE_PRIVATE";
+        message="Steam reports your profile is not public. If you want to sync achievements, set My Profile and Game details to Public in Steam privacy settings.";
+      }else if(visibility==="public"){
+        message="Steam refused achievements (HTTP 403) despite your public profile. Check Game details privacy and whether the Steam Web API key has access restrictions.";
+      }
+    }
     const {error:e}=await db.from("orbit_steam_games").update({achievement_error:message,achievements_checked_at:new Date().toISOString()}).eq("owner_id",owner).eq("app_id",appid);
     if(e)throw e;
     // Return only sanitized error codes and descriptions, never credentials or URLs.
@@ -133,7 +164,7 @@ async function batch(db,owner,steamid,key,body){
     // auth/rate-limit failure. Not all HTTP failures are account-wide.
     if(body.action!=="sync_game" && processed.length>=2){
       const a=processed[processed.length-1],b=processed[processed.length-2];
-      if(!a.ok && !b.ok && a.code===b.code && ["HTTP_401","HTTP_403","HTTP_429","NETWORK"].includes(a.code)){
+      if(!a.ok && !b.ok && a.code===b.code && ["HTTP_401","HTTP_403","HTTP_429","PROFILE_PRIVATE","NETWORK"].includes(a.code)){
         blocked={code:a.code,message:a.message};
         break;
       }
