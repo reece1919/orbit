@@ -83,6 +83,23 @@ async function profileVisibility(steamid,key){
     return item?.communityvisibilitystate===3?"public":item?.communityvisibilitystate?"private":"unknown";
   }catch(_){return "unknown";}
 }
+// On a per-game 403, independently inspect Steam's current public visibility.
+// Do not expose credentials or the raw Steam response to the browser.
+async function checkPublicVisibility(steamid,appid,key){
+  const profile=await profileVisibility(steamid,key);
+  let gameVisibility="unknown";
+  try{
+    const library=await steamCall("IPlayerService","GetOwnedGames","0001",
+      {steamid,include_appinfo:0,include_played_free_games:1},key);
+    const visibleGames=library?.response?.games;
+    if(Array.isArray(visibleGames)){
+      gameVisibility=visibleGames.some(g=>Number(g.appid)===Number(appid))?"visible":"not_listed";
+    }else if(library?.response&&Number(library.response.game_count)===0){
+      gameVisibility="not_listed";
+    }
+  }catch(_){}
+  return {profile,gameVisibility};
+}
 async function achievements(db,owner,steamid,appid,key){
   let result;
   try{
@@ -90,13 +107,25 @@ async function achievements(db,owner,steamid,appid,key){
   }catch(ex){
     let code=typeof ex?.code==="string"&&/^(HTTP_[0-9]{3}|NETWORK|INVALID_JSON|PROFILE_PRIVATE|NO_STATS)$/.test(ex.code)?ex.code:"UNKNOWN";
     let message=code==="UNKNOWN"?"Unexpected Steam achievement request failure.":String(ex.message);
-    if(code==="HTTP_403"){
-      const visibility=await profileVisibility(steamid,key);
-      if(visibility==="private"){
+    if(code==="PROFILE_PRIVATE" || code==="HTTP_403"){
+      const visibility=await checkPublicVisibility(steamid,appid,key);
+      if(visibility.profile==="private"){
         code="PROFILE_PRIVATE";
-        message="Steam reports your profile is not public. If you want to sync achievements, set My Profile and Game details to Public in Steam privacy settings.";
-      }else if(visibility==="public"){
-        message="Steam refused achievements (HTTP 403) despite your public profile. Check Game details privacy and whether the Steam Web API key has access restrictions.";
+        message="Steam's public API still sees your profile as private. Confirm My Profile is Public in Steam and allow time for the change to propagate.";
+      }else if(visibility.profile==="public"&&visibility.gameVisibility==="not_listed"){
+        code="GAME_NOT_PUBLIC";
+        message="Your Steam profile is public, but this game is not listed in the public game library. Verify Game details is Public and the game is not individually marked Private.";
+      }else if(visibility.profile==="public"&&visibility.gameVisibility==="visible"){
+        code="ACHIEVEMENTS_FORBIDDEN";
+        message="Steam confirms your profile and this game are public, but its achievement API still refuses access. This can happen while a privacy change propagates; try again later.";
+      }else if(visibility.profile==="public"){
+        code="GAME_DETAILS_UNVERIFIED";
+        message="Steam confirms your profile is public, but game visibility could not be verified. Check Game details privacy and retry after the setting propagates.";
+      }else if(visibility.gameVisibility==="visible"){
+        code="ACHIEVEMENTS_FORBIDDEN";
+        message="Your game is visible in Steam's public library, but Steam's achievement API still refuses access. Try again after the privacy update propagates.";
+      }else if(code==="PROFILE_PRIVATE"){
+        message="Steam's achievement API still reports that the profile is not public, but TROPHY could not independently verify visibility. Confirm My Profile and Game details are Public, then retry.";
       }
     }
     const {error:e}=await db.from("orbit_steam_games").update({achievement_error:message,achievements_checked_at:new Date().toISOString()}).eq("owner_id",owner).eq("app_id",appid);
@@ -164,7 +193,7 @@ async function batch(db,owner,steamid,key,body){
     // auth/rate-limit failure. Not all HTTP failures are account-wide.
     if(body.action!=="sync_game" && processed.length>=2){
       const a=processed[processed.length-1],b=processed[processed.length-2];
-      if(!a.ok && !b.ok && a.code===b.code && ["HTTP_401","HTTP_403","HTTP_429","PROFILE_PRIVATE","NETWORK"].includes(a.code)){
+      if(!a.ok && !b.ok && a.code===b.code && ["HTTP_401","HTTP_403","HTTP_429","PROFILE_PRIVATE","GAME_NOT_PUBLIC","GAME_DETAILS_UNVERIFIED","ACHIEVEMENTS_FORBIDDEN","NETWORK"].includes(a.code)){
         blocked={code:a.code,message:a.message};
         break;
       }
