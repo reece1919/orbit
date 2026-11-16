@@ -37,7 +37,7 @@ test('Daily review opens directly from Home and notification link',()=>{
  assert.match(html,/data-view="review"/);
  assert.match(html,/id="review-finish"/);
  assert.match(app,/get\('view'\)==='review'/);
- assert.match(worker,/\["pulse","review"\]/);
+ assert.match(worker,/\["pulse","review","habits"\]/);
  assert.match(worker,/payload\.url/);
 });
 

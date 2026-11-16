@@ -4,7 +4,7 @@ function target(raw){
   try{
     const url=new URL(raw||ROOT+"?view=pulse");
     return url.origin==="https://reece1919.github.io"&&url.pathname==="/orbit/"&&
-      ["pulse","review"].includes(url.searchParams.get("view"))?
+      ["pulse","review","habits"].includes(url.searchParams.get("view"))?
       url.origin+url.pathname+"?view="+url.searchParams.get("view"):ROOT+"?view=pulse";
   }catch{return ROOT+"?view=pulse";}
 }
