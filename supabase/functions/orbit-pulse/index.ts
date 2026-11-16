@@ -77,7 +77,8 @@ async function configuredKeys(){
  return deserializeVapidKeys({publicKey:await setting("vapid_public"),privateKey:await setting("vapid_private")});
 }
 async function send(row,kind,day){
- const payload={title:kind==="journal"?"PULSE · Evening reflection":"PULSE · Mood check-in",body:kind==="journal"?"Your daily journal prompt is ready.":"A small moment to check in with yourself.",url:LINK+"?view=pulse",tag:"pulse-"+kind+"-"+day};
+ const isReview=kind==="review"||kind==="review_snooze";
+ const payload={title:isReview?"ORBIT · Daily review":kind==="journal"?"PULSE · Evening reflection":"PULSE · Mood check-in",body:isReview?"Your evening check-in is ready.":kind==="journal"?"Your daily journal prompt is ready.":"A small moment to check in with yourself.",url:LINK+"?view="+(isReview?"review":"pulse"),tag:"pulse-"+kind+"-"+day};
  const response=await sendPushNotification(await configuredKeys(),{endpoint:row.endpoint,keys:{p256dh:row.p256dh,auth:row.auth_secret}},"support@reece1919.github.io",JSON.stringify(payload),{algorithm:"aes128gcm",ttl:3600});
  return response;
 }
@@ -95,7 +96,8 @@ function dueSlots(settings,now){
  const clock=localClock(settings.time_zone,now);
  const times=[...(settings.mood_times||[]),settings.journal_time];
  const due=[];
- times.forEach((t,i)=>{const diff=clock.minute-minutes(t);if(diff>=0&&diff<=14)due.push(slots[i])});
+ if(settings.pulse_reminders_enabled!==false)times.forEach((t,i)=>{const diff=clock.minute-minutes(t);if(diff>=0&&diff<=14)due.push(slots[i])});
+ if(settings.review_reminders_enabled===true){const diff=clock.minute-minutes(settings.review_time||"20:30");if(diff>=0&&diff<=14)due.push("review");}
  return {day:clock.day,due};
 }
 async function dispatch(req){
@@ -110,6 +112,19 @@ async function dispatch(req){
  for(const settingRow of settings||[]){
   let clock;
   try{clock=dueSlots(settingRow,now)}catch{continue}
+  // One generic daily review reminder, and at most one snoozed follow-up.
+  // Skipping is never a completion and neither status should generate a push.
+  if(settingRow.review_reminders_enabled===true){
+   const {data:review,error:reviewError}=await db.from("orbit_daily_reviews")
+     .select("finished_at,skipped_at,snoozed_until").eq("owner_id",settingRow.owner_id).eq("review_date",clock.day).maybeSingle();
+   if(reviewError){failures++;continue}
+   if(review?.finished_at||review?.skipped_at){clock.due=clock.due.filter(x=>x!=="review"&&x!=="review_snooze");}
+   else if(review?.snoozed_until){
+    clock.due=clock.due.filter(x=>x!=="review");
+    const delayMinutes=(now.getTime()-Date.parse(review.snoozed_until))/60000;
+    if(Number.isFinite(delayMinutes)&&delayMinutes>=0&&delayMinutes<=14)clock.due.push("review_snooze");
+   }
+  }
   if(!clock.due.length)continue;
   const {data:devices,error:deviceError}=await db.from("pulse_push_subscriptions").select("*").eq("owner_id",settingRow.owner_id).limit(12);
   if(deviceError||!devices?.length)continue;
