@@ -40,6 +40,7 @@ test('Habits are accessible as a dedicated panel and inside the Daily Review',()
  assert.match(html,/id="review-habit-list"/);
  assert.match(html,/data-view="habits"/);
  assert.match(app,/habits:'HABITS'/);
+ assert.match(app,/setView\(startupView\(\)\)/);
  assert.match(worker,/\["pulse","review","habits"\]/);
  assert.match(read('habits.js'),/\.from\('orbit_habit_logs'\)/);
 });
