@@ -246,7 +246,7 @@
     }else if(next==='vita'){
       vitaSection='overview';
     }
-    if(!['home','projects','focus','calendar','journal','trophy','gaia','vita','inbox','automations','routines','settings'].includes(next))return;
+    if(!['home','review','projects','focus','calendar','journal','trophy','gaia','vita','inbox','automations','routines','settings'].includes(next))return;
     view=next;
     closeSystemsMenu();
     // Only top-level workspace panels are switched here. The three nested
@@ -264,8 +264,8 @@
     document.querySelectorAll('.main-nav [data-view], .mobile-nav [data-view]').forEach(x=>{x.classList.toggle('active',x.dataset.view===view);if(x.dataset.view===view)x.setAttribute('aria-current','page');else x.removeAttribute('aria-current')});
     const more=$('#mobile-more');
     more.classList.toggle('active',!['home','vita','journal','trophy'].includes(view));
-    $('#current-crumb').textContent=({home:'OVERVIEW',projects:'PROJECTS',focus:'TASKS',calendar:'CALENDAR',journal:'MUSE',trophy:'TROPHY',gaia:'GAIA',vita:'VITA',inbox:'INBOX',automations:'AUTOMATIONS',routines:'ROUTINES',settings:'SETTINGS'})[view];
-    closeNavigation();if(view==='calendar')window.ORBITCalendar?.render();window.scrollTo({top:0,behavior:'instant'});
+    $('#current-crumb').textContent=({home:'OVERVIEW',review:'DAILY REVIEW',projects:'PROJECTS',focus:'TASKS',calendar:'CALENDAR',journal:'MUSE',trophy:'TROPHY',gaia:'GAIA',vita:'VITA',inbox:'INBOX',automations:'AUTOMATIONS',routines:'ROUTINES',settings:'SETTINGS'})[view];
+    closeNavigation();if(view==='calendar')window.ORBITCalendar?.render();if(view==='review')window.ORBITDailyReview?.refresh();window.scrollTo({top:0,behavior:'instant'});
   }
   const field = (name,label,value='',type='text',other='') => `<label class="dialog-field">${label}<input name="${name}" type="${type}" value="${esc(value)}" ${other}></label>`;
   const select = (name,label,value,options) => `<label class="dialog-field">${label}<select name="${name}">${options.map(v=>`<option value="${esc(v.value)}" ${v.value===value?'selected':''}>${esc(v.label)}</option>`).join('')}</select></label>`;
@@ -390,7 +390,7 @@
       catch(err){toast('Old ORBIT data could not be imported: '+err.message);}
     });
     document.addEventListener('orbit:auth-changed',e=>{
-      accountId=e.detail?.user?.id||'';state=load();focusFilter='open';render();setView('home');updateLegacyButton();
+      accountId=e.detail?.user?.id||'';state=load();focusFilter='open';render();setView(new URLSearchParams(location.search).get('view')==='review'?'review':'home');updateLegacyButton();
     });
   }
   function updateLegacyButton(){
@@ -442,6 +442,6 @@
       return true;
     }
   });
-    wire();render();initDate();setView('home');
+    wire();render();initDate();setView(new URLSearchParams(location.search).get('view')==='review'?'review':'home');
   if(window.ORBITAuth?.user){accountId=window.ORBITAuth.user.id;state=load();render();updateLegacyButton();}
 })();

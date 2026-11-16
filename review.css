@@ -1,0 +1,36 @@
+/* ORBIT 2.0 Daily Review: compact, responsive recording and evening checklist. */
+.review-view{--review-accent:#9fc9f4}
+.review-heading{align-items:center}
+.review-status{color:var(--muted,#9aabba);margin:0 0 16px;line-height:1.5}
+.review-error{color:#f2a6aa}
+.review-home-module{margin-top:16px;display:flex;flex-direction:column;align-items:flex-start;gap:12px}
+.review-home-module .module-head{width:100%}
+.review-grid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(265px,1fr);gap:16px;align-items:start}
+.review-main,.review-side{display:grid;gap:16px;min-width:0}
+.review-module{padding:20px;min-width:0}
+.review-module .module-head{margin-bottom:17px;gap:10px}
+.review-module fieldset{padding:0;margin:0;border:0;min-width:0;display:grid;gap:14px}
+.review-module fieldset:disabled{opacity:.65}
+.review-module label{display:grid;gap:6px;font-size:13px;font-weight:600;color:var(--text)}
+.review-module label small,.review-source-note{font-size:11px;line-height:1.6;font-weight:400;color:var(--muted,#a5b5c1);margin:6px 0}
+.review-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.review-module input[type="time"],.review-module input[type="number"],.review-module input[type="text"],.review-module select,.review-module textarea{width:100%;min-width:0;min-height:43px;border:1px solid var(--line);border-radius:8px;background:var(--surface,var(--panel));color:var(--text);font:inherit;font-size:13px;padding:10px}
+.review-module textarea{min-height:110px;resize:vertical}
+.review-module input:focus-visible,.review-module textarea:focus-visible,.review-module select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.review-module .review-journal-field{margin-top:16px}
+.review-module .review-checkline{display:flex;align-items:center;gap:10px;font-weight:500;font-size:13px;line-height:1.4}
+.review-checkline input[type="checkbox"]{width:18px;height:18px;flex:0 0 auto}
+.review-link-row{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.review-module .review-primary-actions{display:flex;gap:9px;flex-wrap:wrap;margin:14px 0}
+.review-evening-list{display:grid;gap:10px}
+.review-evening-step{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:var(--surface)}
+.review-evening-step input{height:18px;width:18px}
+.review-evening-step label{font-size:13px;font-weight:550}
+.review-evening-step input:checked+label{text-decoration:line-through;opacity:.6}
+.review-step-add{display:flex;align-items:center;gap:10px;margin-top:13px}
+.review-step-add input{flex:1;min-width:0}
+.review-side form{display:grid;gap:12px}
+.review-side .review-checkline{margin:2px 0}
+.review-side button{justify-self:start}
+@media(max-width:980px){.review-grid{grid-template-columns:1fr}.review-side{grid-row:2}}
+@media(max-width:570px){.review-module{padding:15px}.review-fields{grid-template-columns:1fr}.review-step-add{align-items:stretch;flex-direction:column}.review-module .review-primary-actions .primary-button{width:100%}}
