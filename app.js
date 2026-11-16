@@ -236,6 +236,10 @@
     $('#menu-button').setAttribute('aria-expanded',String(show));
     $('#mobile-more').setAttribute('aria-expanded',String(show));
   }
+  function startupView(){
+    const requested=new URLSearchParams(location.search).get('view');
+    return ['review','habits','pulse'].includes(requested)?requested:'home';
+  }
   let vitaSection='overview';
   function setView(next){
     // Backwards-compatible deep navigation: old FUEL/PULSE/WELLNESS buttons now
@@ -390,7 +394,7 @@
       catch(err){toast('Old ORBIT data could not be imported: '+err.message);}
     });
     document.addEventListener('orbit:auth-changed',e=>{
-      accountId=e.detail?.user?.id||'';state=load();focusFilter='open';render();setView(new URLSearchParams(location.search).get('view')==='review'?'review':'home');updateLegacyButton();
+      accountId=e.detail?.user?.id||'';state=load();focusFilter='open';render();setView(startupView());updateLegacyButton();
     });
   }
   function updateLegacyButton(){
@@ -442,6 +446,6 @@
       return true;
     }
   });
-    wire();render();initDate();setView(new URLSearchParams(location.search).get('view')==='review'?'review':'home');
+    wire();render();initDate();setView(startupView());
   if(window.ORBITAuth?.user){accountId=window.ORBITAuth.user.id;state=load();render();updateLegacyButton();}
 })();
