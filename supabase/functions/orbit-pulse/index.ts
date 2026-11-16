@@ -78,7 +78,9 @@ async function configuredKeys(){
 }
 async function send(row,kind,day){
  const isReview=kind==="review"||kind==="review_snooze";
- const payload={title:isReview?"ORBIT · Daily review":kind==="journal"?"PULSE · Evening reflection":"PULSE · Mood check-in",body:isReview?"Your evening check-in is ready.":kind==="journal"?"Your daily journal prompt is ready.":"A small moment to check in with yourself.",url:LINK+"?view="+(isReview?"review":"pulse"),tag:"pulse-"+kind+"-"+day};
+ const isHabit=kind.startsWith("habit_");
+ const payload=isHabit?{title:"ORBIT · Habit check-in",body:"An optional habit check-in is ready.",url:LINK+"?view=habits",tag:"orbit-"+kind+"-"+day}:
+   {title:isReview?"ORBIT · Daily review":kind==="journal"?"PULSE · Evening reflection":"PULSE · Mood check-in",body:isReview?"Your evening check-in is ready.":kind==="journal"?"Your daily journal prompt is ready.":"A small moment to check in with yourself.",url:LINK+"?view="+(isReview?"review":"pulse"),tag:"pulse-"+kind+"-"+day};
  const response=await sendPushNotification(await configuredKeys(),{endpoint:row.endpoint,keys:{p256dh:row.p256dh,auth:row.auth_secret}},"support@reece1919.github.io",JSON.stringify(payload),{algorithm:"aes128gcm",ttl:3600});
  return response;
 }
@@ -124,6 +126,32 @@ async function dispatch(req){
     const delayMinutes=(now.getTime()-Date.parse(review.snoozed_until))/60000;
     if(Number.isFinite(delayMinutes)&&delayMinutes>=0&&delayMinutes<=14)clock.due.push("review_snooze");
    }
+  }
+  // Discreet, opt-in habit alerts. No habit names or sensitive details in push payloads.
+  const {data:habits,error:habitError}=await db.from("orbit_habits")
+    .select("id,cadence,weekly_target,days_of_week,reminder_time").eq("owner_id",settingRow.owner_id)
+    .eq("reminder_enabled",true).is("archived_at",null).limit(80);
+  if(habitError){failures++;continue;}
+  const dow=new Date(clock.day+"T12:00:00Z").getUTCDay();
+  const dueHabits=(habits||[]).filter(h=>{
+    if(!Array.isArray(h.days_of_week)||!h.days_of_week.includes(dow)||!h.reminder_time)return false;
+    const diff=localClock(settingRow.time_zone,now).minute-minutes(h.reminder_time);
+    return diff>=0&&diff<=14;
+  });
+  if(dueHabits.length){
+    const stamp=new Date(clock.day+"T12:00:00Z");
+    stamp.setUTCDate(stamp.getUTCDate()-(stamp.getUTCDay()+6)%7);
+    const weekStart=stamp.toISOString().slice(0,10);
+    const {data:habitLogs,error:logsError}=await db.from("orbit_habit_logs")
+      .select("habit_id,log_date,status").eq("owner_id",settingRow.owner_id)
+      .gte("log_date",weekStart).lte("log_date",clock.day).limit(500);
+    if(logsError){failures++;continue;}
+    for(const habit of dueHabits){
+      const recent=(habitLogs||[]).filter(l=>l.habit_id===habit.id);
+      if(recent.some(l=>l.log_date===clock.day))continue; // Done or Skip.
+      if(habit.cadence==="weekly"&&recent.filter(l=>l.status==="done").length>=habit.weekly_target)continue;
+      clock.due.push("habit_"+habit.id);
+    }
   }
   if(!clock.due.length)continue;
   const {data:devices,error:deviceError}=await db.from("pulse_push_subscriptions").select("*").eq("owner_id",settingRow.owner_id).limit(12);
