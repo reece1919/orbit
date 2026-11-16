@@ -15,6 +15,16 @@
   const ago=t=>{if(!t)return 'No record';return new Date(t).toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});};
   const select=el=>el?.value||'';
   const checked=el=>!!el?.checked;
+  function canSnooze(){
+    if(core.reviewStatus(state.review)!=='pending')return false;
+    try{
+      const parts=new Intl.DateTimeFormat('en-US',{timeZone:state.push.time_zone||'America/Los_Angeles',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date());
+      const pick=t=>Number(parts.find(x=>x.type===t)?.value||0);
+      const minute=pick('hour')*60+pick('minute');
+      const planned=String(state.push.review_time||'20:30').split(':').map(Number);
+      return minute>=planned[0]*60+planned[1]&&minute<23*60+30;
+    }catch{return false;}
+  }
   function statusText(){
     const kind=core.reviewStatus(state.review);
     $('review-home-state').textContent=kind==='complete'?'Completed today':kind==='skipped'?'Skipped today':'Ready to record';
@@ -104,7 +114,7 @@
       row.append(input,label,remove);holder.append(row);
     }
     $('review-add-step').disabled=completed.length>=20;
-    $('review-finish').disabled=false;$('review-skip').disabled=false;$('review-snooze').disabled=false;
+    $('review-finish').disabled=false;$('review-skip').disabled=false;$('review-snooze').disabled=!canSnooze();
     const kind=core.reviewStatus(review);
     $('review-finish').textContent=kind==='complete'?'Update completed review':'Finish daily review';
     $('review-skip').textContent=kind==='skipped'?'Review skipped':'Skip tonight';
@@ -133,6 +143,7 @@
       state.busy=false;
       for(const id of ['review-save','review-finish','review-skip','review-snooze'])$(id).disabled=false;
       $('review-add-step').disabled=core.normalizeSteps(state.settings.evening_steps).length>=20;
+      $('review-snooze').disabled=!canSnooze();
     }
   }
   async function saveDraft(finish=false){
@@ -207,10 +218,13 @@
   $('review-form')?.addEventListener('submit',e=>{e.preventDefault();void action(()=>saveDraft(false),'Daily review saved.');});
   $('review-finish')?.addEventListener('click',()=>void action(()=>saveDraft(true),'Daily review finished. You can continue your evening routine.'));
   $('review-skip')?.addEventListener('click',()=>void action(async()=>{await upsertReview({skipped_at:now().toISOString(),finished_at:null,snoozed_until:null});},'Tonight was skipped, not marked complete.'));
-  $('review-snooze')?.addEventListener('click',()=>void action(async()=>{
+  $('review-snooze')?.addEventListener('click',()=>{
+    if(!canSnooze()){msg('Snooze is available after your scheduled review time, before 11:30 PM.',true);return;}
+    void action(async()=>{
     const inThirty=new Date(Date.now()+30*60*1000);
     await upsertReview({snoozed_until:inThirty.toISOString(),skipped_at:null});
-  },'Reminder snoozed once for 30 minutes. Push delivery requires device permission.'));
+  },'Reminder snoozed once for 30 minutes. Push delivery requires device permission.');
+  });
   $('review-settings-form')?.addEventListener('submit',e=>{
     e.preventDefault();
     const f=e.currentTarget.elements,time=f.review_time.value,enable=f.notifications.checked,pulse=!!f.pulse_reminders.checked;
