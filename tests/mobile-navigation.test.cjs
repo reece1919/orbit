@@ -16,10 +16,10 @@ const within=(str,left,right)=>{
  return str.slice(a,b);
 };
 
-test("Four-tab mobile bar retains Home / Systems / VITA / More in order",()=>{
+test("Four-tab mobile bar offers Home / Review / Systems / More in order",()=>{
  const nav=within(html,'<nav class="mobile-nav"','</nav>');
  assert.equal((nav.match(/<button\b/g)||[]).length,4);
- const expected=['data-view="home"','id="mobile-systems"','data-view="vita"','id="mobile-more"'];
+ const expected=['data-view="home"','data-view="review"','id="mobile-systems"','id="mobile-more"'];
  let last=-1;
  for(const marker of expected){
   const position=nav.indexOf(marker);
@@ -33,13 +33,13 @@ test("Four-tab mobile bar retains Home / Systems / VITA / More in order",()=>{
 
 test("Systems selector offers existing destinations with secure external links",()=>{
  const sheet=within(html,'<section id="mobile-system-sheet"','</section>');
- for(const name of ["GAIA","ECHO","RUNE","VITA","QUILL"])
+ for(const name of ["GAIA","ECHO","RUNE","QUILL","TROPHY"])
   assert.ok(sheet.includes(">"+name+"</span>"),"Missing "+name+" link");
  assert.match(sheet,/href="https:\/\/reece1919.github.io\/gaia\/"/);
  assert.match(sheet,/href="https:\/\/reece1919.github.io\/echo\/"/);
  assert.match(sheet,/href="https:\/\/reece1919.github.io\/rune-web\/"/);
  assert.match(sheet,/href="driftmark\/"/);
- assert.match(sheet,/type="button" data-view="vita"/);
+ assert.match(sheet,/type="button" data-view="trophy"/);
  assert.match(sheet,/target="_blank" rel="noopener noreferrer"/);
  assert.match(html,/id="mobile-systems-backdrop"[^>]*hidden/);
  assert.match(html,/id="mobile-systems"[^>]*aria-expanded="false"/);
@@ -93,23 +93,23 @@ test("Systems opens, closes, and yields correctly to More",()=>{
 });
 
 
-test("Home system shortcuts omit duplicate VITA and Inbox destinations",()=>{
+test("Home launcher keeps specialist destinations while Daily Review stays directly accessible",()=>{
  const row=within(html,'<section class="system-launch-bar"','</section>');
  const entries=[...row.matchAll(/class="system-launch"/g)];
- assert.equal(entries.length,4);
- const expected=["GAIA","ECHO","RUNE","QUILL"];
+ assert.equal(entries.length,7);
+ const expected=["GAIA","ECHO","RUNE","QUILL","VITA","MUSE","TROPHY"];
  let prev=-1;
  for(const label of expected){
   const index=row.indexOf(">"+label+"</span>");
   assert.ok(index>prev,"Expected specialist shortcut in order: "+label);
   prev=index;
  }
- assert.doesNotMatch(row,/>VITA<|>INBOX<|data-view="vita"|data-view="inbox"/);
- assert.match(launchCss,/\.system-launch-items\{display:grid;grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/);
- assert.doesNotMatch(launchCss,/\.system-launch-items[^\n]*repeat\(6,minmax\(0,1fr\)\)/);
+ assert.doesNotMatch(row,/>INBOX<|data-view="inbox"/);
+ assert.match(launchCss,/\.system-launch-items\{display:grid;grid-template-columns:repeat\(6,minmax\(0,1fr\)\)/);
+ assert.match(html,/data-view="review"/);
  // Direct VITA navigation and Inbox on Home remain available.
  const nav=within(html,'<nav class="mobile-nav"','</nav>');
- assert.match(nav,/data-view="vita"/);
+ assert.match(nav,/data-view="review"/);
  assert.match(html,/class="subtle-link" type="button" data-view="inbox"|type="button" class="subtle-link" data-view="inbox"/);
 });
 
