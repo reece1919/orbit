@@ -1,0 +1,27 @@
+/* ORBIT 2.0 habit tracker. Responsive, accessible, compact. */
+.habits-view .page-head{align-items:center}
+.habits-grid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(280px,1fr);gap:16px;align-items:start}
+.habits-module{padding:20px}
+.habits-module .module-head{margin-bottom:14px}
+.habits-home-module{margin-top:16px}
+.habits-checkin-list{display:grid;gap:10px;min-width:0}
+.habit-row{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;border:1px solid var(--line);background:var(--surface);padding:12px;border-radius:10px}
+.habit-row-info{display:grid;min-width:150px;flex:1;gap:5px}
+.habit-row-title{font-size:14px}
+.habit-row-caption,.habit-row-status{font-size:11px;color:var(--muted,#a7b7c2)}
+.habit-done{border-color:var(--accent)}
+.habit-row-actions{display:flex;align-items:center;flex-wrap:wrap;gap:7px}
+.habit-row-actions button{font-size:12px;min-height:35px;padding:6px 10px}
+.habits-editor form>fieldset{display:grid;gap:14px;border:0;margin:0;padding:0}
+.habits-editor label{display:grid;gap:6px;font-size:13px;font-weight:600}
+.habits-editor input[type="text"],.habits-editor input[type="time"],.habits-editor select{width:100%;min-height:42px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--text);font:inherit}
+.habits-editor .habit-days{border:1px solid var(--line);border-radius:8px;margin:0;padding:12px}
+.habit-days legend{padding:0 6px;font-size:12px;font-weight:650}
+.habit-day-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.habits-editor .habit-day-grid label{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);border-radius:6px;padding:8px 3px;font-size:11px;font-weight:500}
+.habits-editor input[type="checkbox"]{height:17px;width:17px}
+.habits-editor .habit-check{display:flex;gap:9px;align-items:flex-start;font-weight:500;line-height:1.45}
+.habit-form-actions{display:flex;gap:8px;flex-wrap:wrap}
+.habits-module fieldset:disabled{opacity:.6}
+@media(max-width:950px){.habits-grid{grid-template-columns:1fr}}
+@media(max-width:520px){.habits-module{padding:14px}.habit-row-actions{width:100%}.habit-day-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
