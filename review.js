@@ -7,7 +7,7 @@
   const $=id=>document.getElementById(id);
   const defaults={review_time:'20:30',review_reminders_enabled:false,pulse_reminders_enabled:true,notifications_enabled:false,time_zone:Intl.DateTimeFormat().resolvedOptions().timeZone||'America/Los_Angeles'};
   let state={owner:'',date:'',review:null,settings:{evening_steps:core.DEFAULT_STEPS},push:{...defaults},moods:[],journal:null,health:null,loading:false,busy:false};
-  let moodDirty=false,journalDirty=false;
+  let moodDirty=false,journalDirty=false,draftDirty=false;
   const now=()=>new Date();
   const today=()=>core.dayKey();
   const msg=(text,error=false)=>{const el=$('review-status');if(el){el.textContent=text;el.classList.toggle('review-error',error)}};
@@ -31,6 +31,7 @@
     state.loading=true;msg('Loading your private daily review…');
     try{
       const auth=await account(),day=today();
+      if(state.date&&state.date!==day)draftDirty=false;
       const queries=await Promise.all([
         auth.client.from('orbit_daily_reviews').select('*').eq('owner_id',auth.user.id).eq('review_date',day).maybeSingle(),
         auth.client.from('orbit_review_settings').select('*').eq('owner_id',auth.user.id).maybeSingle(),
@@ -63,13 +64,15 @@
     form.querySelector('fieldset').disabled=false;
     $('review-settings-form').querySelector('fieldset').disabled=false;
     const mood=state.moods.find(x=>x.slot==='evening')||state.moods[0]||null;
-    form.elements.mood.value=mood?.mood||'';
-    form.elements.energy.value=mood?.energy||'';
-    form.elements.stress.value=mood?.stress||'';
-    form.elements.alcohol.value=review.alcohol_standard_drinks===null||review.alcohol_standard_drinks===undefined?'':review.alcohol_standard_drinks;
-    form.elements.journal.value=state.journal?.body||'';
-    form.elements.tomorrow.checked=!!review.tomorrow_reviewed;
-    moodDirty=false;journalDirty=false;
+    if(!draftDirty){
+      form.elements.mood.value=mood?.mood||'';
+      form.elements.energy.value=mood?.energy||'';
+      form.elements.stress.value=mood?.stress||'';
+      form.elements.alcohol.value=review.alcohol_standard_drinks===null||review.alcohol_standard_drinks===undefined?'':review.alcohol_standard_drinks;
+      form.elements.journal.value=state.journal?.body||'';
+      form.elements.tomorrow.checked=!!review.tomorrow_reviewed;
+      moodDirty=false;journalDirty=false;
+    }
     const badge=core.sourceBadges({mood,journal:state.journal,health:state.health,alcohol:review.alcohol_standard_drinks});
     $('review-mood-source').textContent=badge.mood?'Already logged in Mind':'Not recorded';
     $('review-journal-source').textContent=badge.journal?'Already logged in Mind':'Optional';
@@ -161,6 +164,7 @@
     ]);
     if(!m.error)state.moods=m.data||[];
     if(!j.error)state.journal=j.data;
+    draftDirty=false;
   }
   async function toggleStep(id,done){
     if(state.busy)return;
@@ -188,6 +192,8 @@
     const id='s'+(crypto?.randomUUID?.()||String(Date.now())).replace(/-/g,'');
     void action(async()=>{await saveEveningSteps([...existing,{id,title}]);input.value='';},'Routine step added.');
   });
+  $('review-form')?.addEventListener('input',()=>{draftDirty=true;});
+  $('review-form')?.addEventListener('change',()=>{draftDirty=true;});
   $('review-form')?.elements.mood?.addEventListener('change',()=>{moodDirty=true;});
   for(const name of ['energy','stress'])$('review-form')?.elements[name]?.addEventListener('change',()=>{moodDirty=true;});
   $('review-form')?.elements.journal?.addEventListener('input',()=>{journalDirty=true;});
