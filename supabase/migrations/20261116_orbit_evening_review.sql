@@ -34,7 +34,8 @@ create policy orbit_review_settings_owner_mfa on public.orbit_review_settings fo
 -- Disabled by default; opt-in from Daily Review is required.
 alter table public.pulse_settings
   add column if not exists review_time text not null default '20:30',
-  add column if not exists review_reminders_enabled boolean not null default false;
+  add column if not exists review_reminders_enabled boolean not null default false,
+  add column if not exists pulse_reminders_enabled boolean not null default true;
 alter table public.pulse_settings
   add constraint pulse_settings_review_time_check
   check (review_time ~ '^([01][0-9]|2[0-3]):[0-5][0-9]$');
