@@ -16,6 +16,7 @@
   <link rel="stylesheet" href="signals.css?v=1.2.0" /><link rel="stylesheet" href="compact-systems.css?v=2.3.0" /><link rel="stylesheet" href="specialist-themes.css?v=1.1.0" />
   <link rel="stylesheet" href="wellness.css?v=1.0.0" />
   <link rel="stylesheet" href="vita.css?v=2.0.0" />
+  <link rel="stylesheet" href="review.css?v=1.0.0" />
   <link rel="stylesheet" href="fuel-inbox.css?v=1.0.0" />
   <link rel="stylesheet" href="nutrition-week.css?v=1.0.0" />
   <link rel="stylesheet" href="mobile-nav.css?v=1.2.0" />
@@ -45,6 +46,8 @@
   <script src="pulse.js?v=1.0.5" defer></script>
   <script src="wellness.js?v=1.0.0" defer></script>
   <script src="vita.js?v=1.0.0" defer></script>
+  <script src="review-core.js?v=1.0.0" defer></script>
+  <script src="review.js?v=1.0.0" defer></script>
   <script src="signals.js?v=1.2.0" defer></script>
   <script src="chat-shortcuts.js?v=1.1.3" defer></script>
 </head>
@@ -79,6 +82,7 @@
         <button type="button" class="nav-item active" data-view="home"><span data-icon="layout-dashboard"></span> Overview <span class="nav-indicator"></span></button>
         <button type="button" class="nav-item" data-view="focus"><span data-icon="check-circle"></span> Todoist &amp; Tasks <span class="nav-count" id="nav-task-count">0</span></button>
         <button type="button" class="nav-item" data-view="calendar"><span data-icon="calendar"></span> Calendar <span class="nav-indicator"></span></button>
+        <button type="button" class="nav-item" data-view="review"><span data-icon="moon"></span> Daily Review <span class="nav-indicator"></span></button>
         
         <span id="nav-gaia-count" hidden aria-hidden="true">—</span>
         <span id="nav-fuel-count" hidden aria-hidden="true">—</span>
@@ -162,8 +166,66 @@
               </section>
             </div>
           </div>
+          <section class="module review-home-module" aria-label="Tonight’s daily review"><div class="module-head"><div><div class="eyebrow small">ORBIT / 8:30 PM EVENING ROUTINE</div><h3>Daily review</h3></div><span data-icon="moon"></span></div><p id="review-home-state" class="watch-detail">Ready to record</p><button type="button" data-view="review" class="primary-button">Open tonight’s review</button></section>
           <div class="dashboard-lower home-capture">
             <section class="module note-module"><div class="module-head"><div><div class="eyebrow small">NOTES</div><h3>Scratchpad</h3></div><span data-icon="pen-line" class="muted-icon"></span></div><textarea id="scratchpad" placeholder="An idea, a reminder, something to remember…" aria-label="Scratchpad notes"></textarea><div class="note-bottom"><span data-icon="hard-drive"></span> Saved on this device · cloud optional <span id="note-saved" aria-live="polite"></span></div></section>
+          </div>
+        </section>
+                <section data-panel="review" id="review-panel" class="view-panel review-view" hidden aria-label="ORBIT daily review and evening routine">
+          <div class="eyebrow"><span class="eyebrow-line"></span> ORBIT / YOUR DIGITAL BULLET JOURNAL</div>
+          <div class="page-head review-heading"><div><h1>Daily review<span class="accent-period">.</span></h1><p id="review-date">Your evening check-in</p></div><button id="review-reload" class="quiet-pill" type="button">Refresh</button></div>
+          <p class="review-status" id="review-status" role="status" aria-live="polite">Checking private daily review access…</p>
+          <div class="review-grid">
+            <div class="review-main">
+              <section class="module review-module">
+                <div class="module-head"><div><div class="eyebrow small">RECORD THE DAY</div><h2>Your check-in</h2></div><span id="review-progress" class="result-label">Review not finished</span></div>
+                <form id="review-form">
+                  <fieldset disabled>
+                    <div class="review-fields">
+                      <label>Mood <small id="review-mood-source">Not recorded</small><select name="mood"><option value="">Not recorded</option><option value="1">1 · Very low</option><option value="2">2 · Low</option><option value="3">3 · Okay</option><option value="4">4 · Good</option><option value="5">5 · Great</option></select></label>
+                      <label>Energy <select name="energy"><option value="">Optional</option><option value="1">1 · Very low</option><option value="2">2 · Low</option><option value="3">3 · Moderate</option><option value="4">4 · High</option><option value="5">5 · Very high</option></select></label>
+                      <label>Stress <select name="stress"><option value="">Optional</option><option value="1">1 · Very low</option><option value="2">2 · Low</option><option value="3">3 · Moderate</option><option value="4">4 · High</option><option value="5">5 · Very high</option></select></label>
+                      <label>Alcohol, US standard drinks <small id="review-alcohol-source">Not recorded</small><input type="number" name="alcohol" min="0" max="40" step="0.25" inputmode="decimal" placeholder="Blank = unknown; 0 = none"></label>
+                    </div>
+                    <label class="review-journal-field">A few words about today <small id="review-journal-source">Optional</small><textarea name="journal" rows="4" maxlength="12000" placeholder="What happened? What mattered? This uses your existing private PULSE journal."></textarea></label>
+                    <p class="review-source-note" id="review-health-source">Checking the latest Apple Health summary…</p>
+                    <div class="review-link-row"><button type="button" class="quiet-pill" data-view="wellness">Health details</button><button type="button" class="quiet-pill" data-view="calendar">Tomorrow’s calendar</button><button type="button" class="quiet-pill" data-view="focus">Tasks</button></div>
+                    <label class="review-checkline"><input type="checkbox" name="tomorrow"> I reviewed tomorrow’s schedule and priorities</label>
+                    <button type="submit" id="review-save" class="outline-button">Save check-in</button>
+                  </fieldset>
+                </form>
+                <div class="review-primary-actions">
+                  <button id="review-finish" type="button" class="primary-button" disabled>Finish daily review</button>
+                  <button id="review-snooze" type="button" class="quiet-pill" disabled>Snooze 30 min</button>
+                  <button id="review-skip" type="button" class="quiet-pill" disabled>Skip tonight</button>
+                </div>
+                <p id="review-complete-label" class="review-source-note">Blank values remain unknown, never zero.</p>
+              </section>
+              <section class="module review-module">
+                <div class="module-head"><div><div class="eyebrow small">THEN WIND DOWN</div><h2>Evening routine</h2></div><span id="review-evening-summary" class="result-label">0 steps complete</span></div>
+                <div id="review-evening-steps" class="review-evening-list"></div>
+                <div class="review-step-add"><label for="review-new-step" class="sr-only">New evening routine step</label><input id="review-new-step" type="text" maxlength="90" placeholder="Add an evening routine step"><button id="review-add-step" type="button" class="outline-button" disabled>Add step</button></div>
+                <p class="review-source-note">Only a saved completion counts. You can edit the checklist whenever your routine changes.</p>
+              </section>
+            </div>
+            <div class="review-side">
+              <section class="module review-module">
+                <div class="module-head"><div><div class="eyebrow small">GENTLE NUDGES</div><h2>Reminder settings</h2></div><span data-icon="bell"></span></div>
+                <form id="review-settings-form"><fieldset disabled>
+                  <label>Daily reminder time<input type="time" id="review-time" name="review_time" value="20:30" required></label>
+                  <label class="review-checkline"><input type="checkbox" id="review-notifications-enabled" name="notifications"> Remind me to do my daily review</label>
+                  <label class="review-checkline"><input type="checkbox" id="review-pulse-reminders" name="pulse_reminders" checked> Also send the separate PULSE mood and journal reminders</label>
+                  <button type="submit" class="outline-button">Save reminder preferences</button>
+                </fieldset></form>
+                <p id="review-push-status" class="review-source-note">Reviewing push settings…</p>
+                <button type="button" class="quiet-pill" data-view="pulse">Set up or test device notifications</button>
+                <p class="review-source-note">Reminders are opt-in, private, and sent using the existing PULSE Web Push system. On iPhone, install ORBIT to your Home Screen before enabling push.</p>
+              </section>
+              <section class="module review-module"><div class="module-head"><h3>Why this works</h3></div>
+                <p class="review-source-note">Mood and writing reuse your existing PULSE records. Apple Health summaries remain read-only. A blank alcohol amount is unknown; entering 0 explicitly means no drinks.</p>
+                <p class="review-source-note">Snoozing or skipping is not counted as a completed health or habit recording. This tracker does not prescribe alcohol intake or withdrawal schedules.</p>
+              </section>
+            </div>
           </div>
         </section>
         <section data-panel="trophy" id="trophy-panel" class="view-panel trophy-panel" hidden aria-label="TROPHY Steam achievements tracker">
@@ -699,6 +761,7 @@
       </main>
       <nav class="mobile-nav" aria-label="Mobile navigation">
         <button class="mobile-nav-item active" type="button" data-view="home"><span data-icon="layout-dashboard"></span><span>Home</span></button>
+        <button class="mobile-nav-item" type="button" data-view="review"><span data-icon="moon"></span><span>Review</span></button>
         <button class="mobile-nav-item" type="button" id="mobile-systems" aria-controls="mobile-system-sheet" aria-expanded="false" aria-haspopup="true"><span data-icon="grid"></span><span>Systems</span></button>
         <button class="mobile-nav-item" type="button" id="mobile-more" aria-controls="sidebar" aria-expanded="false"><span data-icon="menu"></span><span>More</span></button>
       </nav>
