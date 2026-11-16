@@ -8,6 +8,7 @@
   const defaults={review_time:'20:30',review_reminders_enabled:false,pulse_reminders_enabled:true,notifications_enabled:false,time_zone:Intl.DateTimeFormat().resolvedOptions().timeZone||'America/Los_Angeles'};
   let state={owner:'',date:'',review:null,settings:{evening_steps:core.DEFAULT_STEPS},push:{...defaults},moods:[],journal:null,health:null,loading:false,busy:false};
   let moodDirty=false,journalDirty=false,draftDirty=false;
+  let loadGeneration=0;
   const now=()=>new Date();
   const today=()=>core.dayKey();
   const msg=(text,error=false)=>{const el=$('review-status');if(el){el.textContent=text;el.classList.toggle('review-error',error)}};
@@ -28,7 +29,7 @@
   }
   async function load(){
     if(state.loading||state.busy)return;
-    state.loading=true;msg('Loading your private daily review…');
+    state.loading=true;const generation=++loadGeneration;msg('Loading your private daily review…');
     try{
       const auth=await account(),day=today();
       if(state.date&&state.date!==day)draftDirty=false;
@@ -40,6 +41,7 @@
         auth.client.from('pulse_journals').select('*').eq('owner_id',auth.user.id).eq('entry_date',day).maybeSingle(),
         auth.client.from('wellness_daily').select('metric_date,steps,sleep_minutes,weight_lb,synced_at').order('metric_date',{ascending:false}).limit(1)
       ]);
+      if(generation!==loadGeneration||window.ORBITAuth?.user?.id!==auth.user.id)return;
       const error=queries.find(q=>q.error)?.error;if(error)throw error;
       state={...state,owner:auth.user.id,date:day,review:queries[0].data||null,
         settings:queries[1].data||{evening_steps:core.DEFAULT_STEPS},
@@ -47,7 +49,12 @@
         moods:queries[3].data||[],journal:queries[4].data||null,health:queries[5].data?.[0]||null};
       render();msg('Saved privately with your existing ORBIT account.');
     }catch(error){
-      state.owner='';msg(error.message||'Could not load review data.',true);
+      if(generation!==loadGeneration)return;
+      state.owner='';state.review=null;state.moods=[];state.journal=null;state.health=null;
+      $('review-form').reset();$('review-evening-steps').replaceChildren();
+      $('review-home-state').textContent='Sign in to record';
+      $('review-progress').textContent='Unavailable';
+      msg(error.message||'Could not load review data.',true);
       $('review-form').querySelector('fieldset').disabled=true;
       $('review-settings-form').querySelector('fieldset').disabled=true;
       $('review-add-step').disabled=true;
@@ -218,7 +225,7 @@
     },'Reminder preferences saved. Verify push delivery from VITA → Mind.');
   });
   $('review-reload')?.addEventListener('click',()=>void load());
-  document.addEventListener('orbit:auth-changed',()=>{state.owner='';void load();});
+  document.addEventListener('orbit:auth-changed',()=>{loadGeneration++;state.loading=false;state.owner='';draftDirty=false;void load();});
   document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!$('review-panel')?.hidden)void load();});
   window.ORBITDailyReview={refresh:()=>void load()};
   if(window.ORBITAuth?.ready)void window.ORBITAuth.ready.then(()=>load());
