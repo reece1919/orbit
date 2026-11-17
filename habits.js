@@ -91,6 +91,11 @@
        if(!core.validAmount(h,val)){note('Enter a positive whole-number '+(type==='duration'?'minute':'count')+' amount.',true);quantity.focus();return;}
        void log(h.id,'done',{amount:Number(val),note:details.value.trim().slice(0,500)});
      },'outline-button'));
+     actions.append(button(type==='duration'?'+30 min':'+1',()=>{
+       const next=(Number(quantity.value)||0)+(type==='duration'?30:1);
+       if(!core.validAmount(h,next)){note('Activity total must stay within the allowed range.',true);return;}
+       void log(h.id,'done',{amount:next,note:details.value.trim().slice(0,500)});
+     }));
    }else if(status!=='done'){
      actions.append(button('Done',()=>void log(h.id,'done',{amount:1,note:''}),'outline-button'));
    }
