@@ -19,6 +19,7 @@
    $('habit-form').querySelector('fieldset').disabled=true;
    $('habits-list').replaceChildren(make('p','review-source-note','Sign in and verify your authenticator to manage habits.'));
    $('review-habit-list').replaceChildren(make('p','review-source-note','Sign in to see today’s habits.'));
+   $('review-activity-list').replaceChildren();
    $('habits-history').replaceChildren(make('p','review-source-note','Sign in to view history.'));
    $('habits-home-summary').textContent='Sign in to see habits.';
    $('habits-day-count').textContent='—';
@@ -127,10 +128,11 @@
    $('habits-reminder-note').textContent=state.notifs?
      'Account notifications are on. Your device also needs Web Push enabled in VITA → Mind. Lock-screen reminders never include activity names.':
      'Reminders are off for your account. Enable Web Push in VITA → Mind if you want alerts; new activities never enable them automatically.';
-   const main=$('habits-list'),review=$('review-habit-list');main.replaceChildren();review.replaceChildren();
+   const main=$('habits-list'),review=$('review-habit-list'),optional=$('review-activity-list');main.replaceChildren();review.replaceChildren();optional.replaceChildren();
    if(!list.length){
      main.append(make('p','review-source-note','Select a template above or create any habit or activity.'));
      review.append(make('p','review-source-note','Create habits and activities in the Habits section.'));
+     optional.append(make('p','review-source-note','No optional activities yet.'));
      renderHistory();return;
    }
    for(const [key,label] of Object.entries(core.CATEGORIES)){
@@ -139,11 +141,11 @@
      for(const h of group)main.append(renderCard(h,t));
    }
    for(const h of list){
-     const recorded=core.row(state.logs,h,t)?.status==='done';
-     if((core.isGoal(h)&&core.scheduled(h,t))||(!core.isGoal(h)&&recorded))
-       review.append(renderCard(h,t,true));
+     if(core.isGoal(h)&&core.scheduled(h,t))review.append(renderCard(h,t,true));
+     else if(!core.isGoal(h))optional.append(renderCard(h,t,true));
    }
-   if(!review.childElementCount)review.append(make('p','review-source-note','No scheduled goals or logged activities today. You can log leisure in Habits at any time.'));
+   if(!review.childElementCount)review.append(make('p','review-source-note','No scheduled goals today.'));
+   if(!optional.childElementCount)optional.append(make('p','review-source-note','Add any hobby or activity in Habits to record it here.'));
    renderHistory();
  }
  async function log(id,status,entry={}){
