@@ -61,7 +61,8 @@ test('Server dispatch is completion-aware and never embeds habit names in notifi
  assert.match(code,/\.from\("orbit_habits"\)/);
  assert.match(code,/\.from\("orbit_habit_logs"\)/);
  assert.match(code,/recent\.some\(l=>l\.log_date===clock\.day\)/);
- assert.match(code,/recent\.filter\(l=>l\.status==="done"\)\.length>=habit\.weekly_target/);
+ assert.match(code,/recent\.filter\(l=>l\.status==="done"&&/);
+ assert.match(code,/Number\(l\.amount\?\?1\)>=Number\(habit\.daily_target\?\?1\)/);
  assert.match(code,/title:"ORBIT · Habit check-in"/);
  assert.match(code,/url:LINK\+"\?view=habits"/);
  assert.doesNotMatch(code,/body:.*habit\.title/);
