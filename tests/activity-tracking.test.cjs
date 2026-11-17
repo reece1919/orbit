@@ -62,6 +62,9 @@ test('UI supports category, activity quantity, optional goal and recent history'
  assert.match(js,/habit-note/);
  assert.match(js,/renderPresets/);
  assert.match(js,/renderHistory/);
+ assert.match(js,/\+30 min/);
+ assert.match(js,/review-activity-list/);
+ assert.match(html,/Other things I did today \(optional\)/);
  assert.match(js,/const goals=list\.filter\(h=>core\.isGoal\(h\)/);
  assert.match(js,/\.from\('orbit_habit_logs'\)\.upsert\(payload/);
 });
