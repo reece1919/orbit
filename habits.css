@@ -61,3 +61,8 @@
  .habit-quantity-label{flex:1 1 100%}
  .habit-quantity-label:last-child{flex:1 1 100%}
 }
+
+.review-activity-details{margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
+.review-activity-details summary{cursor:pointer;font-weight:650;font-size:13px;margin-bottom:10px}
+.review-activity-details summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.review-activity-details .habits-checkin-list{margin-top:9px}
