@@ -129,7 +129,7 @@ async function dispatch(req){
   }
   // Discreet, opt-in habit alerts. No habit names or sensitive details in push payloads.
   const {data:habits,error:habitError}=await db.from("orbit_habits")
-    .select("id,cadence,weekly_target,days_of_week,reminder_time").eq("owner_id",settingRow.owner_id)
+    .select("id,cadence,weekly_target,days_of_week,reminder_time,goal_enabled,daily_target,entry_type").eq("owner_id",settingRow.owner_id)
     .eq("reminder_enabled",true).is("archived_at",null).limit(80);
   if(habitError){failures++;continue;}
   const dow=new Date(clock.day+"T12:00:00Z").getUTCDay();
@@ -143,13 +143,13 @@ async function dispatch(req){
     stamp.setUTCDate(stamp.getUTCDate()-(stamp.getUTCDay()+6)%7);
     const weekStart=stamp.toISOString().slice(0,10);
     const {data:habitLogs,error:logsError}=await db.from("orbit_habit_logs")
-      .select("habit_id,log_date,status").eq("owner_id",settingRow.owner_id)
+      .select("habit_id,log_date,status,amount").eq("owner_id",settingRow.owner_id)
       .gte("log_date",weekStart).lte("log_date",clock.day).limit(500);
     if(logsError){failures++;continue;}
     for(const habit of dueHabits){
       const recent=(habitLogs||[]).filter(l=>l.habit_id===habit.id);
       if(recent.some(l=>l.log_date===clock.day))continue; // Done or Skip.
-      if(habit.cadence==="weekly"&&recent.filter(l=>l.status==="done").length>=habit.weekly_target)continue;
+      if(habit.cadence==="weekly"&&habit.goal_enabled!==false&&recent.filter(l=>l.status==="done"&&(habit.entry_type==="checkoff"||Number(l.amount??1)>=Number(habit.daily_target??1))).length>=habit.weekly_target)continue;
       clock.due.push("habit_"+habit.id);
     }
   }

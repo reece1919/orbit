@@ -17,7 +17,7 @@
   <link rel="stylesheet" href="wellness.css?v=1.0.0" />
   <link rel="stylesheet" href="vita.css?v=2.0.0" />
   <link rel="stylesheet" href="review.css?v=1.0.0" />
-  <link rel="stylesheet" href="habits.css?v=1.0.0" />
+  <link rel="stylesheet" href="habits.css?v=1.1.0" />
   <link rel="stylesheet" href="fuel-inbox.css?v=1.0.0" />
   <link rel="stylesheet" href="nutrition-week.css?v=1.0.0" />
   <link rel="stylesheet" href="mobile-nav.css?v=1.2.0" />
@@ -49,8 +49,8 @@
   <script src="vita.js?v=1.0.0" defer></script>
   <script src="review-core.js?v=1.0.0" defer></script>
   <script src="review.js?v=1.0.0" defer></script>
-  <script src="habit-core.js?v=1.0.0" defer></script>
-  <script src="habits.js?v=1.0.0" defer></script>
+  <script src="habit-core.js?v=1.1.0" defer></script>
+  <script src="habits.js?v=1.1.0" defer></script>
   <script src="signals.js?v=1.2.0" defer></script>
   <script src="chat-shortcuts.js?v=1.1.3" defer></script>
 </head>
@@ -91,7 +91,7 @@
         <span id="nav-fuel-count" hidden aria-hidden="true">—</span>
         <button type="button" class="nav-item" data-view="inbox"><span data-icon="mail"></span> Inbox <span class="nav-count" id="nav-inbox-count">—</span></button>
         <button type="button" class="nav-item" data-view="automations"><span data-icon="clock"></span> Automations <span class="nav-count" id="nav-automations-count">—</span></button>
-        <button type="button" class="nav-item" data-view="habits"><span data-icon="repeat"></span> Habits <span class="nav-indicator"></span></button>
+        <button type="button" class="nav-item" data-view="habits"><span data-icon="repeat"></span> Habits &amp; Activities <span class="nav-indicator"></span></button>
         <button type="button" class="nav-item" data-view="routines"><span data-icon="history"></span> Legacy Routines </button>
         <button type="button" class="nav-item" data-view="settings"><span data-icon="settings"></span> Settings </button>
       </nav>
@@ -206,7 +206,7 @@
                 </div>
                 <p id="review-complete-label" class="review-source-note">Blank values remain unknown, never zero.</p>
               </section>
-              <section class="module review-module" aria-label="Habits for today"><div class="module-head"><div><div class="eyebrow small">RECORD AS YOU GO</div><h2>Today’s habits</h2></div><button type="button" class="quiet-pill" data-view="habits">Manage habits</button></div><div id="review-habit-list" class="habits-checkin-list"><p class="review-source-note">Your habits will appear here when configured.</p></div></section>
+              <section class="module review-module" aria-label="Habits for today"><div class="module-head"><div><div class="eyebrow small">RECORD AS YOU GO</div><h2>Today’s habits</h2></div><button type="button" class="quiet-pill" data-view="habits">Manage habits</button></div><div id="review-habit-list" class="habits-checkin-list"><p class="review-source-note">Your scheduled habits will appear here.</p></div><details class="review-activity-details"><summary>Other things I did today (optional)</summary><p class="review-source-note">Record entertainment, hobbies, and everyday activities, with no completion requirement.</p><div id="review-activity-list" class="habits-checkin-list"></div></details></section>
               <section class="module review-module">
                 <div class="module-head"><div><div class="eyebrow small">THEN WIND DOWN</div><h2>Evening routine</h2></div><span id="review-evening-summary" class="result-label">0 steps complete</span></div>
                 <div id="review-evening-steps" class="review-evening-list"></div>
@@ -236,18 +236,24 @@
         </section>
                 <section data-panel="habits" id="habits-panel" class="view-panel habits-view" hidden aria-label="ORBIT private habit tracker">
           <div class="eyebrow"><span class="eyebrow-line"></span> ORBIT / BULLET JOURNAL</div>
-          <div class="page-head"><div><h1>Habits<span class="accent-period">.</span></h1><p>Record routines without turning your life into a competition.</p></div><button id="habits-reload" type="button" class="quiet-pill">Refresh</button></div>
+          <div class="page-head"><div><h1>Habits &amp; Activities<span class="accent-period">.</span></h1><p>Track brushing your teeth, gaming, TV, creative time, and anything else worth remembering. Goals are optional.</p></div><button id="habits-reload" type="button" class="quiet-pill">Refresh</button></div>
           <p id="habits-status" class="review-status" role="status" aria-live="polite">Connecting to your private habits…</p>
+          <section class="module habits-presets-section" aria-label="Quick start activity templates"><div class="module-head"><div><div class="eyebrow small">START ANYWHERE</div><h2>Quick-add ideas</h2></div></div><p class="review-source-note">Tap to fill the form, then choose Save. No activities are created until you confirm.</p><div id="habit-presets" class="habit-presets-list"></div></section>
           <div class="habits-grid">
             <section class="module habits-module">
-              <div class="module-head"><div><div class="eyebrow small">YOUR HABITS</div><h2>Today's check-ins</h2></div><span id="habits-day-count" class="result-label">—</span></div>
-              <p class="review-source-note">Mark Done, Skip, or Undo. Skips are not counted as completed. Unrecorded days remain unknown.</p>
+              <div class="module-head"><div><div class="eyebrow small">YOUR DAY</div><h2>Habits &amp; activities</h2></div><span id="habits-day-count" class="result-label">—</span></div>
+              <p class="review-source-note">Check off habits or enter counts, minutes, and an optional note. Skips are never counted as done; casual activities have no required goal.</p>
               <div id="habits-list" class="habits-checkin-list"><p class="watch-detail">Loading habits…</p></div>
             </section>
             <section class="module habits-module habits-editor">
               <div class="module-head"><div><div class="eyebrow small">YOUR SCHEDULE</div><h2 id="habit-form-title">Create a habit</h2></div><button id="habit-edit-cancel" type="button" class="quiet-pill" hidden>Cancel edit</button></div>
               <form id="habit-form"><fieldset disabled>
-                <label>Habit name<input name="title" type="text" maxlength="100" required placeholder="e.g. Evening walk or medication check"></label>
+                <label>Name<input name="title" type="text" maxlength="100" required placeholder="e.g. Gaming, brush teeth, or painting"></label>
+                <label>Category<select name="category"><option value="hygiene">Hygiene</option><option value="health">Health</option><option value="movement">Movement</option><option value="home">Home</option><option value="creative">Creativity</option><option value="leisure">Leisure</option><option value="social">Social</option><option value="learning">Learning</option><option value="other" selected>Other</option></select></label>
+                <label>How to record<select name="entry_type"><option value="checkoff">Just check it off</option><option value="count">Count how many</option><option value="duration">Track minutes</option></select></label>
+                <label class="habit-unit-field" hidden>Unit (counts)<input name="unit_label" type="text" maxlength="24" value="times" placeholder="times, glasses, pages…"></label>
+                <label class="habit-check"><input name="goal_enabled" type="checkbox" checked> Treat this as a goal (uncheck for just tracking an activity)</label>
+                <label class="habit-daily-target" hidden>Daily goal amount<input name="daily_target" type="number" min="1" max="100000" step="1" value="1"></label>
                 <label>Frequency<select name="cadence"><option value="daily">On selected days</option><option value="weekly">Times per week</option></select></label>
                 <label class="habit-goal-field">Weekly goal<select name="weekly_target"><option value="1">1 time</option><option value="2">2 times</option><option value="3">3 times</option><option value="4">4 times</option><option value="5">5 times</option><option value="6">6 times</option><option value="7">7 times</option></select></label>
                 <fieldset class="habit-days"><legend id="habit-days-label">Days to record or remind</legend>
@@ -269,6 +275,7 @@
               <p class="review-source-note">The older Routines page is preserved separately until we verify this replacement.</p>
             </section>
           </div>
+          <section class="module habits-module habits-history-module" aria-label="Recent activity log"><div class="module-head"><div><div class="eyebrow small">LOOK BACK</div><h2>Recent recordings</h2></div></div><div id="habits-history" class="habits-history-list"><p class="review-source-note">Your latest recorded activities will appear here.</p></div></section>
         </section>
         <section data-panel="trophy" id="trophy-panel" class="view-panel trophy-panel" hidden aria-label="TROPHY Steam achievements tracker">
           <div class="eyebrow"><span class="eyebrow-line"></span> ORBIT / TROPHY · STEAM GAME COMPLETION</div>

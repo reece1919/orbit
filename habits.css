@@ -25,3 +25,44 @@
 .habits-module fieldset:disabled{opacity:.6}
 @media(max-width:950px){.habits-grid{grid-template-columns:1fr}}
 @media(max-width:520px){.habits-module{padding:14px}.habit-row-actions{width:100%}.habit-day-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+
+/* Everyday activity recording: templates, groups, minutes, counts, and history. */
+.habits-presets-section{padding:17px 20px;margin-bottom:15px}
+.habits-presets-section .module-head{margin-bottom:5px}
+.habit-presets-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:13px}
+.habit-preset{min-height:35px;font-size:12px;border-radius:20px;white-space:nowrap}
+.habit-category-heading{font-size:13px;letter-spacing:.03em;margin:14px 0 3px;color:var(--text);font-weight:750}
+.habit-category-heading:first-child{margin-top:0}
+.habit-quantity-fields{display:flex;flex-wrap:wrap;gap:9px;flex:1 1 100%;width:100%;order:2}
+.habit-quantity-label{display:grid;gap:4px;min-width:125px;flex:1 1 125px;font-size:11px;color:var(--muted,#a7b7c2)}
+.habit-quantity-label:last-child{flex:2 1 220px}
+.habits-checkin-list .habit-quantity-label input{
+ min-height:36px;width:100%;border:1px solid var(--line);border-radius:8px;
+ padding:8px 10px;background:var(--panel);color:var(--text);font:inherit;font-size:13px;
+}
+.habit-row-actions{order:3}
+.habit-activity{border-style:dashed}
+.habit-goal{border-style:solid}
+.habits-editor .habit-daily-target input,.habits-editor .habit-unit-field input{
+ width:100%;min-height:42px;padding:8px 10px;border:1px solid var(--line);
+ border-radius:8px;background:var(--surface);color:var(--text);font:inherit
+}
+.habits-editor [hidden]{display:none!important}
+.habits-history-module{margin-top:16px}
+.habits-history-list{display:grid;gap:0}
+.habit-history-row{display:flex;justify-content:space-between;align-items:center;
+ gap:12px;padding:12px 2px;border-top:1px solid var(--line)}
+.habit-history-row:first-child{border-top:0}
+.habit-history-value{font-size:12px;white-space:nowrap;color:var(--text);font-weight:650}
+@media(max-width:520px){
+ .habits-presets-section{padding:14px}
+ .habit-quantity-fields{order:initial}
+ .habit-row-actions{order:initial}
+ .habit-quantity-label{flex:1 1 100%}
+ .habit-quantity-label:last-child{flex:1 1 100%}
+}
+
+.review-activity-details{margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
+.review-activity-details summary{cursor:pointer;font-weight:650;font-size:13px;margin-bottom:10px}
+.review-activity-details summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.review-activity-details .habits-checkin-list{margin-top:9px}
