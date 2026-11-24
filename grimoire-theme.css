@@ -304,3 +304,11 @@ body[data-theme="light"] .home-view .home-sidequests .eyebrow{color:var(--accent
 .auth-card .auth-help{color:var(--muted-dim);}
 body[data-theme="light"] .auth-screen{background:var(--bg);}
 body[data-theme="light"] .auth-card{box-shadow:0 18px 52px rgba(74,62,41,.10);}
+
+/* Inverse chapter icon tones for the parchment-colored theme. */
+body[data-theme="light"] .home-view .grimoire-chapter:nth-child(1){--chapter-color:#486e52;}
+body[data-theme="light"] .home-view .grimoire-chapter:nth-child(2){--chapter-color:#715579;}
+body[data-theme="light"] .home-view .grimoire-chapter:nth-child(3){--chapter-color:#846431;}
+body[data-theme="light"] .home-view .grimoire-chapter:nth-child(4){--chapter-color:#536658;}
+body[data-theme="light"] .home-view .grimoire-chapter:nth-child(5){--chapter-color:#75613d;}
+body[data-theme="light"] .home-view .grimoire-chapter:nth-child(6){--chapter-color:#696a63;}
