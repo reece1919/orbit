@@ -73,6 +73,7 @@
   let catalog=null; let gaiaLastSync=''; let gaiaPublicError='';
   let gaiaClient=null; let gaiaUser=null; let gaiaPrivateTasks=[]; let gaiaPrivateError=''; let gaiaPrivateLoading=false;
   let gaiaPrivateInitialized=false; let gaiaPrivateBusy=new Set();
+  let gaiaReviewSequence=0;
 
   function note(selector, message){ const el=$(selector); if(el) el.textContent=message; }
   function toast(message){ const element=$('#toast'); if (!element) return; element.textContent=message; element.hidden=false; clearTimeout(toast.timer);toast.timer=setTimeout(()=>{element.hidden=true;},3800); }
@@ -402,14 +403,25 @@
 
   function gaiaHtmlSafe(source){return String(source||'').replace(/<[^>]*>/g,' ').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>');}
   function renderGaiaPublic(){
-    if(!catalog){note('#gaia-home-note',gaiaPublicError||'Reading GAIA published records.');note('#gaia-last-updated',gaiaPublicError||'Loading GAIA…');return;}
+    if(!catalog||gaiaPublicError){const flags=$('#gaia-home-flags');if(flags){flags.hidden=true;flags.replaceChildren();}note('#gaia-home-note',gaiaPublicError||'Reading GAIA published records.');note('#gaia-last-updated',gaiaPublicError||'Loading GAIA…');return;}
     const plants=Array.isArray(catalog.plants)?catalog.plants:[];
     const watch=plants.filter(p=>['Watch','Concern'].includes(p.status));
     const needsReview=plants.filter(p=>['Fair','Watch','Concern'].includes(p.status));
     const newborn=plants.filter(p=>p.newAddition);
     note('#nav-gaia-count',plants.length);
     note('#gaia-count',plants.length);note('#gaia-watch-count',watch.length);note('#gaia-new-count',newborn.length);
-    note('#gaia-home-note',needsReview.length?`Some plants could use a closer look · refreshed ${gaiaLastSync}`:`No current care flags · refreshed ${gaiaLastSync}`);
+    const severity={Concern:0,Watch:1,Fair:2};
+    const orderedFlags=needsReview.slice().sort((a,b)=>severity[a.status]-severity[b.status]||String(a.name).localeCompare(String(b.name)));
+    note('#gaia-home-note',`${needsReview.length} catalog care flags · recorded ${catalog.updatedAt||'date unknown'}`);
+    const flags=$('#gaia-home-flags');
+    if(flags){
+      flags.replaceChildren();
+      for(const plant of orderedFlags.slice(0,3)){
+        const li=document.createElement('li');li.textContent=String(plant.name||'Unnamed plant')+' · '+plant.status;flags.appendChild(li);
+      }
+      if(orderedFlags.length>3){const li=document.createElement('li');li.textContent='+'+(orderedFlags.length-3)+' more in the Conservatory';flags.appendChild(li);}
+      flags.hidden=!orderedFlags.length;
+    }
     note('#gaia-last-updated',`Published catalog last updated ${catalog.updatedAt||'date unknown'} · refreshed ${gaiaLastSync}. Plant conditions are recorded observations, not live sensor readings.`);
     if(!gaiaUser){gaiaPrivateTasks=(catalog.dashboardTasks||[]).filter(t=>typeof t.id==='string'&&typeof t.title==='string').map(t=>({id:t.id,kind:'curated',title:t.title,plantName:'Collection follow-up',due:'',done:false})); renderGaiaPrivate();}
     const tiles=Array.isArray(catalog.recentCare?.tiles)?catalog.recentCare.tiles.slice(0,5):[];
@@ -425,6 +437,46 @@
     renderGaiaPublic();
   }
   function gaiaPrivateSupported(){return location.origin==='https://reece1919.github.io';}
+  async function refreshGaiaHomeReview(){
+    const list=$('#gaia-home-recommendations');
+    if(!list)return;
+    const seq=++gaiaReviewSequence, owner=gaiaUser?.id;
+    list.replaceChildren();list.hidden=true;
+    const status=message=>note('#gaia-home-review-status',message);
+    if(!owner||!gaiaClient||!gaiaPrivateSupported()){status('Sign in to see saved private recommendations.');return;}
+    const current=()=>seq===gaiaReviewSequence&&gaiaUser?.id===owner;
+    status('Checking saved private recommendations…');
+    try{
+      const {data:assurance,error:authError}=await gaiaClient.auth.mfa.getAuthenticatorAssuranceLevel();
+      if(!current())return;
+      if(authError)throw authError;
+      if(assurance?.currentLevel!=='aal2'){status('Verify your authenticator to see private recommendations.');return;}
+      const [review,decisions]=await Promise.all([
+        gaiaClient.from('gaia_ai_reviews').select('review_date,priorities').eq('user_id',owner).order('review_date',{ascending:false}).order('created_at',{ascending:false}).limit(1),
+        gaiaClient.from('gaia_priority_decisions').select('priority_key,decision').eq('user_id',owner).limit(1000)
+      ]);
+      if(!current())return;
+      if(review.error||decisions.error)throw review.error||decisions.error;
+      const row=review.data?.[0];
+      if(!row){status('No saved private review found.');return;}
+      let raw=row.priorities;
+      if(typeof raw==='string'){try{raw=JSON.parse(raw);}catch(_){throw Error('Invalid saved review format');}}
+      if(!Array.isArray(raw))throw Error('Invalid saved review format');
+      const canonical=value=>String(value||'').toLowerCase().replace(/[^a-z0-9 ]/g,' ').replace(/\b(the|a|an|for|to|and|my|gaia)\b/g,' ').replace(/\s+/g,' ').trim();
+      const handled=new Set((decisions.data||[]).filter(x=>['dismissed','todoist'].includes(x.decision)).map(x=>x.priority_key));
+      const labels={urgent:'Immediate attention',upcoming:'Upcoming care',monitor:'Monitor',growth:'Noteworthy growth'};
+      const entries=raw.slice(0,5).map(p=>typeof p==='string'?{title:p.trim().slice(0,300),id:'',category:''}:p&&typeof p==='object'?{title:String(p.title||p.action||p.task||'').trim().slice(0,300),id:String(p.plant_id??''),category:p.category}:null).filter(p=>p?.title&&!handled.has(canonical(p.title)+'|'+p.id));
+      const validDate=/^\d{4}-\d{2}-\d{2}$/.test(row.review_date||'')?row.review_date:'date unknown';
+      const age=(Date.parse(TODAY()+'T00:00:00Z')-Date.parse(validDate+'T00:00:00Z'))/86400000;
+      status('Saved review · '+validDate+(age>7?' · older review; recheck conditions':'')+(entries.length?'':' · no unhandled suggestions'));
+      for(const p of entries.slice(0,3)){
+        const li=document.createElement('li');
+        const label=Object.prototype.hasOwnProperty.call(labels,p.category)?labels[p.category]:'Recommendation';
+        li.textContent=label+' · '+p.title;list.appendChild(li);
+      }
+      list.hidden=!entries.length;
+    }catch(_){if(current()){list.replaceChildren();list.hidden=true;status('Private recommendations could not be verified. Refresh or open the Conservatory.');}}
+  }
   function renderGaiaPrivate(){
     const isSignedIn=Boolean(gaiaUser);
     note('#gaia-private-status',gaiaPrivateLoading?'Syncing private GAIA tasks…':gaiaPrivateError||(!gaiaPrivateSupported()?'Private tasks become available when ORBIT is deployed on reece1919.github.io (the same host as GAIA).':isSignedIn?`Signed into ORBIT and GAIA · ${gaiaPrivateTasks.filter(t=>!t.done).length} unfinished task(s)`:'Sign in to ORBIT to see your private GAIA tasks.'));
@@ -460,6 +512,7 @@
     if(next){try{token=sessionStorage.getItem(sessionKey)||'';}catch(_){}}
     gaiaClient=window.ORBITAuth?.client||gaiaClient;gaiaUser=user||null;gaiaPrivateTasks=[];gaiaPrivateError='';
     renderTodoist();renderGaiaPrivate();
+    void refreshGaiaHomeReview();
     if(gaiaUser&&gaiaClient)void refreshGaiaPrivate();
     if(token)void refreshTodoist();
     if(next)void checkOAuth(next);
@@ -500,7 +553,7 @@
   }
   document.addEventListener('click',event=>{
     const refresh=event.target.closest('[data-refresh]');
-    if(refresh){if(refresh.dataset.refresh==='todoist')void refreshTodoist();else if(refresh.dataset.refresh==='gaia'){void refreshGaiaPublic().then(()=>refreshGaiaPrivate());}return;}
+    if(refresh){if(refresh.dataset.refresh==='todoist')void refreshTodoist();else if(refresh.dataset.refresh==='gaia'){void refreshGaiaPublic().then(()=>refreshGaiaPrivate());void refreshGaiaHomeReview();}return;}
     const filter=event.target.closest('[data-todoist-filter]');if(filter){todoistFilter=filter.dataset.todoistFilter;renderTodoist();return;}
     if(event.target.closest('#todoist-oauth-connect')){void startOAuth();return;}
     if(event.target.closest('#todoist-disconnect')){void disconnectTodoist();return;}
@@ -533,5 +586,5 @@
   // waiting for the public GAIA catalog network request to complete.
   void window.ORBITAuth.ready.then(()=>handleOrbitAccount(window.ORBITAuth?.user||null));
   void refreshGaiaPublic().then(()=>initializeGaiaPrivate());
-  window.addEventListener('focus',()=>{if((token||serverConnected)&&!todoistLoading)void refreshTodoist();if(gaiaClient&&gaiaUser&&!gaiaPrivateLoading)void refreshGaiaPrivate();});
+  window.addEventListener('focus',()=>{if((token||serverConnected)&&!todoistLoading)void refreshTodoist();if(gaiaClient&&gaiaUser&&!gaiaPrivateLoading)void refreshGaiaPrivate();void refreshGaiaHomeReview();});
 })();
