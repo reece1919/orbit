@@ -227,7 +227,14 @@
               </section>
             </div>
           </div>
-          <section class="module review-home-module" aria-label="Tonight’s daily review"><div class="module-head"><div><div class="eyebrow small">EVENING REFLECTION</div><h3>Daily review</h3></div><span data-icon="moon"></span></div><p id="review-home-state" class="watch-detail">Ready to record</p><button type="button" data-view="review" class="primary-button">Open tonight’s review</button></section>
+          <section class="module review-home-module grimoire-review-shortcut" aria-label="Daily review shortcut">
+            <span class="grimoire-review-symbol" aria-hidden="true"><span data-icon="moon"></span></span>
+            <div class="grimoire-review-copy">
+              <h3>Daily review</h3>
+              <p id="review-home-state" class="watch-detail" role="status">Ready to record</p>
+            </div>
+            <button type="button" data-view="review" class="outline-button grimoire-review-open">Open review <span data-icon="arrow-right"></span></button>
+          </section>
           <section class="module habits-home-module" aria-label="Habit recording progress"><div class="module-head"><div><div class="eyebrow small">TODAY / HABITS</div><h3>Habits</h3></div><button type="button" class="subtle-link" data-view="habits">Open Habits</button></div><p id="habits-home-summary" class="watch-detail">Checking your habits…</p></section>
           <div class="dashboard-lower home-capture">
             <section class="module note-module"><div class="module-head"><div><div class="eyebrow small">NOTES</div><h3>Scratchpad</h3></div><span data-icon="pen-line" class="muted-icon"></span></div><textarea id="scratchpad" placeholder="An idea, a reminder, something to remember…" aria-label="Scratchpad notes"></textarea><div class="note-bottom"><span data-icon="hard-drive"></span> Saved on this device · cloud optional <span id="note-saved" aria-live="polite"></span></div></section>
