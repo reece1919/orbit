@@ -11,10 +11,10 @@
   const addDays=(key,n)=>{const d=parseDay(key);d.setDate(d.getDate()+n);return localDay(d)};
   const dateText=(key,style={weekday:'long',month:'long',day:'numeric',year:'numeric'})=>parseDay(key).toLocaleDateString(undefined,style);
   const today=()=>localDay(new Date());
-  let selected=today(),mode='week',editId='';
+  let selected=today(),mode='month',editId='';
   const weekday=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
   const assets={
-    orbit:'assets/orbit-emblem-cutout.png?v=4.0.0',
+    orbit:'assets/grimoire-mark.svg?v=1.1.0',
     gaia:'assets/systems/gaia.svg?v=2.0.0',
     echo:'assets/systems/echo.svg?v=2.0.0',
     rune:'assets/systems/rune-metal.png?v=2.0.0',
