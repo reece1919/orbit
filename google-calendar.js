@@ -52,7 +52,7 @@
    if(connected){
     const list=await request('calendars');if(owner!==current)return;
     calendarOptions=Array.isArray(list.items)?list.items:[];selected=Array.isArray(list.selected)?list.selected:selected;
-   }else{items=[];loaded=false;calendarOptions=[];lastSync=''}
+   }else{items=[];loaded=false;calendarOptions=[];lastSync='';todayCache=null;todayCacheKey=''}
    const param=new URL(window.location.href).searchParams.get('google_calendar');
    if(param){
     const clean=new URL(window.location.href);clean.searchParams.delete('google_calendar');
@@ -83,7 +83,7 @@
   busy=true;renderConnection();
   try{
    await request('disconnect');
-   connected=false;email='';items=[];selected=[];calendarOptions=[];loaded=false;lastSync='';error='';
+   connected=false;email='';items=[];selected=[];calendarOptions=[];loaded=false;lastSync='';error='';todayCache=null;todayCacheKey='';
   }catch(e){error=e.message}
   finally{busy=false;renderConnection();emit()}
  }
@@ -93,7 +93,7 @@
   busy=true;error='';renderConnection();
   try{
    await request('select_calendars',{calendar_ids:ids});
-   selected=ids;loaded=false;items=[];lastSync='';
+   selected=ids;loaded=false;items=[];lastSync='';todayCache=null;todayCacheKey='';
   }catch(e){error=e.message}
   finally{busy=false;renderConnection();emit();if(connected&&needsRange)void ensureRange(...needsRange)}
  }
@@ -147,7 +147,7 @@
  $('#cal-google-connect')?.addEventListener('click',begin);
  function refresh(){
   if(!owner||!connected||busy)return;
-  loaded=false;failedRangeKey='';items=[];lastSync='';
+  loaded=false;failedRangeKey='';items=[];lastSync='';todayCache=null;todayCacheKey='';
   if(needsRange)void ensureRange(...needsRange,true);else void check();
  }
  $('#cal-google-refresh')?.addEventListener('click',refresh);
