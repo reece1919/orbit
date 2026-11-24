@@ -1,2 +1,17 @@
 #sanctum-almanac{margin:1rem 0;padding:1rem}#sanctum-almanac .almanac-toolbar,#sanctum-almanac .almanac-days{display:flex;gap:.45rem;flex-wrap:wrap;align-items:center;margin:.65rem 0}#sanctum-almanac .almanac-day[aria-pressed="true"]{outline:2px solid currentColor}#sanctum-almanac .almanac-correspondences{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:.65rem;margin:.8rem 0}#sanctum-almanac dt{font-size:.75rem;opacity:.75}#sanctum-almanac dd{margin:0;font-weight:600}#sanctum-almanac h4{margin:.8rem 0 .3rem}#sanctum-almanac .almanac-phase{font-weight:600}#sanctum-almanac details{margin-top:.6rem}#sanctum-almanac summary{cursor:pointer}
 .home-view .unified-planning #sanctum-almanac{margin:0;padding:16px 0 0;color:var(--paper-ink)}.home-view .unified-planning #sanctum-almanac a{color:var(--paper-green);overflow-wrap:anywhere}.home-view .unified-planning #sanctum-almanac p{line-height:1.55}
+
+/* Native details keep reference information accessible to mouse, touch and keyboard. */
+.home-view .unified-planning .almanac-correspondences{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin:12px 0;align-items:start}
+.home-view .unified-planning .almanac-correspondences dt{font-size:.75rem;color:var(--paper-muted)}
+.home-view .unified-planning .almanac-correspondences dd{margin:0;min-width:0}
+.home-view .unified-planning .almanac-explainer{margin:0;min-width:0}
+.home-view .unified-planning .almanac-explainer summary{cursor:pointer;color:var(--paper-green);font-weight:650;line-height:1.45;padding:5px 0;min-height:28px;overflow-wrap:anywhere;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px}
+.home-view .unified-planning .almanac-explainer[open]{grid-column:auto}
+.home-view .unified-planning .almanac-correspondences>div:has(.almanac-explainer[open]){grid-column:1/-1}
+.home-view .unified-planning .almanac-explainer-body{font-size:12px;font-weight:400;border-left:2px solid var(--paper-gold);padding:8px 10px;margin:5px 0 8px;background:var(--paper-surface);overflow-wrap:anywhere}
+.home-view .unified-planning .almanac-explainer-body p{margin:0 0 6px}
+.home-view .unified-planning .almanac-explainer-body small{display:block;color:var(--paper-muted);margin-bottom:6px}
+.home-view .unified-planning .almanac-explainer-body a{color:var(--paper-green);font-size:11px;text-decoration:underline}
+.home-view .unified-planning .almanac-explainer summary:focus-visible{outline:2px solid var(--paper-green);outline-offset:3px}
+.home-view .unified-planning #almanac-week-preview .almanac-correspondences{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
