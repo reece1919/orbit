@@ -1,8 +1,8 @@
-# Connect Google Calendar to ORBIT
+# Connect Google Calendar to Grimoire Home
 
-**Status:** ORBIT calendar UI and the `orbit-google-calendar` Supabase Edge Function are deployed. Google OAuth application credentials must be supplied privately before authorization works.
+**Status:** Grimoire Home already contains a read-only Google Calendar integration and the deployed `orbit-google-calendar` Supabase Edge Function. The website still requires a separate Google authorization; no account connection has been verified yet. If the Google OAuth credentials are not configured, complete the one-time setup below.
 
-ORBIT preserves your own events and Todoist tasks. Google Calendar is **read-only**: it can display events from calendars you choose, but cannot create, change, or delete Google events. Your authorized Google tokens are encrypted and stored in backend-only Supabase tables, never in public GitHub code or your browser storage.
+Google Calendar is the **authoritative source for events**, shown read-only in Grimoire. Grimoire does not create, edit, or delete Google events. Existing local ORBIT calendar records are preserved as read-only legacy entries; Todoist tasks remain in Todoist. Your authorized Google tokens are encrypted and stored in backend-only Supabase tables, never in public GitHub code or your browser storage.
 
 ## One-time configuration
 
@@ -24,12 +24,12 @@ ORBIT preserves your own events and Todoist tasks. Google Calendar is **read-onl
    - `ORBIT_GOOGLE_CLIENT_SECRET` = the Google Client secret
 
    **Never paste these credentials into ChatGPT, issues, public GitHub files, browser JavaScript, or screenshots.** Use the Supabase secret-settings form.
-6. Open [ORBIT](https://reece1919.github.io/orbit/), sign in and complete the existing MFA prompt, and go to **Calendar → Connect Google Calendar**. Approve Google's read-only calendar consent screen.
-7. On return to ORBIT, verify that it shows the connected Google account and your primary calendar's events. Select additional calendars with the checkboxes, then **Save calendar selection**. Use **Refresh events** to reload.
+6. Open [Grimoire Home](https://reece1919.github.io/orbit/), sign in and complete the existing MFA prompt, then use **Connect Google** on the home calendar (or **Calendar → Connect Google Calendar**). Approve Google's read-only calendar consent screen.
+7. On return to Grimoire, verify that it shows the connected Google account and your primary calendar's events. Select additional calendars with the checkboxes, then **Save calendar selection**. Use **Refresh events** to reload.
 
 ## Security and behavior
 
-- This connection is independent of ChatGPT's Google Calendar plugin.
+- This connection is independent of ChatGPT's Google Calendar plugin. ChatGPT can already have access while the separately hosted Grimoire website does not.
 - A separate, direct Google consent is mandatory; connecting the Google account to ChatGPT does not grant ORBIT OAuth tokens.
 - The OAuth callback uses a single-use, hashed, short-lived state and a server-held PKCE verifier.
 - Backend POST requests require a valid ORBIT Supabase session with AAL2 MFA. The read-only client can list only the signed-in owner's events.

@@ -1,5 +1,16 @@
 # ORBIT — Headquarters for Execution, Logic, and Memory
 
+## Google Calendar as schedule authority (November 23, 2026)
+
+- The Calendar homepage now clearly shows **Google connection status**, plus Connect, Refresh, and Choose calendars when appropriate. The existing secure read-only OAuth Edge Function is reused. No browser-side Google credentials are stored.
+- Removed *Add Event* controls from the home and full calendar, along with the visible edit controls for old ORBIT events. New events and edits are handled in **Google Calendar** or via ChatGPT's connected Google Calendar integration.
+- Google events sort first in calendar agendas. Existing ORBIT-only events remain available as **read-only legacy entries**; no stored records were deleted. Todoist continues to own tasks and their completion state.
+- Google Calendar's **ChatGPT connector** and **Grimoire's separate website OAuth** are distinct authorizations. The Google connector is already active in ChatGPT; a direct Grimoire connection must still be completed in the Grimoire website. See [Google Calendar setup](GOOGLE-CALENDAR-SETUP.md) if the secure website OAuth is unconfigured.
+- The existing backend remains deployed. There were **no stored Grimoire Google account connections** at the time of this change; live authenticated Google-event sync cannot be verified until website consent is completed.
+- No Supabase schema, data, permissions, or OAuth tokens were changed in this release.
+
+---
+
 ## Grimoire Home · calendar and tasks first (November 23, 2026)
 
 - Removed the oversized greeting, date aside, inspirational copy, and header illustration from the homepage. Kept compact ChatGPT, Calendar and Todoist action buttons.

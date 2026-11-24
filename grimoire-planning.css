@@ -335,3 +335,56 @@
 @media(prefers-reduced-motion:reduce){
   .home-view .grimoire-calendar-day{transition:none;}
 }
+
+/* Google Calendar is the authoritative event source. Its connection state
+   must remain legible on the parchment surface, including on phones. */
+.home-view .grimoire-google-status{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  flex-wrap:wrap;padding:10px 12px;margin:0 0 13px;
+  border:1px solid var(--paper-line);border-radius:9px;
+  background:rgba(247,237,210,.65);
+  color:var(--paper-ink);
+}
+.home-view .grimoire-google-summary{
+  display:flex;gap:9px;align-items:center;min-width:0;flex:1 1 230px;
+}
+.home-view .grimoire-google-dot{
+  width:9px;height:9px;flex:0 0 9px;border-radius:50%;
+  border:1px solid #8e805f;background:#b6a27b;
+}
+.home-view .grimoire-google-status[data-connection="connected"] .grimoire-google-dot{
+  background:#507c58;border-color:#406345;
+}
+.home-view .grimoire-google-summary div{min-width:0;}
+.home-view .grimoire-google-summary strong{
+  display:block;color:#304336;font-size:12px;font-weight:750;line-height:1.4;
+}
+.home-view .grimoire-google-summary small{
+  display:block;color:var(--paper-muted);font-size:10px;line-height:1.45;
+  overflow-wrap:anywhere;margin-top:2px;
+}
+.home-view .grimoire-google-actions{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+}
+.home-view .grimoire-google-actions a{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:11px;color:#3c6548;font-weight:750;text-decoration:none;
+}
+.home-view .grimoire-google-actions a:hover{text-decoration:underline;}
+.home-view .grimoire-google-actions a svg{width:13px;height:13px;}
+.home-view .grimoire-google-actions .grimoire-calendar-control{
+  min-height:32px;font-size:11px;background:#486e51;color:#fff8e8;
+  border-color:#486e51;padding:5px 10px;
+}
+.home-view .grimoire-google-actions .grimoire-calendar-control:hover{
+  background:#345a40;border-color:#345a40;
+}
+.home-view .grimoire-google-actions [hidden]{display:none!important;}
+.home-view .grimoire-calendar-add{
+  border-top:1px solid rgba(97,75,41,.12);
+  padding-top:10px;
+}
+@media(max-width:560px){
+  .home-view .grimoire-google-status{padding:9px 10px;gap:9px;}
+  .home-view .grimoire-google-actions{width:100%;justify-content:flex-start;}
+}

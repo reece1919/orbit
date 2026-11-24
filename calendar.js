@@ -44,7 +44,7 @@
     ];
   }
   const order=(a,b)=>{
-    const priority=x=>x.kind==='event'?0:x.kind==='google'?1:2;
+    const priority=x=>x.kind==='google'?0:x.kind==='task'?1:2;
     return priority(a)===priority(b)
       ?(a.event?.allDay?'':a.time||'').localeCompare(b.event?.allDay?'':b.time||'')||a.title.localeCompare(b.title)
       :priority(a)-priority(b);
@@ -63,7 +63,7 @@
   }
   function dayChip(item){
     const source=item.kind==='event'?'orbit':item.source;
-    const name=item.kind==='event'?'Event':item.kind==='google'?'Google / '+item.event.calendarName:sourceName(source)+' task';
+    const name=item.kind==='event'?'Legacy ORBIT event':item.kind==='google'?'Google / '+item.event.calendarName:sourceName(source)+' task';
     const icon=item.kind==='google'?'<span class="cal-google-icon" aria-hidden="true">G</span>':
       '<img src="'+esc(sourceIcon(source))+'" alt="" loading="lazy" width="15" height="15">';
     return '<span class="cal-chip '+(item.kind==='google'?'cal-chip-google':item.kind==='event'?'cal-chip-event':'cal-chip-task')+'" title="'+esc(name+': '+item.title)+'">'+
@@ -108,7 +108,7 @@
     dayItems.innerHTML=!owner?'<p class="grimoire-calendar-empty">Sign in to see your schedule.</p>':
       !count.length?'<p class="grimoire-calendar-empty">Nothing scheduled for this day.</p>':
       count.slice(0,5).map(item=>{
-        const type=item.kind==='google'?'Google Calendar':item.kind==='task'?'Todoist':'Personal event';
+        const type=item.kind==='google'?'Google Calendar':item.kind==='task'?'Todoist':'Legacy ORBIT event';
         const time=item.kind==='google'?(item.event.allDay?'All day':item.time):
           item.kind==='event'?(item.event.allDay?'All day':item.event.start||''):'';
         const extra=time?' · '+time:'';
@@ -117,8 +117,30 @@
           '<div><strong>'+esc(item.title)+'</strong><small>'+esc(type+extra)+'</small></div></div>';
       }).join('')+(count.length>5?'<button type="button" class="subtle-link" data-view="calendar">'+
       'View all '+count.length+' items</button>':'');
-    const newEvent=home.querySelector('[data-home-cal-new-event]');
-    if(newEvent)newEvent.disabled=!owner;
+    const connection=$('#grimoire-google-status');
+    if(connection){
+      const google=window.ORBITGoogleCalendar?.getStatus?.();
+      const title=$('#grimoire-google-title'),note=$('#grimoire-google-note');
+      const connect=$('#grimoire-google-connect'),manage=$('#grimoire-google-manage');
+      const refresh=$('#grimoire-google-refresh');
+      const setup=$('#grimoire-google-setup');
+      const linked=Boolean(owner&&google?.connected);
+      const configured=Boolean(google?.configured);
+      connection.dataset.connection=linked?'connected':!owner?'signed-out':configured?'ready':'setup';
+      title.textContent=linked?'Google Calendar connected':'Google Calendar';
+      note.textContent=!owner?'Sign in to view your Google calendars.':
+        google?.busy?(linked?'Refreshing your events…':'Checking Google connection…'):
+        linked?(google.error?'Sync issue: '+google.error:
+          (google.email?'Connected to '+google.email+' · ':'')+
+          (google.selected?.length||0)+' calendar(s) selected · Read only'):
+        google?.error?google.error:
+        configured?'Connect Google once to show your calendar events here.':
+        'One-time Google OAuth setup required for Grimoire sync.';
+      if(connect){connect.hidden=!owner||linked||!configured;connect.disabled=Boolean(google?.busy);}
+      if(manage)manage.hidden=!linked;
+      if(refresh){refresh.hidden=!linked;refresh.disabled=Boolean(google?.busy);}
+      if(setup)setup.hidden=!owner||linked||configured;
+    }
     const newTask=home.querySelector('[data-home-cal-new-task]');
     if(newTask)newTask.disabled=!owner||!window.ORBITConnectedTodoist?.active?.();
   }
@@ -139,10 +161,11 @@
     const todoist=window.ORBITConnectedTodoist?.getCalendarStatus?.();
     const google=window.ORBITGoogleCalendar?.getStatus?.();
     $('#calendar-status').textContent=!owner?'Sign in to see your calendar.':
-      'ORBIT events'+(todoist?.connected?' + Todoist due dates':' · connect Todoist in Tasks for due dates')+
-      (google?.connected?' + Google Calendar (read only)':' · Google Calendar not connected')+
+      (google?.connected?'Google Calendar connected (read only)':'Google Calendar not connected')+
+      (todoist?.connected?' · Todoist due dates':' · Connect Todoist in Tasks for due dates')+
+      (events().length?' · Legacy ORBIT entries shown read-only':'')+
       (todoist?.error?' · Todoist: '+todoist.error:'')+
-      (google?.connected&&google.error?' · Google: '+google.error:'');
+      (google?.error?' · Google: '+google.error:'');
     document.querySelectorAll('[data-cal-mode]').forEach(b=>{b.classList.toggle('is-active',b.dataset.calMode===mode);b.setAttribute('aria-pressed',String(b.dataset.calMode===mode))});
     const heading=weekday.map(x=>'<div class="cal-weekday" aria-hidden="true">'+x+'</div>').join('');
     $('#calendar-grid').innerHTML=heading+days.map(key=>{
@@ -154,7 +177,7 @@
         '<span class="cal-date">'+day+'</span><span class="cal-chips">'+chips+more+'</span></button>';
     }).join('');
     $('#calendar-day-list').innerHTML=count.length?count.map(item=>{
-      const name=item.kind==='event'?'ORBIT event':item.kind==='google'?'Google · '+item.event.calendarName:sourceName(item.source)+' / Todoist';
+      const name=item.kind==='event'?'Legacy ORBIT event':item.kind==='google'?'Google · '+item.event.calendarName:sourceName(item.source)+' / Todoist';
       const icon=item.kind==='google'?'<span class="cal-google-agenda-icon" aria-label="Google Calendar">G</span>':
         '<img class="cal-agenda-icon" src="'+esc(sourceIcon(item.source))+'" alt="'+esc(name)+'" width="23" height="23">';
       if(item.kind==='task')return '<article class="cal-agenda-item"><input type="checkbox" data-todoist-done="'+esc(item.id)+'" aria-label="Complete '+esc(item.title)+' in Todoist">'+icon+
@@ -170,10 +193,9 @@
       }
       return '<article class="cal-agenda-item"><span class="cal-event-dot" aria-hidden="true"></span>'+icon+
         '<div class="cal-agenda-copy"><strong>'+esc(item.title)+'</strong><small>'+esc((item.time==='All day'?'All day':item.event.start+'–'+item.event.end)+(item.event.location?' · '+item.event.location:''))+'</small>'+
-        (item.event.notes?'<p>'+esc(item.event.notes)+'</p>':'')+'</div><button class="cal-edit" data-cal-edit="'+esc(item.id)+'" type="button">Edit</button></article>';
-    }).join(''):'<p class="cal-empty">Nothing scheduled for this day. Select another date or add an event.</p>';
+        (item.event.notes?'<p>'+esc(item.event.notes)+'</p>':'')+'</div></article>';
+    }).join(''):'<p class="cal-empty">Nothing scheduled for this day. Select another date or check Google Calendar.</p>';
     renderHomeCalendar({owner,days,byDate,month,now,count,header});
-    root.querySelectorAll('[data-cal-new-event]').forEach(button=>{button.disabled=!owner});
     $('#cal-new-task').disabled=!owner||!window.ORBITConnectedTodoist?.active?.();
     $('#cal-new-task').title=$('#cal-new-task').disabled?'Connect Todoist in Tasks to add tasks':'Add task to Todoist';
   }
@@ -211,6 +233,18 @@
   $('#grimoire-home-calendar')?.addEventListener('click',e=>{
     const button=e.target.closest('button');
     if(!button)return;
+    if(button.id==='grimoire-google-connect'){
+      const google=window.ORBITGoogleCalendar;
+      const status=google?.getStatus?.();
+      if(status?.configured&&!status.connected&&!status.busy)void google.connect?.();
+      return;
+    }
+    if(button.id==='grimoire-google-refresh'){
+      const google=window.ORBITGoogleCalendar;
+      const status=google?.getStatus?.();
+      if(status?.connected&&!status.busy)void google.refresh?.();
+      return;
+    }
     if(button.dataset.homeCalDay){setDay(button.dataset.homeCalDay);return}
     if(button.dataset.homeCalMode){
       if(!['week','month'].includes(button.dataset.homeCalMode))return;
@@ -219,7 +253,6 @@
     if(button.hasAttribute('data-home-cal-prev')){changePeriod(-1);return}
     if(button.hasAttribute('data-home-cal-next')){changePeriod(1);return}
     if(button.hasAttribute('data-home-cal-today')){selected=today();render();return}
-    if(button.hasAttribute('data-home-cal-new-event')){openEvent();return}
     if(button.hasAttribute('data-home-cal-new-task')){
       const create=$('#todoist-add');
       if(!create||create.disabled)return;
@@ -235,8 +268,6 @@
     if(button.hasAttribute('data-cal-prev')){changePeriod(-1);return}
     if(button.hasAttribute('data-cal-next')){changePeriod(1);return}
     if(button.hasAttribute('data-cal-today')){selected=today();render();return}
-    if(button.hasAttribute('data-cal-new-event')){openEvent();return}
-    if(button.dataset.calEdit){openEvent(button.dataset.calEdit);return}
     if(button.hasAttribute('data-cal-new-task')){
       const taskButton=$('#todoist-add');
       if(taskButton?.disabled){$('#calendar-status').textContent='Connect Todoist in Tasks before adding a task.';return}

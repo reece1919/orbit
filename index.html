@@ -129,6 +129,19 @@
                   <div><span class="eyebrow small">YOUR SCHEDULE</span><h3>Calendar</h3></div>
                   <button class="subtle-link" type="button" data-view="calendar">Full calendar <span data-icon="arrow-right"></span></button>
                 </div>
+                <div id="grimoire-google-status" class="grimoire-google-status" aria-live="polite">
+                  <div class="grimoire-google-summary">
+                    <span class="grimoire-google-dot" aria-hidden="true"></span>
+                    <div><strong id="grimoire-google-title">Google Calendar</strong><small id="grimoire-google-note">Checking your Google connection…</small></div>
+                  </div>
+                  <div class="grimoire-google-actions">
+                    <button type="button" class="grimoire-calendar-control" id="grimoire-google-connect" hidden>Connect Google</button>
+                    <button type="button" class="grimoire-calendar-control" id="grimoire-google-refresh" hidden>Refresh</button>
+                    <button type="button" class="grimoire-calendar-control" id="grimoire-google-manage" data-view="calendar" hidden>Choose calendars</button>
+                    <a id="grimoire-google-setup" href="https://github.com/reece1919/orbit/blob/main/GOOGLE-CALENDAR-SETUP.md" target="_blank" rel="noopener noreferrer" hidden>Connection setup</a>
+                    <a href="https://calendar.google.com/calendar/u/0/r" target="_blank" rel="noopener noreferrer">Open Google Calendar <span data-icon="arrow-up-right"></span></a>
+                  </div>
+                </div>
                 <div class="grimoire-calendar-toolbar">
                   <div class="grimoire-calendar-navigation">
                     <button type="button" class="grimoire-calendar-control" data-home-cal-prev aria-label="Previous calendar period">‹</button>
@@ -146,8 +159,7 @@
                   <div class="grimoire-calendar-day-head"><h4 id="grimoire-calendar-selected">Today</h4><span id="grimoire-calendar-count">0 items</span></div>
                   <div id="grimoire-calendar-day-list" class="grimoire-calendar-day-list" aria-live="polite"><p class="watch-detail">Checking your schedule…</p></div>
                   <div class="grimoire-calendar-add">
-                    <button type="button" class="grimoire-calendar-control" data-home-cal-new-event>+ Event</button>
-                    <button type="button" class="grimoire-calendar-control" data-home-cal-new-task>+ Task</button>
+                    <button type="button" class="grimoire-calendar-control" data-home-cal-new-task>+ Todoist task</button>
                   </div>
                 </div>
               </section>
@@ -578,8 +590,8 @@
           </div>
         </section>
         <section data-panel="calendar" class="view-panel orbit-calendar-view" id="orbit-calendar" hidden aria-label="Calendar and dated Todoist tasks">
-          <div class="eyebrow"><span class="eyebrow-line"></span> ORBIT / PLANNING</div>
-          <div class="page-head"><div><h1>Calendar<span class="accent-period">.</span></h1><p>ORBIT events, Google Calendar, and Todoist due dates in one place.</p></div><button class="primary-button" type="button" data-cal-new-event><span data-icon="plus"></span> New event</button></div>
+          <div class="eyebrow"><span class="eyebrow-line"></span> GRIMOIRE / PLANNING</div>
+          <div class="page-head"><div><h1>Calendar<span class="accent-period">.</span></h1><p>Google Calendar is your schedule. Todoist tasks appear alongside it.</p></div><a class="primary-button" href="https://calendar.google.com/calendar/u/0/r" target="_blank" rel="noopener noreferrer">Open Google Calendar <span data-icon="arrow-up-right"></span></a></div>
           <div class="cal-toolbar">
             <div class="cal-navigation">
               <button type="button" class="cal-button" data-cal-prev aria-label="Previous calendar period">‹</button>
@@ -595,7 +607,7 @@
           <p class="cal-status" id="calendar-status" role="status">Checking your calendar…</p>
           <section class="cal-google-connection" aria-label="Google Calendar connection">
             <div class="cal-google-heading">
-              <div><div class="eyebrow small">GOOGLE CALENDAR / READ ONLY</div><h3>Connected calendars</h3><p id="cal-google-status" role="status">Checking Google Calendar connection…</p></div>
+              <div><div class="eyebrow small">GOOGLE CALENDAR / YOUR SCHEDULE</div><h3>Google Calendar connection</h3><p id="cal-google-status" role="status">Checking Google Calendar connection…</p></div>
               <div class="cal-google-actions">
                 <button type="button" class="cal-button cal-primary" id="cal-google-connect" disabled>Connect Google Calendar</button>
                 <button type="button" class="cal-button" id="cal-google-refresh" hidden>Refresh events</button>
@@ -613,10 +625,10 @@
               <div class="cal-day-head"><h3 id="calendar-selected">Today</h3><span id="calendar-day-count" class="cal-day-count">0 items</span></div>
               <div class="cal-day-list" id="calendar-day-list"></div>
               <div class="cal-day-actions">
-                <button type="button" id="cal-new-event" class="cal-button cal-primary" data-cal-new-event>+ Event</button>
                 <button type="button" id="cal-new-task" class="cal-button" data-cal-new-task>+ Todoist task</button>
+                <a href="https://calendar.google.com/calendar/u/0/r" target="_blank" rel="noopener noreferrer" class="cal-button cal-primary">Manage Google events <span data-icon="arrow-up-right"></span></a>
               </div>
-              <p class="helper-paragraph">Events belong to your ORBIT workspace. Tasks stay in Todoist and can be checked off there or here. Enable ORBIT cloud sync in Settings to share manually added events across devices.</p>
+              <p class="helper-paragraph">Create and edit events in Google Calendar or through ChatGPT. Todoist tasks stay in Todoist. Previous ORBIT-only events remain visible as read-only legacy entries; no records have been deleted.</p>
             </section>
           </div>
         </section>

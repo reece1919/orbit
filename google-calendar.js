@@ -25,7 +25,7 @@
    busy?(connected?'Refreshing Google Calendar…':'Checking Google Calendar connection…'):
    error?error:!configured?'Google Calendar setup required: configure Google OAuth credentials in Supabase.':
    connected?'Connected to '+email+' · Read only'+(lastSync?' · Updated '+stamp(lastSync):''):
-   'Not connected · Google events will appear alongside ORBIT events and Todoist tasks.';
+   'Not connected · Authorize Google to show your calendars in Grimoire.';
   connect.hidden=!owner||connected;connect.disabled=busy||!configured;
   connect.textContent=connected?'Connected':'Connect Google Calendar';
   reload.hidden=!owner||!connected;reload.disabled=busy;
@@ -143,7 +143,12 @@
   }
  }
  $('#cal-google-connect')?.addEventListener('click',begin);
- $('#cal-google-refresh')?.addEventListener('click',()=>{loaded=false;failedRangeKey='';items=[];lastSync='';if(needsRange)void ensureRange(...needsRange);else void check()});
+ function refresh(){
+  if(!owner||!connected||busy)return;
+  loaded=false;failedRangeKey='';items=[];lastSync='';
+  if(needsRange)void ensureRange(...needsRange,true);else void check();
+ }
+ $('#cal-google-refresh')?.addEventListener('click',refresh);
  $('#cal-google-disconnect')?.addEventListener('click',disconnect);
  $('#cal-google-calendars')?.addEventListener('click',e=>{if(e.target.closest('#cal-google-save'))void save()});
  document.addEventListener('orbit:auth-changed',e=>{
@@ -152,7 +157,7 @@
   owner=id;connected=false;configured=false;email='';busy=false;calendarOptions=[];selected=[];items=[];rangeStart='';rangeEnd='';loaded=false;failedRangeKey='';needsRange=null;error='';lastSync='';
   renderConnection();emit();if(owner)void check();
  });
- window.ORBITGoogleCalendar=Object.freeze({ensureRange,getEvents:events,getStatus:info});
+ window.ORBITGoogleCalendar=Object.freeze({ensureRange,getEvents:events,getStatus:info,connect:begin,refresh});
  renderConnection();
  window.ORBITAuth?.ready?.then(()=>{const id=window.ORBITAuth.user?.id||'';if(id!==owner){owner=id;renderConnection();if(id)void check()}});
 })();
