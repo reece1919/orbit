@@ -6,7 +6,15 @@
   --gr-gold:#c2a575;
   --gr-forest:#142923;
 }
-.home-view{min-width:0;}
+.home-view{min-width:0;display:flex;flex-direction:column;}
+.home-view > .grimoire-intro{order:0;}
+.home-view > .grimoire-portals{order:1;}
+.home-view > .grimoire-day-heading{order:2;}
+.home-view > .home-work-grid{order:3;}
+.home-view > .home-signals-grid{order:4;}
+.home-view > .review-home-module{order:5;}
+.home-view > .habits-home-module{order:6;}
+.home-view > .home-capture{order:7;}
 .home-view > .system-launch-bar{display:none!important;}
 .home-view .grimoire-intro{
   display:grid;grid-template-columns:minmax(0,1fr) minmax(180px,260px);
@@ -63,8 +71,7 @@
 .home-view .grimoire-chapter p{margin:0;color:var(--muted);line-height:1.55;font-size:11px;flex:1;}
 .home-view .grimoire-chapter-links{display:flex;flex-wrap:wrap;gap:8px 14px;margin-top:7px;align-items:center;}
 .home-view .grimoire-chapter-links a,.home-view .grimoire-chapter-links button{
-  color:var(--accent);font:750 11px/1.3 inherit; /* font family inherited below */
-  font-family:inherit;font-size:11px;font-weight:750;
+  color:var(--accent);font-family:inherit;font-size:11px;font-weight:750;line-height:1.3;
   display:inline-flex;align-items:center;gap:5px;padding:3px 0;border:0;background:none;
   cursor:pointer;text-decoration:none;}
 .home-view .grimoire-chapter-links a:hover,.home-view .grimoire-chapter-links button:hover{text-decoration:underline;}
