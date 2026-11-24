@@ -28,7 +28,7 @@ test('Reader is owner-scoped, paginated, and cleared on close or auth change',()
   assert.ok(js.includes('auth.user?.id!==account'));
   assert.ok(js.includes("dialog.addEventListener('close'"));
   assert.ok(js.includes("document.addEventListener('orbit:auth-changed'"));
-  assert.doesNotMatch(js,/\.(insert|update|upsert|delete)\(/g.exec(js)?.[0]==='.delete('? /\.(insert|update|upsert)\(/ : /\.(insert|update|upsert)\(/);
+  assert.doesNotMatch(js,/\.(insert|update|upsert)\(/);
   assert.doesNotMatch(js,/innerHTML|localStorage|sessionStorage/);
   for(const id of ['hearth-dialog','hearth-open','hearth-close','hearth-list','hearth-recipe','hearth-refresh','hearth-search','hearth-status-filter','hearth-tag-filter','hearth-state'])assert.equal(html.split('id="'+id+'"').length,2);
 });
