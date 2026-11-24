@@ -59,6 +59,8 @@
   
   <link rel="stylesheet" href="sanctum-almanac.css?v=1.2.0" />
   <script src="sanctum-almanac.js?v=1.2.0" defer></script>
+  <link rel="stylesheet" href="hearth-cookbook.css?v=1" />
+  <script src="hearth-cookbook.js?v=1" defer></script>
 </head>
 <body data-theme="dark" data-auth-state="checking">
   <section id="orbit-auth" class="auth-screen" aria-labelledby="auth-heading" aria-live="polite">
@@ -197,6 +199,11 @@
                 <h3>The Conservatory</h3><p>Plants, observations, propagation, and the living herbarium.</p>
                 <div id="gaia-home-attention" aria-live="polite"><p id="gaia-home-note">Reading the catalog…</p><ul id="gaia-home-flags" hidden></ul><p id="gaia-home-review-status">Sign in to see saved private recommendations.</p><ul id="gaia-home-recommendations" hidden></ul></div>
                 <div class="grimoire-chapter-links"><a href="https://reece1919.github.io/gaia/" target="_blank" rel="noopener noreferrer">Open GAIA <span data-icon="arrow-up-right"></span></a></div>
+              </article>
+              <article class="grimoire-chapter">
+                <div class="grimoire-chapter-head"><span class="grimoire-chapter-symbol" aria-hidden="true">♨</span><span class="grimoire-chapter-status">Culinary collection</span></div>
+                <h3>The Hearth</h3><p>Recipes, kitchen experiments, and favorite dishes.</p>
+                <div class="grimoire-chapter-links"><button type="button" id="hearth-open">Open cookbook <span data-icon="arrow-right"></span></button></div>
               </article>
               <article class="grimoire-chapter">
                 <div class="grimoire-chapter-head"><span class="grimoire-chapter-symbol"><span data-icon="book-open"></span></span><span class="grimoire-chapter-status">Creative worlds</span></div>
@@ -946,6 +953,14 @@
       </section>
     </div>
   </div>
+  <dialog id="hearth-dialog" class="item-dialog hearth-dialog" aria-labelledby="hearth-title">
+    <div class="dialog-header"><div><div class="eyebrow small">THE HEARTH / PRIVATE COOKBOOK</div><h2 id="hearth-title">The Culinary Codex</h2></div><button type="button" id="hearth-close" class="small-icon-btn" aria-label="Close cookbook"><span data-icon="x"></span></button></div>
+    <p class="hearth-intro">Your saved recipes, from first experiments to favorites. Create and revise them in ChatGPT; refresh to see the latest edition.</p>
+    <div class="hearth-toolbar"><label>Search<input type="search" id="hearth-search" placeholder="Dish, ingredient, cuisine…" autocomplete="off"></label><label>Status<select id="hearth-status-filter"><option value="">All recipes</option><option value="favorite">Favorites</option><option value="tested">Tested</option><option value="untested">Untested</option></select></label><label>Tag<select id="hearth-tag-filter"><option value="">All tags</option></select></label><button type="button" class="quiet-pill" id="hearth-refresh">Refresh</button></div>
+    <p id="hearth-state" role="status" aria-live="polite"></p>
+    <div class="hearth-layout"><div id="hearth-list" class="hearth-list" aria-label="Recipe index"></div><article id="hearth-recipe" class="hearth-recipe" aria-label="Selected recipe"></article></div>
+    <p class="hearth-footnote">Recipe nutrition is an estimate, not a food diary entry. Log meals separately when eaten.</p>
+  </dialog>
   <dialog id="calendar-event-dialog" class="item-dialog" aria-labelledby="cal-event-dialog-title">
     <form id="calendar-event-form" class="cal-event-form">
       <div class="dialog-header"><div><div class="eyebrow small">ORBIT / CALENDAR</div><h2 id="cal-event-dialog-title">New event</h2></div><button type="button" id="cal-event-close" class="small-icon-btn" aria-label="Close"><span data-icon="x"></span></button></div>
