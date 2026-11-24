@@ -1,17 +1,23 @@
 {
   "id": "/orbit/",
-  "name": "ORBIT — Personal Command Center",
-  "short_name": "ORBIT",
-  "description": "ORBIT personal command center and connected specialist dashboards",
+  "name": "The Grimoire | Home",
+  "short_name": "Grimoire",
+  "description": "The Grimoire: personal headquarters for daily life, creative worlds and connected applications",
   "start_url": "/orbit/?view=home",
   "scope": "/orbit/",
   "display": "standalone",
   "display_override": [
     "standalone"
   ],
-  "theme_color": "#070d19",
-  "background_color": "#070d19",
+  "theme_color": "#0d1513",
+  "background_color": "#0d1513",
   "icons": [
+    {
+      "src": "/orbit/assets/grimoire-mark.svg?v=1.0.0",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
     {
       "src": "/orbit/apple-touch-icon.png?v=4.0.0",
       "sizes": "160x160",
