@@ -101,7 +101,9 @@
         '<span class="grimoire-calendar-dots" aria-hidden="true">'+dots+overflow+'</span>'+first+
         '</button>';
     }).join('');
-    $('#grimoire-calendar-grid').innerHTML=weekdays+cells;
+    const homeGrid=$('#grimoire-calendar-grid');
+    homeGrid.dataset.mode=mode;
+    homeGrid.innerHTML=weekdays+cells;
     const dayItems=$('#grimoire-calendar-day-list');
     dayItems.innerHTML=!owner?'<p class="grimoire-calendar-empty">Sign in to see your schedule.</p>':
       !count.length?'<p class="grimoire-calendar-empty">Nothing scheduled for this day.</p>':
