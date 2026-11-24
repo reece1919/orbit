@@ -4,7 +4,7 @@
 
 - Replaced the earlier book-and-star concept with an **original circular geometric sigil drawn on parchment** (`assets/grimoire-mark.svg`). The homepage also displays a more detailed original engraved circle (`assets/grimoire-arcane-plate.svg`). Both are local SVG assets rather than third-party imagery.
 - Added `grimoire-theme.css` as the final stylesheet to unify ORBIT's accumulated celestial and specialist styles into a cohesive dark-library palette: ink green, warm ivory, muted brass, and parchment. Includes matching light mode, mobile navigation, authentication, common cards, and quick links.
-- Updated the browser favicon, installed-app name, and web manifest's primary icon. Kept the existing PNG touch-icon fallback for older platforms pending a future matching raster replacement.
+- Updated the browser favicon and installed-app name. A matching 160×160 parchment sigil PNG now replaces ORBIT's older iOS touch icon and manifest PNG fallback, alongside the primary SVG icon.
 - Preserved the existing data tables, application routes, login IDs, task components, and script hooks. No backend or authentication changes.
 - Static checks confirm no original HTML IDs/panels were lost, all core bindings remain, and the manifest parses. Browser-rendered layout and authenticated runtime still require a live acceptance check after deployment.
 
