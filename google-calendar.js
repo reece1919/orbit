@@ -25,7 +25,7 @@
    busy?(connected?'Refreshing Google Calendar…':'Checking Google Calendar connection…'):
    error?error:!configured?'Google Calendar setup required: configure Google OAuth credentials in Supabase.':
    connected?'Connected to '+email+' · Read only'+(lastSync?' · Updated '+stamp(lastSync):''):
-   'Not connected · Google events will appear alongside ORBIT events and Todoist tasks.';
+   'Not connected · Authorize Google to show your calendars in Grimoire.';
   connect.hidden=!owner||connected;connect.disabled=busy||!configured;
   connect.textContent=connected?'Connected':'Connect Google Calendar';
   reload.hidden=!owner||!connected;reload.disabled=busy;
@@ -152,7 +152,7 @@
   owner=id;connected=false;configured=false;email='';busy=false;calendarOptions=[];selected=[];items=[];rangeStart='';rangeEnd='';loaded=false;failedRangeKey='';needsRange=null;error='';lastSync='';
   renderConnection();emit();if(owner)void check();
  });
- window.ORBITGoogleCalendar=Object.freeze({ensureRange,getEvents:events,getStatus:info});
+ window.ORBITGoogleCalendar=Object.freeze({ensureRange,getEvents:events,getStatus:info,connect:begin});
  renderConnection();
  window.ORBITAuth?.ready?.then(()=>{const id=window.ORBITAuth.user?.id||'';if(id!==owner){owner=id;renderConnection();if(id)void check()}});
 })();
