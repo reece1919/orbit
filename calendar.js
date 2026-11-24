@@ -121,6 +121,16 @@
     const homeGrid=$('#grimoire-calendar-grid');
     homeGrid.dataset.mode=mode;
     homeGrid.innerHTML=weekdays+cells;
+    const summary=$('#home-week-summary');
+    if(summary){
+      const weekDates=days.includes(now)?days.filter(d=>d>now):days;
+      const populated=weekDates.filter(d=>(byDate.get(d)||[]).length);
+      summary.hidden=mode!=='week'||!owner;
+      summary.innerHTML=summary.hidden?'':populated.length?populated.map(d=>{
+        const items=byDate.get(d)||[],shown=items.slice(0,2).map(item=>esc(item.title)).join(' · ');
+        return '<button type="button" class="home-week-row" data-home-cal-day="'+d+'" aria-label="'+esc(dateText(d)+', '+items.length+' scheduled items')+'"><strong>'+esc(dateText(d,{weekday:'short',day:'numeric'}))+'</strong><span>'+shown+(items.length>2?' · +'+(items.length-2)+' more':'')+'</span></button>';
+      }).join(''):'<p class="watch-detail">No other dated items in the loaded week.</p>';
+    }
     const dayItems=$('#grimoire-calendar-day-list');
     dayItems.innerHTML=!owner?'<p class="grimoire-calendar-empty">Sign in to see your schedule.</p>':
       selected===now?'<p class="grimoire-calendar-empty">Today’s schedule and tasks are in the main panel.</p>':
