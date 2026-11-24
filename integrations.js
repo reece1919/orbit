@@ -175,7 +175,7 @@
     // Unassigned Todoist tasks belong to ORBIT. Preserve the source icon for module-tagged tasks.
     const origin=system==='general'?'orbit':system;
     const iconAssets={
-      orbit:'assets/orbit-emblem-cutout.png?v=4.0.0',
+      orbit:'assets/grimoire-mark.svg?v=1.1.0',
       vita:'assets/systems/vita-metal.webp?v=2.0.0',
       quill:'assets/systems/quill-blue-metal.png?v=2.0.0',
       driftmark:'assets/systems/quill-blue-metal.png?v=2.0.0'
