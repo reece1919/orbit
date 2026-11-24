@@ -1,5 +1,24 @@
 # ORBIT — Headquarters for Execution, Logic, and Memory
 
+## Grimoire Home · first replacement milestone (November 23, 2026)
+
+The ORBIT codebase now hosts a reimagined **Grimoire Home**. The existing Github Pages deployment, Supabase account, Todoist bridge, and the legacy functional panels remain. This milestone replaces the first-screen experience rather than migrating or deleting records.
+
+- A quiet, responsive home: local-date greeting, ChatGPT launch, calendar, and six chapter cards.
+- Chapters: Conservatory (GAIA), Scriptorium (QUILL / RUNE / World Anvil), Workshop (GitHub), Wellbeing (existing VITA / habits), Reference (via ChatGPT), and Chronicle (clearly marked planned, with existing MUSE journal).
+- Real Todoist daily agenda, Side Quests (desktop), Gmail saved snapshot, daily review, habits, and scratchpad still use their **existing** elements, handlers, and data.
+- The former system launch bar is hidden but retained temporarily so its bindings cannot be broken by the first redesign.
+- New files: `grimoire-home.css` and `grimoire-home.js`. Both are presentation-only, with no data writes, new API keys, extra database, or subscription.
+- Renamed visible shell branding and the Home breadcrumb without changing underlying database/table names or auth flow.
+- **Not yet verified:** authenticated cross-device runtime behavior, responsive visual acceptance in live browsers, and GitHub Pages propagation. Test those after deploying. If something breaks, revert this merge; source data is unchanged.
+
+### Out of scope for this milestone
+The Reference does not expose private Supabase records in the public dashboard. ChatGPT Project URLs are not inferred. Chronicle is not a functioning new database. World Anvil remains authoritative for published canon; the card links to its service rather than pretending an unverified deep link exists.
+
+---
+
+
+
 ## v1.3.0 — Galactic atlas and labeled Todoist
 
 - Replaced the neon homepage hero with a subdued astronomical chart and **six actual destinations**: GAIA, ECHO, RUNE, FUEL, PULSE, and Inbox. Removed the duplicate Tasks and Projects planets; both remain in regular navigation.

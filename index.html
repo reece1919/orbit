@@ -6,8 +6,8 @@
   <meta name="theme-color" content="#070c19" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' https: data: blob:; connect-src 'self' https://zdurujqwhxqrwbhwzzxg.supabase.co wss://zdurujqwhxqrwbhwzzxg.supabase.co https://api.todoist.com https://reece1919.github.io https://raw.githubusercontent.com; font-src 'self' data:; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
   <meta name="referrer" content="strict-origin-when-cross-origin" />
-  <meta name="description" content="ORBIT Personal Command Center — Todoist tasks, GAIA plants, routines, projects, and daily focus." />
-  <title>ORBIT — Celestial Command Center</title>
+  <meta name="description" content="The Grimoire Home — personal headquarters, creative worlds, daily planning, and connected tools." />
+  <title>The Grimoire | Home</title>
   <link rel="stylesheet" href="styles.css?v=0.6.2" />
   <link rel="stylesheet" href="security-mfa.css?v=1.2.1" />
   <link rel="stylesheet" href="celestial.css?v=1.4.0" />
@@ -22,10 +22,11 @@
   <link rel="stylesheet" href="nutrition-week.css?v=1.0.0" />
   <link rel="stylesheet" href="mobile-nav.css?v=1.2.0" />
   <link rel="stylesheet" href="orbit-brand.css?v=4.0.0" />
-  <link rel="stylesheet" href="agenda-overdue.css?v=1.2.1" />
+    <link rel="stylesheet" href="agenda-overdue.css?v=1.2.1" />
   <link rel="stylesheet" href="calendar.css?v=1.1.0" />
   <link rel="stylesheet" href="journal.css?v=1.3.0" />
   <link rel="stylesheet" href="trophy.css?v=1.0.0" />
+  <link rel="stylesheet" href="grimoire-home.css?v=1.0.0" />
   <link rel="manifest" href="pulse.webmanifest?v=4.0.0" />
   <link rel="icon" type="image/png" href="assets/orbit-emblem-cutout.png?v=4.0.0" />
   <link rel="apple-touch-icon" sizes="160x160" href="apple-touch-icon.png?v=4.0.0" />
@@ -53,20 +54,21 @@
   <script src="habits.js?v=1.1.0" defer></script>
   <script src="signals.js?v=1.2.0" defer></script>
   <script src="chat-shortcuts.js?v=1.1.3" defer></script>
+  <script src="grimoire-home.js?v=1.0.0" defer></script>
 </head>
 <body data-theme="dark" data-auth-state="checking">
   <section id="orbit-auth" class="auth-screen" aria-labelledby="auth-heading" aria-live="polite">
     <div class="auth-visual" aria-hidden="true"><div class="auth-ring auth-ring-one"></div><div class="auth-ring auth-ring-two"></div><img class="orbit-auth-watermark" src="assets/orbit-emblem-cutout.png?v=4.0.0" alt=""></div>
     <div class="auth-card">
-      <div class="auth-brand"><div class="brand-mark orbit-logo-mark" aria-hidden="true"><img src="assets/orbit-emblem-cutout.png?v=4.0.0" alt=""></div><div><div class="brand-name">ORBIT<span class="brand-period">.</span></div><div class="brand-sub">PERSONAL COMMAND CENTER</div></div></div>
-      <div class="eyebrow small">ONE ACCOUNT / TWO WORKSPACES</div>
+      <div class="auth-brand"><div class="brand-mark orbit-logo-mark" aria-hidden="true"><img src="assets/orbit-emblem-cutout.png?v=4.0.0" alt=""></div><div><div class="brand-name">GRIMOIRE<span class="brand-period">.</span></div><div class="brand-sub">PERSONAL HEADQUARTERS</div></div></div>
+      <div class="eyebrow small">ONE ACCOUNT / CONNECTED SYSTEMS</div>
       <h1 id="auth-heading">Welcome back<span class="accent-period">.</span></h1>
-      <p class="auth-intro">Sign in with your existing GAIA account to access ORBIT. No second account required.</p>
+      <p class="auth-intro">Sign in with your existing GAIA account to access Grimoire Home. No second account required.</p>
       <p id="auth-loading" class="auth-loading" role="status">Checking your session…</p>
       <form id="orbit-login" class="auth-form" hidden>
         <label>Email address<input name="email" type="email" autocomplete="username" required maxlength="254" placeholder="you@example.com"></label>
         <label>Password<input name="password" type="password" autocomplete="current-password" required placeholder="Your GAIA password"></label>
-        <button class="primary-button" id="orbit-signin" type="submit">Sign in to ORBIT</button>
+        <button class="primary-button" id="orbit-signin" type="submit">Sign in to Grimoire</button>
       </form>
       <p id="auth-message" class="auth-message" role="alert" hidden></p>
       <button id="auth-retry" class="outline-button auth-retry" type="button" hidden>Retry connection</button>
@@ -77,12 +79,12 @@
     <aside class="sidebar" id="sidebar">
       <div class="brand">
         <div class="brand-mark orbit-logo-mark" aria-hidden="true"><img src="assets/orbit-emblem-cutout.png?v=4.0.0" alt=""></div>
-        <div><div class="brand-name">ORBIT<span class="brand-period">.</span></div><div class="brand-sub">HEADQUARTERS</div></div>
+        <div><div class="brand-name">GRIMOIRE<span class="brand-period">.</span></div><div class="brand-sub">PERSONAL HEADQUARTERS</div></div>
       </div>
-      <div class="side-status"><span class="pulse-dot"></span> PERSONAL OPERATIONS CENTER <span class="status-bar"></span></div>
+      <div class="side-status"><span class="pulse-dot"></span> YOUR CONNECTED WORLDS <span class="status-bar"></span></div>
       <nav aria-label="Primary navigation" class="main-nav">
         <div class="nav-label">WORKSPACE</div>
-        <button type="button" class="nav-item active" data-view="home"><span data-icon="layout-dashboard"></span> Overview <span class="nav-indicator"></span></button>
+        <button type="button" class="nav-item active" data-view="home"><span data-icon="layout-dashboard"></span> Home <span class="nav-indicator"></span></button>
         <button type="button" class="nav-item" data-view="focus"><span data-icon="check-circle"></span> Todoist &amp; Tasks <span class="nav-count" id="nav-task-count">0</span></button>
         <button type="button" class="nav-item" data-view="calendar"><span data-icon="calendar"></span> Calendar <span class="nav-indicator"></span></button>
         <button type="button" class="nav-item" data-view="review"><span data-icon="moon"></span> Daily Review <span class="nav-indicator"></span></button>
@@ -98,17 +100,71 @@
       <div class="sidebar-rule"></div>
       <div class="sidebar-bottom">
         
-        <div class="sidebar-footer">ORBIT / SYSTEM 001 <span>v1.4.0</span></div>
+        <div class="sidebar-footer">GRIMOIRE / HOME <span>v1.0.0</span></div>
       </div>
     </aside>
     <button type="button" id="nav-backdrop" class="nav-backdrop" aria-label="Close navigation" hidden></button>
     <div class="main-column">
       <header class="topbar">
-        <div class="breadcrumbs"><button class="menu-button" type="button" id="menu-button" aria-label="Toggle menu" aria-controls="sidebar" aria-expanded="false"><span data-icon="menu"></span></button><span class="crumb-parent">HEADQUARTERS</span><span class="crumb-slash">/</span><span id="current-crumb">OVERVIEW</span></div>
-        <div class="topbar-right"><a class="top-github-shortcut" href="https://github.com/reece1919/orbit" target="_blank" rel="noopener noreferrer" title="Open ORBIT source code on GitHub" aria-label="Open ORBIT repository on GitHub"><span data-icon="github"></span><span class="top-github-text">GitHub</span><span class="top-github-external" data-icon="arrow-up-right"></span></a><a class="top-github-shortcut top-launch-chatgpt" href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer" title="Open ChatGPT" aria-label="Open ChatGPT"><span data-icon="message-circle"></span><span class="top-github-text">ChatGPT</span><span class="top-github-external" data-icon="arrow-up-right"></span></a><a class="top-github-shortcut top-launch-orbit" id="orbit-edit-chat" href="#" target="_blank" rel="noopener noreferrer" title="Set up your ORBIT development chat link" aria-label="Set up the ORBIT development chat shortcut" aria-haspopup="dialog"><span data-icon="pen-line"></span><span class="top-github-text">Edit ORBIT</span><span class="top-github-external" data-icon="arrow-up-right"></span></a><span id="topbar-date" class="top-date"></span><span class="top-separator"></span><button type="button" id="orbit-account-button" class="top-account" title="Sign out of ORBIT and GAIA on this browser"><span data-icon="shield-check"></span><span id="orbit-account-label">Account</span></button></div>
+        <div class="breadcrumbs"><button class="menu-button" type="button" id="menu-button" aria-label="Toggle menu" aria-controls="sidebar" aria-expanded="false"><span data-icon="menu"></span></button><span class="crumb-parent">THE GRIMOIRE</span><span class="crumb-slash">/</span><span id="current-crumb">HOME</span></div>
+        <div class="topbar-right"><a class="top-github-shortcut" href="https://github.com/reece1919/orbit" target="_blank" rel="noopener noreferrer" title="Open ORBIT source code on GitHub" aria-label="Open ORBIT repository on GitHub"><span data-icon="github"></span><span class="top-github-text">GitHub</span><span class="top-github-external" data-icon="arrow-up-right"></span></a><a class="top-github-shortcut top-launch-chatgpt" href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer" title="Open ChatGPT" aria-label="Open ChatGPT"><span data-icon="message-circle"></span><span class="top-github-text">ChatGPT</span><span class="top-github-external" data-icon="arrow-up-right"></span></a><a class="top-github-shortcut top-launch-orbit" id="orbit-edit-chat" href="#" target="_blank" rel="noopener noreferrer" title="Open or configure your development chat" aria-label="Open or configure development chat shortcut" aria-haspopup="dialog"><span data-icon="pen-line"></span><span class="top-github-text">Development chat</span><span class="top-github-external" data-icon="arrow-up-right"></span></a><span id="topbar-date" class="top-date"></span><span class="top-separator"></span><button type="button" id="orbit-account-button" class="top-account" title="Sign out of ORBIT and GAIA on this browser"><span data-icon="shield-check"></span><span id="orbit-account-label">Account</span></button></div>
       </header>
       <main class="content" id="main-content">
-        <section data-panel="home" class="view-panel home-view" aria-label="Today at a glance">
+        <section data-panel="home" class="view-panel home-view" aria-label="The Grimoire home">
+          <section class="grimoire-intro" aria-labelledby="grimoire-home-title">
+            <div>
+              <p class="grimoire-kicker">The Grimoire <span> / Your personal headquarters</span></p>
+              <h1 id="grimoire-home-title"><span id="grimoire-welcome">The day is yours.</span><br>Make it interesting.</h1>
+              <p class="grimoire-lede">Your everyday life, creative worlds, and curious projects, all within reach. A quiet front door to everything we've built.</p>
+              <div class="grimoire-actions">
+                <a class="grimoire-action grimoire-action-primary" href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer"><span data-icon="message-circle"></span> Talk with Aethera <span data-icon="arrow-up-right"></span></a>
+                <button type="button" class="grimoire-action grimoire-action-secondary" data-view="calendar"><span data-icon="calendar"></span> View calendar</button>
+              </div>
+            </div>
+            <aside class="grimoire-intro-aside" aria-label="Today's date">
+              <p class="grimoire-aside-label">TODAY IN THE GRIMOIRE</p>
+              <time id="grimoire-date">Your day, at a glance</time>
+              <span class="grimoire-aside-sub">A place to begin, not another list of things you should be doing.</span>
+            </aside>
+          </section>
+          <section class="grimoire-portals" aria-labelledby="grimoire-chapters-title">
+            <div class="grimoire-section-heading">
+              <div><div class="eyebrow small">YOUR WORLDS</div><h2 id="grimoire-chapters-title">The chapters</h2></div>
+              <p>Open the tools and spaces that matter to you.</p>
+            </div>
+            <div class="grimoire-chapters">
+              <article class="grimoire-chapter">
+                <div class="grimoire-chapter-head"><span class="grimoire-chapter-symbol"><span data-icon="sprout"></span></span><span class="grimoire-chapter-status">Living collection</span></div>
+                <h3>The Conservatory</h3><p>Plants, observations, propagation, and the living herbarium.</p>
+                <div class="grimoire-chapter-links"><a href="https://reece1919.github.io/gaia/" target="_blank" rel="noopener noreferrer">Open GAIA <span data-icon="arrow-up-right"></span></a></div>
+              </article>
+              <article class="grimoire-chapter">
+                <div class="grimoire-chapter-head"><span class="grimoire-chapter-symbol"><span data-icon="book-open"></span></span><span class="grimoire-chapter-status">Creative worlds</span></div>
+                <h3>The Scriptorium</h3><p>Driftbound, writing, worldbuilding, and characters.</p>
+                <div class="grimoire-chapter-links"><a href="driftmark/">QUILL <span data-icon="arrow-right"></span></a><a href="https://reece1919.github.io/rune-web/" target="_blank" rel="noopener noreferrer">RUNE <span data-icon="arrow-up-right"></span></a><a href="https://www.worldanvil.com/" target="_blank" rel="noopener noreferrer">World Anvil <span data-icon="arrow-up-right"></span></a></div>
+              </article>
+              <article class="grimoire-chapter">
+                <div class="grimoire-chapter-head"><span class="grimoire-chapter-symbol"><span data-icon="github"></span></span><span class="grimoire-chapter-status">Building</span></div>
+                <h3>The Workshop</h3><p>Code, integrations, experiments, and Grimoire's architecture.</p>
+                <div class="grimoire-chapter-links"><a href="https://github.com/reece1919" target="_blank" rel="noopener noreferrer">Open GitHub <span data-icon="arrow-up-right"></span></a></div>
+              </article>
+              <article class="grimoire-chapter">
+                <div class="grimoire-chapter-head"><span class="grimoire-chapter-symbol"><span data-icon="heart-pulse"></span></span><span class="grimoire-chapter-status">Daily care</span></div>
+                <h3>Wellbeing</h3><p>Daily check-ins, nutrition, habits, and reflections.</p>
+                <div class="grimoire-chapter-links"><button type="button" data-view="vita">Open VITA <span data-icon="arrow-right"></span></button><button type="button" data-view="habits">Habits <span data-icon="arrow-right"></span></button></div>
+              </article>
+              <article class="grimoire-chapter">
+                <div class="grimoire-chapter-head"><span class="grimoire-chapter-symbol"><span data-icon="layers"></span></span><span class="grimoire-chapter-status">Context &amp; connections</span></div>
+                <h3>The Reference</h3><p>Personal context and people, accessed conversationally through ChatGPT.</p>
+                <div class="grimoire-chapter-links"><a href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer">Open ChatGPT <span data-icon="arrow-up-right"></span></a></div>
+              </article>
+              <article class="grimoire-chapter grimoire-chapter-muted">
+                <div class="grimoire-chapter-head"><span class="grimoire-chapter-symbol"><span data-icon="pen-line"></span></span><span class="grimoire-chapter-status">Chronicle planned</span></div>
+                <h3>The Chronicle</h3><p>A future record of meaningful moments. Your existing journal remains available.</p>
+                <div class="grimoire-chapter-links"><button type="button" data-view="journal">Open MUSE journal <span data-icon="arrow-right"></span></button></div>
+              </article>
+            </div>
+          </section>
           <section class="system-launch-bar" aria-label="System navigation"><img class="orbit-home-logo" src="assets/orbit-emblem-cutout.png?v=4.0.0" width="52" height="52" alt="ORBIT logo"><div class="system-launch-heading"><span class="eyebrow small">SYSTEMS</span><span id="home-date"></span><span id="home-greeting" class="visually-hidden">Welcome.</span></div><div class="system-launch-items"><a class="system-launch" href="https://reece1919.github.io/gaia/" target="_blank" rel="noopener noreferrer" aria-label="Open GAIA"><img src="assets/systems/gaia.svg?v=2.0.0" alt="" width="34" height="34"><span>GAIA</span></a>
 <a class="system-launch" href="https://reece1919.github.io/echo/" target="_blank" rel="noopener noreferrer" aria-label="Open ECHO"><img src="https://reece1919.github.io/echo/echo-metal-logo.png?v=2.0.0" alt="" width="34" height="34"><span>ECHO</span></a>
 <a class="system-launch" href="https://reece1919.github.io/rune-web/" target="_blank" rel="noopener noreferrer" aria-label="Open RUNE"><img src="assets/systems/rune-metal.png?v=2.0.0" alt="" width="34" height="34"><span>RUNE</span></a>
@@ -117,6 +173,7 @@
 <button class="system-launch" type="button" data-view="journal" aria-label="Open MUSE personal journal"><img src="assets/systems/muse-tarot.png?v=2.0.0" alt="" width="34" height="34"><span>MUSE</span></button>
 <button class="system-launch" type="button" data-view="trophy" aria-label="Open TROPHY Steam achievements"><span data-icon="trophy"></span><span>TROPHY</span></button></div></section>
 
+          <div class="grimoire-section-heading grimoire-day-heading"><div><div class="eyebrow small">TODAY &amp; TOMORROW</div><h2>The day ahead</h2></div><p>Real tasks and the latest saved inbox snapshot.</p></div>
           <div class="home-signals-grid home-signals-grid-single" aria-label="Latest unread Gmail activity">
             <section class="module home-signal home-signal-mail">
               <div class="module-head home-module-head">
@@ -170,7 +227,7 @@
               </section>
             </div>
           </div>
-          <section class="module review-home-module" aria-label="Tonight’s daily review"><div class="module-head"><div><div class="eyebrow small">ORBIT / 8:30 PM EVENING ROUTINE</div><h3>Daily review</h3></div><span data-icon="moon"></span></div><p id="review-home-state" class="watch-detail">Ready to record</p><button type="button" data-view="review" class="primary-button">Open tonight’s review</button></section>
+          <section class="module review-home-module" aria-label="Tonight’s daily review"><div class="module-head"><div><div class="eyebrow small">EVENING REFLECTION</div><h3>Daily review</h3></div><span data-icon="moon"></span></div><p id="review-home-state" class="watch-detail">Ready to record</p><button type="button" data-view="review" class="primary-button">Open tonight’s review</button></section>
           <section class="module habits-home-module" aria-label="Habit recording progress"><div class="module-head"><div><div class="eyebrow small">TODAY / HABITS</div><h3>Habits</h3></div><button type="button" class="subtle-link" data-view="habits">Open Habits</button></div><p id="habits-home-summary" class="watch-detail">Checking your habits…</p></section>
           <div class="dashboard-lower home-capture">
             <section class="module note-module"><div class="module-head"><div><div class="eyebrow small">NOTES</div><h3>Scratchpad</h3></div><span data-icon="pen-line" class="muted-icon"></span></div><textarea id="scratchpad" placeholder="An idea, a reminder, something to remember…" aria-label="Scratchpad notes"></textarea><div class="note-bottom"><span data-icon="hard-drive"></span> Saved on this device · cloud optional <span id="note-saved" aria-live="polite"></span></div></section>
