@@ -112,8 +112,9 @@
   for(let d=start;d<=last&&values.length<72;d=nextDay(d))values.push(d);
   return values.length?values:[start];
  }
- function events(){
-  return items.flatMap(event=>toDays(event).map(date=>({
+ let todayCache=null,todayCacheKey='';
+ function events(source=items){
+  return source.flatMap(event=>toDays(event).map(date=>({
    kind:'google',date,title:event.title||'(Untitled event)',id:event.calendarId+':'+event.id,
    time:event.allDay?'All day':new Date(event.start).toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'}),
    source:'google',event
@@ -132,9 +133,10 @@
    const begin=new Date(start+'T00:00:00'),finish=new Date(end+'T00:00:00');
    const result=await request('events',{start:begin.toISOString(),end:finish.toISOString()});
    if(owner!==current)return;
-   items=Array.isArray(result.items)?result.items:[];rangeStart=start;rangeEnd=end;loaded=true;successful=true;failedRangeKey='';lastSync=result.synced_at||new Date().toISOString();
+   items=Array.isArray(result.items)?result.items:[];rangeStart=start;rangeEnd=end;loaded=true;
+   const now=localDay(new Date());if(start<=now&&now<end){todayCache=events().filter(e=>e.date===now);todayCacheKey=now;}successful=true;failedRangeKey='';lastSync=result.synced_at||new Date().toISOString();
    if(result.incomplete)error='Google Calendar returned a partial result. Some events may be missing.';
-  }catch(e){if(owner===current){error=e.message||'Calendar refresh failed.';failedRangeKey=key;items=[];loaded=false}}
+  }catch(e){if(owner===current){error=e.message||'Calendar refresh failed.';failedRangeKey=key;items=[];loaded=false;const now=localDay(new Date());if(start<=now&&now<end){todayCache=null;todayCacheKey='';}}}
   finally{
    if(owner===current){
     busy=false;renderConnection();emit();
@@ -154,10 +156,10 @@
  document.addEventListener('orbit:auth-changed',e=>{
   const id=e.detail?.user?.id||'';
   if(id===owner)return;
-  owner=id;connected=false;configured=false;email='';busy=false;calendarOptions=[];selected=[];items=[];rangeStart='';rangeEnd='';loaded=false;failedRangeKey='';needsRange=null;error='';lastSync='';
+  owner=id;todayCache=null;todayCacheKey='';connected=false;configured=false;email='';busy=false;calendarOptions=[];selected=[];items=[];rangeStart='';rangeEnd='';loaded=false;failedRangeKey='';needsRange=null;error='';lastSync='';
   renderConnection();emit();if(owner)void check();
  });
- window.ORBITGoogleCalendar=Object.freeze({ensureRange,getEvents:events,getStatus:info,connect:begin,refresh});
+ window.ORBITGoogleCalendar=Object.freeze({ensureRange,getEvents:()=>events(),getTodayEvents:()=>todayCacheKey===localDay(new Date())&&connected?todayCache:null,getStatus:info,connect:begin,refresh});
  renderConnection();
  window.ORBITAuth?.ready?.then(()=>{const id=window.ORBITAuth.user?.id||'';if(id!==owner){owner=id;renderConnection();if(id)void check()}});
 })();
