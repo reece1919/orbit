@@ -122,6 +122,7 @@
       const google=window.ORBITGoogleCalendar?.getStatus?.();
       const title=$('#grimoire-google-title'),note=$('#grimoire-google-note');
       const connect=$('#grimoire-google-connect'),manage=$('#grimoire-google-manage');
+      const refresh=$('#grimoire-google-refresh');
       const setup=$('#grimoire-google-setup');
       const linked=Boolean(owner&&google?.connected);
       const configured=Boolean(google?.configured);
@@ -137,6 +138,7 @@
         'One-time Google OAuth setup required for Grimoire sync.';
       if(connect){connect.hidden=!owner||linked||!configured;connect.disabled=Boolean(google?.busy);}
       if(manage)manage.hidden=!linked;
+      if(refresh){refresh.hidden=!linked;refresh.disabled=Boolean(google?.busy);}
       if(setup)setup.hidden=!owner||linked||configured;
     }
     const newTask=home.querySelector('[data-home-cal-new-task]');
@@ -233,7 +235,14 @@
     if(!button)return;
     if(button.id==='grimoire-google-connect'){
       const google=window.ORBITGoogleCalendar;
-      if(google?.getStatus?.().configured&&!google.getStatus().connected)void google.connect?.();
+      const status=google?.getStatus?.();
+      if(status?.configured&&!status.connected&&!status.busy)void google.connect?.();
+      return;
+    }
+    if(button.id==='grimoire-google-refresh'){
+      const google=window.ORBITGoogleCalendar;
+      const status=google?.getStatus?.();
+      if(status?.connected&&!status.busy)void google.refresh?.();
       return;
     }
     if(button.dataset.homeCalDay){setDay(button.dataset.homeCalDay);return}
