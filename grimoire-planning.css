@@ -388,3 +388,24 @@
   .home-view .grimoire-google-status{padding:9px 10px;gap:9px;}
   .home-view .grimoire-google-actions{width:100%;justify-content:flex-start;}
 }
+
+/* Unified daily planning: today dominates, week remains a compact companion. */
+.home-view .unified-planning .grimoire-planning-grid{grid-template-columns:minmax(0,2fr) minmax(270px,1fr);align-items:start}
+.home-view .unified-planning .today-main{display:flex;flex-direction:column;gap:17px}
+.home-view .unified-planning .today-subsection{min-width:0;margin:0;padding:0;border:0;background:transparent;box-shadow:none}
+.home-view .unified-planning .today-subsection + .today-subsection,.home-view .unified-planning #sanctum-almanac{border-top:1px solid var(--paper-line);padding-top:16px}
+.home-view .unified-planning .today-subsection .module-head{margin-bottom:10px;align-items:center;gap:8px;flex-wrap:wrap}
+.home-view .unified-planning #home-today-events{display:grid;gap:5px}
+.home-view .unified-planning #todoist-home-list{max-height:none;overflow:visible}
+.home-view .unified-planning [data-home-today-new-task]{align-self:flex-start}
+.home-view .unified-planning #grimoire-home-calendar{align-self:start}
+.home-view .unified-planning .grimoire-calendar-grid[data-mode="week"] .grimoire-calendar-day{min-height:54px;padding:5px 3px}
+.home-view .unified-planning .grimoire-calendar-preview{display:none}
+.home-view .unified-planning .grimoire-calendar-toolbar,.home-view .unified-planning .grimoire-calendar-navigation{flex-wrap:wrap}
+.home-view .unified-planning .grimoire-calendar-item input{accent-color:#426b4b;flex:none}
+.home-view .unified-planning #almanac-week-preview h4{font-size:12px;margin:12px 0 5px}
+.home-view .unified-planning #almanac-week-preview p{margin:3px 0;overflow-wrap:anywhere}
+@media(max-width:1130px){.home-view .unified-planning .grimoire-planning-grid{grid-template-columns:1fr}}
+@media(max-width:560px){.home-view .unified-planning .today-main{gap:13px}.home-view .unified-planning .grimoire-calendar-grid[data-mode="week"] .grimoire-calendar-day{min-height:48px}}
+
+.home-view .unified-planning .home-week-summary{display:grid;gap:3px;margin-top:10px}.home-view .unified-planning .home-week-summary[hidden]{display:none}.home-view .unified-planning .home-week-row{display:grid;grid-template-columns:62px minmax(0,1fr);gap:6px;text-align:left;background:transparent;border:0;border-bottom:1px solid var(--paper-line);padding:7px 2px;color:var(--paper-ink);font:inherit;font-size:11px;cursor:pointer}.home-view .unified-planning .home-week-row span{overflow-wrap:anywhere}.home-view .unified-planning .home-week-row:hover{background:var(--paper-surface)}

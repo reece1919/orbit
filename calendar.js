@@ -11,7 +11,7 @@
   const addDays=(key,n)=>{const d=parseDay(key);d.setDate(d.getDate()+n);return localDay(d)};
   const dateText=(key,style={weekday:'long',month:'long',day:'numeric',year:'numeric'})=>parseDay(key).toLocaleDateString(undefined,style);
   const today=()=>localDay(new Date());
-  let selected=today(),mode='month',editId='';
+  let selected=today(),mode='week',editId='';
   const weekday=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
   const assets={
     orbit:'assets/grimoire-mark.svg?v=1.1.0',
@@ -75,6 +75,23 @@
     const home=$('#grimoire-home-calendar');
     if(!home)return;
     $('#grimoire-calendar-period').textContent=header;
+    $('#home-week-heading').textContent=mode==='month'?'Month':days.includes(now)?'This Week':'Week outlook';
+    $('#home-today-date').textContent=dateText(now,{weekday:'long',month:'long',day:'numeric'});
+    const todayList=$('#home-today-events');
+    const google=window.ORBITGoogleCalendar?.getStatus?.();
+    const cachedGoogle=window.ORBITGoogleCalendar?.getTodayEvents?.();
+    const currentEvents=(byDate.get(now)||[]).filter(item=>item.kind==='event');
+    const todayEvents=[...currentEvents,...(cachedGoogle||[])].sort(order);
+    const scheduleNotice=!owner?'Sign in to see your schedule.':!google?.connected?'Google Calendar is not connected.':cachedGoogle===null||cachedGoogle===undefined?(google.busy?'Checking Google Calendar…':'Today’s Google events are not loaded. Choose Today to refresh the range.'):google.error?'Google Calendar: '+google.error:'';
+    todayList.innerHTML=!owner?'<p class="grimoire-calendar-empty">Sign in to see your schedule.</p>':
+      (todayEvents.length?todayEvents.map(item=>{
+        const source=item.kind==='google'?'Google Calendar':'ORBIT';
+        const when=item.event?.allDay?'All day':item.time||'';
+        return '<div class="grimoire-calendar-item"><span class="grimoire-calendar-item-dot is-'+(item.kind==='google'?'google':'event')+'"></span><div><strong>'+esc(item.title)+'</strong><small>'+esc([when,source,item.event?.location].filter(Boolean).join(' · '))+'</small></div></div>';
+      }).join(''):!scheduleNotice?'<p class="grimoire-calendar-empty">Nothing scheduled today.</p>':'')+(scheduleNotice?'<p class="watch-detail">'+esc(scheduleNotice)+'</p>':'');
+    const addToday=$('[data-home-today-new-task]');
+    if(addToday)addToday.disabled=!owner||!window.ORBITConnectedTodoist?.active?.();
+
     $('#grimoire-calendar-selected').textContent=dateText(selected,{weekday:'long',month:'short',day:'numeric'});
     $('#grimoire-calendar-count').textContent=count.length+' item'+(count.length===1?'':'s');
     home.querySelectorAll('[data-home-cal-mode]').forEach(button=>{
@@ -104,8 +121,19 @@
     const homeGrid=$('#grimoire-calendar-grid');
     homeGrid.dataset.mode=mode;
     homeGrid.innerHTML=weekdays+cells;
+    const summary=$('#home-week-summary');
+    if(summary){
+      const weekDates=days.includes(now)?days.filter(d=>d>now):days;
+      const populated=weekDates.filter(d=>(byDate.get(d)||[]).length);
+      summary.hidden=mode!=='week'||!owner;
+      summary.innerHTML=summary.hidden?'':populated.length?populated.map(d=>{
+        const items=byDate.get(d)||[],shown=items.slice(0,2).map(item=>esc(item.title)).join(' · ');
+        return '<button type="button" class="home-week-row" data-home-cal-day="'+d+'" aria-label="'+esc(dateText(d)+', '+items.length+' scheduled items')+'"><strong>'+esc(dateText(d,{weekday:'short',day:'numeric'}))+'</strong><span>'+shown+(items.length>2?' · +'+(items.length-2)+' more':'')+'</span></button>';
+      }).join(''):'<p class="watch-detail">No other dated items in the loaded week.</p>';
+    }
     const dayItems=$('#grimoire-calendar-day-list');
     dayItems.innerHTML=!owner?'<p class="grimoire-calendar-empty">Sign in to see your schedule.</p>':
+      selected===now?'<p class="grimoire-calendar-empty">Today’s schedule and tasks are in the main panel.</p>':
       !count.length?'<p class="grimoire-calendar-empty">Nothing scheduled for this day.</p>':
       count.slice(0,5).map(item=>{
         const type=item.kind==='google'?'Google Calendar':item.kind==='task'?'Todoist':'Legacy ORBIT event';
@@ -114,6 +142,7 @@
         const extra=time?' · '+time:'';
         return '<div class="grimoire-calendar-item"><span class="grimoire-calendar-item-dot is-'+
           (item.kind==='google'?'google':item.kind==='task'?'task':'event')+'"></span>'+
+          (item.kind==='task'?'<input type="checkbox" data-todoist-done="'+esc(item.id)+'" aria-label="Complete '+esc(item.title)+' in Todoist">':'')+
           '<div><strong>'+esc(item.title)+'</strong><small>'+esc(type+extra)+'</small></div></div>';
       }).join('')+(count.length>5?'<button type="button" class="subtle-link" data-view="calendar">'+
       'View all '+count.length+' items</button>':'');
@@ -151,7 +180,11 @@
     for(const item of list){if(!byDate.has(item.date))byDate.set(item.date,[]);byDate.get(item.date).push(item)}
     for(const group of byDate.values())group.sort(order);
     const days=weeks(),month=selected.slice(0,7),now=today(),count=byDate.get(selected)||[];
-    if(days.length)void window.ORBITGoogleCalendar?.ensureRange?.(days[0],addDays(days[days.length-1],1));
+    if(days.length){
+      const first=days[0]<now?days[0]:now, last=days[days.length-1]>now?days[days.length-1]:now;
+      const nearby=(parseDay(last)-parseDay(first))/86400000<=45;
+      void window.ORBITGoogleCalendar?.ensureRange?.(nearby?first:days[0],addDays(nearby?last:days[days.length-1],1));
+    }
     const header=mode==='month'
       ?dateText(month+'-01',{month:'long',year:'numeric'})
       :dateText(days[0],{month:'short',day:'numeric'})+' – '+dateText(days[6],{month:'short',day:'numeric',year:'numeric'});
@@ -196,6 +229,7 @@
         (item.event.notes?'<p>'+esc(item.event.notes)+'</p>':'')+'</div></article>';
     }).join(''):'<p class="cal-empty">Nothing scheduled for this day. Select another date or check Google Calendar.</p>';
     renderHomeCalendar({owner,days,byDate,month,now,count,header});
+    document.dispatchEvent(new CustomEvent('orbit:calendar-selection',{detail:{selected,days,mode,today:now}}));
     $('#cal-new-task').disabled=!owner||!window.ORBITConnectedTodoist?.active?.();
     $('#cal-new-task').title=$('#cal-new-task').disabled?'Connect Todoist in Tasks to add tasks':'Add task to Todoist';
   }
@@ -261,6 +295,10 @@
       if(date)date.value=selected;
     }
   });
+  $('[data-home-today-new-task]')?.addEventListener('click',()=>{
+    const create=$('#todoist-add');if(!create||create.disabled)return;
+    create.click();const date=$('#todoist-create-dialog [name="due_date"]');if(date)date.value=today();
+  });
   root.addEventListener('click',e=>{
     const button=e.target.closest('button');if(!button)return;
     if(button.dataset.calDay){setDay(button.dataset.calDay);return}
@@ -298,6 +336,6 @@
   });
   document.addEventListener('orbit:auth-changed',()=>{selected=today();render()});
   document.addEventListener('orbit:google-calendar-changed',render);
-  window.ORBITCalendar=Object.freeze({render});
+  window.ORBITCalendar=Object.freeze({render,getSelection:()=>({selected,days:weeks(),mode,today:today()})});
   render();
 })();

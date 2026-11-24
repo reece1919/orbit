@@ -197,21 +197,18 @@
     </article>`;
   }
   function homeAgenda(){
-    const today=TODAY(),future=new Date(today+'T12:00:00');
-    future.setDate(future.getDate()+1);
-    const tomorrow=`${future.getFullYear()}-${String(future.getMonth()+1).padStart(2,'0')}-${String(future.getDate()).padStart(2,'0')}`;
+    const today=TODAY();
     const organized=ordered(tasks);
     const visible=organized.filter(t=>!isSideQuest(t));
     const effectiveDate=t=>dayOf(t)||t._groupDay||'';
     const behind=visible.filter(t=>effectiveDate(t)&&effectiveDate(t)<today);
     const fresh=visible.filter(t=>effectiveDate(t)===today);
-    const next=visible.filter(t=>effectiveDate(t)===tomorrow);
     const group=(name,list)=>{
       const groupClass='agenda-day'+(name==='Overdue'?' is-overdue-group':'');
       if(!list.length)return `<section class="${groupClass}"><h4>${name} <span class="agenda-count">0</span></h4><p class="agenda-empty">Nothing scheduled</p></section>`;
       return `<section class="${groupClass}"><h4>${name} <span class="agenda-count">${list.length}</span></h4>${list.map(homeTaskMarkup).join('')}</section>`;
     };
-    return (behind.length?group('Overdue',behind):'')+group('Today',fresh)+group('Tomorrow',next);
+    return (behind.length?group('Overdue',behind):'')+group('Today',fresh);
   }
   function sideQuestMarkup(t){
     const due=dayOf(t);
