@@ -279,3 +279,28 @@ body[data-theme="light"] .home-view .home-sidequests .eyebrow{color:var(--accent
  .home-view .grimoire-chapter{transition:none;}
  .home-view .grimoire-chapter:hover{transform:none;}
 }
+
+/* Sign-in must feel like the same place as the authenticated application. */
+.auth-screen{
+  background:radial-gradient(ellipse 65% 55% at 50% 15%,rgba(108,110,74,.16),transparent 70%),
+    var(--bg);
+}
+.auth-ring{display:none;}
+.auth-visual{opacity:.24;}
+.orbit-auth-watermark{
+  width:min(54vw,300px);height:auto;aspect-ratio:1;
+  mix-blend-mode:normal!important;opacity:.36;border-radius:0;
+}
+.auth-card{
+  background:var(--panel);border:1px solid var(--line);
+  box-shadow:0 20px 56px rgba(0,0,0,.2);border-radius:15px;
+}
+.auth-card h1{
+  font-family:var(--gr-serif);font-size:clamp(34px,5vw,45px);
+  font-weight:500;letter-spacing:-.025em;
+}
+.auth-form label{color:var(--muted);font-weight:650;}
+.auth-form input{background:var(--panel-alt);border-color:var(--line);}
+.auth-card .auth-help{color:var(--muted-dim);}
+body[data-theme="light"] .auth-screen{background:var(--bg);}
+body[data-theme="light"] .auth-card{box-shadow:0 18px 52px rgba(74,62,41,.10);}
