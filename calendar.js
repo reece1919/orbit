@@ -14,7 +14,7 @@
   let selected=today(),mode='month',editId='';
   const weekday=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
   const assets={
-    orbit:'assets/orbit-emblem-cutout.png?v=4.0.0',
+    orbit:'assets/grimoire-mark.svg?v=1.1.0',
     gaia:'assets/systems/gaia.svg?v=2.0.0',
     echo:'assets/systems/echo.svg?v=2.0.0',
     rune:'assets/systems/rune-metal.png?v=2.0.0',
@@ -69,6 +69,59 @@
     return '<span class="cal-chip '+(item.kind==='google'?'cal-chip-google':item.kind==='event'?'cal-chip-event':'cal-chip-task')+'" title="'+esc(name+': '+item.title)+'">'+
       icon+'<span>'+esc(item.title)+'</span></span>';
   }
+  // The homepage mirrors the same dates and event sources as the full calendar.
+  // One state and one Google Calendar range: no duplicate requests or parallel data stores.
+  function renderHomeCalendar({owner,days,byDate,month,now,count,header}){
+    const home=$('#grimoire-home-calendar');
+    if(!home)return;
+    $('#grimoire-calendar-period').textContent=header;
+    $('#grimoire-calendar-selected').textContent=dateText(selected,{weekday:'long',month:'short',day:'numeric'});
+    $('#grimoire-calendar-count').textContent=count.length+' item'+(count.length===1?'':'s');
+    home.querySelectorAll('[data-home-cal-mode]').forEach(button=>{
+      const active=button.dataset.homeCalMode===mode;
+      button.classList.toggle('is-active',active);
+      button.setAttribute('aria-pressed',String(active));
+    });
+    const weekdays=weekday.map(label=>'<span class="grimoire-calendar-weekday" aria-hidden="true">'+label+'</span>').join('');
+    const cells=days.map(key=>{
+      const group=byDate.get(key)||[];
+      const day=parseDay(key).getDate();
+      const other=mode==='month'&&key.slice(0,7)!==month;
+      const classes='grimoire-calendar-day'+(key===selected?' is-selected':'')+
+        (key===now?' is-today':'')+(other?' is-outside':'');
+      const dots=group.slice(0,4).map(item=>'<i class="grimoire-calendar-dot is-'+
+        (item.kind==='google'?'google':item.kind==='task'?'task':'event')+'"></i>').join('');
+      const overflow=group.length>4?'<span class="grimoire-calendar-overflow">+'+(group.length-4)+'</span>':'';
+      const first=mode==='week'&&group.length?
+        '<small class="grimoire-calendar-preview">'+esc(group[0].title)+'</small>':'';
+      return '<button type="button" class="'+classes+'" data-home-cal-day="'+key+
+        '" aria-pressed="'+String(key===selected)+'" aria-label="'+
+        esc(dateText(key)+', '+group.length+' item'+(group.length===1?'':'s'))+'">'+
+        '<span class="grimoire-calendar-date">'+day+'</span>'+
+        '<span class="grimoire-calendar-dots" aria-hidden="true">'+dots+overflow+'</span>'+first+
+        '</button>';
+    }).join('');
+    const homeGrid=$('#grimoire-calendar-grid');
+    homeGrid.dataset.mode=mode;
+    homeGrid.innerHTML=weekdays+cells;
+    const dayItems=$('#grimoire-calendar-day-list');
+    dayItems.innerHTML=!owner?'<p class="grimoire-calendar-empty">Sign in to see your schedule.</p>':
+      !count.length?'<p class="grimoire-calendar-empty">Nothing scheduled for this day.</p>':
+      count.slice(0,5).map(item=>{
+        const type=item.kind==='google'?'Google Calendar':item.kind==='task'?'Todoist':'Personal event';
+        const time=item.kind==='google'?(item.event.allDay?'All day':item.time):
+          item.kind==='event'?(item.event.allDay?'All day':item.event.start||''):'';
+        const extra=time?' · '+time:'';
+        return '<div class="grimoire-calendar-item"><span class="grimoire-calendar-item-dot is-'+
+          (item.kind==='google'?'google':item.kind==='task'?'task':'event')+'"></span>'+
+          '<div><strong>'+esc(item.title)+'</strong><small>'+esc(type+extra)+'</small></div></div>';
+      }).join('')+(count.length>5?'<button type="button" class="subtle-link" data-view="calendar">'+
+      'View all '+count.length+' items</button>':'');
+    const newEvent=home.querySelector('[data-home-cal-new-event]');
+    if(newEvent)newEvent.disabled=!owner;
+    const newTask=home.querySelector('[data-home-cal-new-task]');
+    if(newTask)newTask.disabled=!owner||!window.ORBITConnectedTodoist?.active?.();
+  }
   function render(){
     if(!root)return;
     const owner=window.ORBITLocal?.getOwner();
@@ -119,6 +172,7 @@
         '<div class="cal-agenda-copy"><strong>'+esc(item.title)+'</strong><small>'+esc((item.time==='All day'?'All day':item.event.start+'–'+item.event.end)+(item.event.location?' · '+item.event.location:''))+'</small>'+
         (item.event.notes?'<p>'+esc(item.event.notes)+'</p>':'')+'</div><button class="cal-edit" data-cal-edit="'+esc(item.id)+'" type="button">Edit</button></article>';
     }).join(''):'<p class="cal-empty">Nothing scheduled for this day. Select another date or add an event.</p>';
+    renderHomeCalendar({owner,days,byDate,month,now,count,header});
     root.querySelectorAll('[data-cal-new-event]').forEach(button=>{button.disabled=!owner});
     $('#cal-new-task').disabled=!owner||!window.ORBITConnectedTodoist?.active?.();
     $('#cal-new-task').title=$('#cal-new-task').disabled?'Connect Todoist in Tasks to add tasks':'Add task to Todoist';
@@ -154,6 +208,26 @@
     dialog.showModal();
     form.elements.title.focus();
   }
+  $('#grimoire-home-calendar')?.addEventListener('click',e=>{
+    const button=e.target.closest('button');
+    if(!button)return;
+    if(button.dataset.homeCalDay){setDay(button.dataset.homeCalDay);return}
+    if(button.dataset.homeCalMode){
+      if(!['week','month'].includes(button.dataset.homeCalMode))return;
+      mode=button.dataset.homeCalMode;render();return;
+    }
+    if(button.hasAttribute('data-home-cal-prev')){changePeriod(-1);return}
+    if(button.hasAttribute('data-home-cal-next')){changePeriod(1);return}
+    if(button.hasAttribute('data-home-cal-today')){selected=today();render();return}
+    if(button.hasAttribute('data-home-cal-new-event')){openEvent();return}
+    if(button.hasAttribute('data-home-cal-new-task')){
+      const create=$('#todoist-add');
+      if(!create||create.disabled)return;
+      create.click();
+      const date=$('#todoist-create-dialog [name="due_date"]');
+      if(date)date.value=selected;
+    }
+  });
   root.addEventListener('click',e=>{
     const button=e.target.closest('button');if(!button)return;
     if(button.dataset.calDay){setDay(button.dataset.calDay);return}

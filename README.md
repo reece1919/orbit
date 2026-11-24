@@ -1,5 +1,17 @@
 # ORBIT — Headquarters for Execution, Logic, and Memory
 
+## Grimoire Home · calendar and tasks first (November 23, 2026)
+
+- Removed the oversized greeting, date aside, inspirational copy, and header illustration from the homepage. Kept compact ChatGPT, Calendar and Todoist action buttons.
+- Promoted **Calendar and Todoist** into the first main region. The calendar defaults to the original month view, supports week/month, navigation, date selection, and day details; task events use existing Todoist integration.
+- The home calendar reuses the original calendar's state, account, event sources, Google Calendar read-only connection, and existing event/task creation dialogues. No second source of truth, new tokens, or database table.
+- Wrapped the working planning modules in a **warm parchment foreground** with locally hosted subtle grain, dark ink typography, and green/brass event markers. The surrounding navigation remains dark evergreen.
+- The short Daily Review shortcut stays below planning. Chapter links, side quests, inbox, habits and notes remain further down.
+- The original full calendar and Task views remain functional. Only visual entry order and some presentation markup changed.
+- Static checks: original data-related element IDs remain, no duplicate IDs, 17 application panels retained, and all existing data handlers are still linked. Verify responsive appearance and signed-in operation after deployment.
+
+---
+
 ## Grimoire visual system · manuscript and arcane circles (November 23, 2026)
 
 - Replaced the earlier book-and-star concept with an **original circular geometric sigil drawn on parchment** (`assets/grimoire-mark.svg`). The homepage also displays a more detailed original engraved circle (`assets/grimoire-arcane-plate.svg`). Both are local SVG assets rather than third-party imagery.

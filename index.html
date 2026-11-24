@@ -28,6 +28,7 @@
   <link rel="stylesheet" href="trophy.css?v=1.0.0" />
   <link rel="stylesheet" href="grimoire-home.css?v=1.0.0" />
   <link rel="stylesheet" href="grimoire-theme.css?v=1.1.0" />
+  <link rel="stylesheet" href="grimoire-planning.css?v=1.0.0" />
   <link rel="manifest" href="pulse.webmanifest?v=5.0.0" />
   <link rel="icon" type="image/svg+xml" href="assets/grimoire-mark.svg?v=1.1.0" />
   <link rel="apple-touch-icon" sizes="160x160" href="assets/grimoire-touch-icon.png?v=1.0.0" />
@@ -55,7 +56,7 @@
   <script src="habits.js?v=1.1.0" defer></script>
   <script src="signals.js?v=1.2.0" defer></script>
   <script src="chat-shortcuts.js?v=1.1.3" defer></script>
-  <script src="grimoire-home.js?v=1.0.0" defer></script>
+  
 </head>
 <body data-theme="dark" data-auth-state="checking">
   <section id="orbit-auth" class="auth-screen" aria-labelledby="auth-heading" aria-live="polite">
@@ -112,22 +113,50 @@
       </header>
       <main class="content" id="main-content">
         <section data-panel="home" class="view-panel home-view" aria-label="The Grimoire home">
-          <section class="grimoire-intro" aria-labelledby="grimoire-home-title">
-            <div>
-              <p class="grimoire-kicker">The Grimoire <span> / Your personal headquarters</span></p>
-              <h1 id="grimoire-home-title"><span id="grimoire-welcome">The day is yours.</span><br>Make it interesting.</h1>
-              <p class="grimoire-lede">Your everyday life, creative worlds, and curious projects, all within reach. A quiet front door to everything we've built.</p>
-              <div class="grimoire-actions">
-                <a class="grimoire-action grimoire-action-primary" href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer"><span data-icon="message-circle"></span> Talk with Aethera <span data-icon="arrow-up-right"></span></a>
-                <button type="button" class="grimoire-action grimoire-action-secondary" data-view="calendar"><span data-icon="calendar"></span> View calendar</button>
-              </div>
+          <div class="grimoire-quickbar" aria-label="Grimoire shortcuts">
+            <span class="grimoire-quickbar-brand"><img src="assets/grimoire-mark.svg?v=1.1.0" alt="" width="30" height="30">THE GRIMOIRE</span>
+            <nav class="grimoire-quickbar-actions" aria-label="Quick actions">
+              <a class="grimoire-action grimoire-action-primary" href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer"><span data-icon="message-circle"></span> Talk with Aethera</a>
+              <button type="button" class="grimoire-action grimoire-action-secondary" data-view="calendar"><span data-icon="calendar"></span> Calendar</button>
+              <button type="button" class="grimoire-action grimoire-action-secondary" data-view="focus"><span data-icon="check-circle"></span> Todoist</button>
+            </nav>
+          </div>
+          <section class="grimoire-planning" aria-labelledby="grimoire-planning-title">
+            <div class="grimoire-planning-heading"><h2 id="grimoire-planning-title">Calendar &amp; tasks</h2><span class="grimoire-planning-eyebrow">YOUR DAY, LIVE</span></div>
+            <div class="grimoire-planning-grid">
+              <section id="grimoire-home-calendar" class="module grimoire-home-calendar" aria-label="Interactive calendar">
+                <div class="grimoire-planning-card-head">
+                  <div><span class="eyebrow small">YOUR SCHEDULE</span><h3>Calendar</h3></div>
+                  <button class="subtle-link" type="button" data-view="calendar">Full calendar <span data-icon="arrow-right"></span></button>
+                </div>
+                <div class="grimoire-calendar-toolbar">
+                  <div class="grimoire-calendar-navigation">
+                    <button type="button" class="grimoire-calendar-control" data-home-cal-prev aria-label="Previous calendar period">‹</button>
+                    <button type="button" class="grimoire-calendar-control grimoire-calendar-today" data-home-cal-today>Today</button>
+                    <button type="button" class="grimoire-calendar-control" data-home-cal-next aria-label="Next calendar period">›</button>
+                    <h4 id="grimoire-calendar-period">Calendar</h4>
+                  </div>
+                  <div class="grimoire-calendar-modes" role="group" aria-label="Home calendar view">
+                    <button type="button" data-home-cal-mode="week" aria-pressed="true">Week</button>
+                    <button type="button" data-home-cal-mode="month" aria-pressed="false">Month</button>
+                  </div>
+                </div>
+                <div id="grimoire-calendar-grid" class="grimoire-calendar-grid" aria-label="Calendar dates"><p class="watch-detail">Loading calendar…</p></div>
+                <div class="grimoire-calendar-agenda">
+                  <div class="grimoire-calendar-day-head"><h4 id="grimoire-calendar-selected">Today</h4><span id="grimoire-calendar-count">0 items</span></div>
+                  <div id="grimoire-calendar-day-list" class="grimoire-calendar-day-list" aria-live="polite"><p class="watch-detail">Checking your schedule…</p></div>
+                  <div class="grimoire-calendar-add">
+                    <button type="button" class="grimoire-calendar-control" data-home-cal-new-event>+ Event</button>
+                    <button type="button" class="grimoire-calendar-control" data-home-cal-new-task>+ Task</button>
+                  </div>
+                </div>
+              </section>
+              <section class="module home-agenda">
+                <div class="module-head home-module-head"><div><div class="eyebrow small">TODOIST</div><h3>Overdue, today &amp; tomorrow</h3></div><div class="home-module-actions"><button type="button" class="quiet-pill" data-refresh="todoist">Refresh</button><button type="button" class="subtle-link" data-view="focus">All tasks <span data-icon="arrow-right"></span></button><button type="button" class="subtle-link" data-view="calendar">Calendar <span data-icon="calendar"></span></button></div></div>
+                <p id="todoist-home-note" class="watch-detail home-source-note"></p>
+                <div id="todoist-home-list" class="live-task-list"><p class="watch-detail">Connect Todoist to load your agenda.</p></div>
+              </section>
             </div>
-            <aside class="grimoire-intro-aside" aria-label="Today's date">
-              <img class="grimoire-arcane-plate" src="assets/grimoire-arcane-plate.svg?v=1.0.0" width="146" height="146" alt="" aria-hidden="true">
-              <p class="grimoire-aside-label">TODAY IN THE GRIMOIRE</p>
-              <time id="grimoire-date">Your day, at a glance</time>
-              <span class="grimoire-aside-sub">A place to begin, not another list of things you should be doing.</span>
-            </aside>
           </section>
           <section class="grimoire-portals" aria-labelledby="grimoire-chapters-title">
             <div class="grimoire-section-heading">
@@ -175,7 +204,6 @@
 <button class="system-launch" type="button" data-view="journal" aria-label="Open MUSE personal journal"><img src="assets/systems/muse-tarot.png?v=2.0.0" alt="" width="34" height="34"><span>MUSE</span></button>
 <button class="system-launch" type="button" data-view="trophy" aria-label="Open TROPHY Steam achievements"><span data-icon="trophy"></span><span>TROPHY</span></button></div></section>
 
-          <div class="grimoire-section-heading grimoire-day-heading"><div><div class="eyebrow small">TODAY &amp; TOMORROW</div><h2>The day ahead</h2></div><p>Real tasks and the latest saved inbox snapshot.</p></div>
           <div class="home-signals-grid home-signals-grid-single" aria-label="Latest unread Gmail activity">
             <section class="module home-signal home-signal-mail">
               <div class="module-head home-module-head">
@@ -190,11 +218,7 @@
 
           <div class="home-work-grid">
             <div class="home-main-stack">
-              <section class="module home-agenda">
-                <div class="module-head home-module-head"><div><div class="eyebrow small">TODOIST</div><h3>Overdue, today &amp; tomorrow</h3></div><div class="home-module-actions"><button type="button" class="quiet-pill" data-refresh="todoist">Refresh</button><button type="button" class="subtle-link" data-view="focus">All tasks <span data-icon="arrow-right"></span></button><button type="button" class="subtle-link" data-view="calendar">Calendar <span data-icon="calendar"></span></button></div></div>
-                <p id="todoist-home-note" class="watch-detail home-source-note"></p>
-                <div id="todoist-home-list" class="live-task-list"><p class="watch-detail">Connect Todoist to load your agenda.</p></div>
-              </section>
+
               <section class="module home-sidequests">
                 <div class="module-head home-module-head">
                   <div><div class="eyebrow small">TODOIST / @SIDEQUEST</div><h3>Side Quests</h3></div>
