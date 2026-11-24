@@ -1,0 +1,355 @@
+/* GRIMOIRE DESIGN SYSTEM v1.1
+   One visual language over legacy ORBIT, without changing application data or behavior.
+   Archival / gaslamp-inspired, not an imitation of a leather-bound book UI. */
+
+/* The palette is deliberately small: ink, evergreen, parchment, brass. */
+:root{
+  --bg:#0d1513;--sidebar:#101b17;--panel:#18251e;--panel-alt:#152019;
+  --panel-light:#27372b;--text:#f1ecdf;--muted:#bbc3b7;--muted-dim:#91a195;
+  --line:rgba(211,188,143,.20);--accent:#d7b77b;--accent-text:#1a251b;
+  --accent-dim:rgba(215,183,123,.13);--cyan:#cbb98d;--shadow:rgba(0,0,0,.23);
+  --surface:rgba(220,199,158,.045);--overlay:rgba(7,15,11,.78);
+  --orbit-blue:#d7b77b;--orbit-gold:#d7b77b;--orbit-green:#a1b99c;
+  --orbit-orange:#c89d78;--orbit-purple:#b2a2bd;
+  --gr-serif:Georgia,"Iowan Old Style","Baskerville",serif;
+}
+body[data-theme="dark"]{
+  color-scheme:dark;
+  background:radial-gradient(ellipse 75% 40% at 72% -12%,rgba(102,101,64,.14),transparent 70%),
+    radial-gradient(ellipse 45% 48% at 1% 92%,rgba(29,83,56,.14),transparent 75%),var(--bg);
+}
+body[data-theme="dark"]::before{content:none!important;display:none!important;}
+body[data-theme="light"]{
+  color-scheme:light;
+  --bg:#f4f0e7;--sidebar:#eee7d8;--panel:#fffaf1;--panel-alt:#f6f0e4;
+  --panel-light:#e6e3d5;--text:#29372d;--muted:#576657;--muted-dim:#6c796c;
+  --line:rgba(88,90,63,.24);--accent:#69522c;--accent-text:#fffaf1;
+  --accent-dim:rgba(137,109,61,.13);--cyan:#69522c;--shadow:rgba(54,44,26,.09);
+  --surface:rgba(83,71,39,.045);--overlay:rgba(42,43,33,.44);
+  background:var(--bg);
+}
+body[data-theme="light"]::before{content:none!important;display:none!important;}
+.app-shell{color:var(--text);}
+.content{max-width:1600px;}
+
+/* Navigation: one coherent material instead of blue orbital chrome. */
+.sidebar{
+  background:linear-gradient(180deg,var(--sidebar),var(--bg))!important;
+  border-right:1px solid var(--line);
+  box-shadow:none;
+}
+.brand{gap:11px;}
+.brand-mark.grimoire-logo-mark,
+.auth-brand .brand-mark.grimoire-logo-mark{
+  width:46px;height:46px;flex:0 0 46px;display:grid;place-items:center;
+  background:transparent;border:0;border-radius:12px;overflow:hidden;
+  box-shadow:none;padding:0;
+}
+.brand-mark.grimoire-logo-mark::before,.brand-mark.grimoire-logo-mark::after,
+.auth-brand .brand-mark.grimoire-logo-mark::before,
+.auth-brand .brand-mark.grimoire-logo-mark::after{content:none!important;display:none!important;}
+.grimoire-logo-mark img{display:block;width:46px;height:46px;object-fit:contain;mix-blend-mode:normal!important;}
+.sidebar .brand-name,.auth-brand .brand-name{
+  font-family:var(--gr-serif);font-size:22px;font-weight:600;
+  letter-spacing:.035em;color:var(--text);
+}
+.sidebar .brand-sub,.auth-brand .brand-sub{
+  font-size:8px;letter-spacing:.16em;color:var(--muted);
+}
+.brand-period{color:var(--accent);}
+.sidebar .side-status{color:var(--muted-dim);font-size:8px;letter-spacing:.115em;margin:28px 10px 26px;}
+.sidebar .pulse-dot{background:#90ae8e;box-shadow:none;}
+.sidebar .nav-label{color:var(--muted-dim);letter-spacing:.15em;}
+.sidebar .nav-item{
+  min-height:42px;border-radius:9px;color:var(--muted);
+  font-size:12.5px;font-weight:600;letter-spacing:.004em;
+}
+.sidebar .nav-item svg{opacity:.8;}
+.sidebar .nav-item:hover,.sidebar-links a:hover{color:var(--text);background:var(--surface);}
+.sidebar .nav-item.active,
+.sidebar .nav-item[data-view="focus"].active,
+.sidebar .nav-item[data-view="gaia"].active,
+.sidebar .nav-item[data-view="fuel"].active,
+.sidebar .nav-item[data-view="projects"].active{
+  background:var(--accent-dim);color:var(--accent);
+  box-shadow:inset 2px 0 0 var(--accent);
+}
+.sidebar .nav-item.active svg{opacity:1;}
+.sidebar .sidebar-rule{background:var(--line);}
+.sidebar .sidebar-footer{color:var(--muted-dim);}
+.topbar{
+  background:var(--sidebar)!important;border-bottom:1px solid var(--line);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+}
+.topbar .crumb-parent{color:var(--muted-dim);}
+.topbar #current-crumb{color:var(--accent);}
+.topbar .top-date{color:var(--muted);}
+.topbar .top-github-shortcut,
+.topbar .top-launch-chatgpt,
+.topbar .top-launch-orbit{
+  background:var(--surface);color:var(--muted);
+  border:1px solid var(--line);border-radius:9px;box-shadow:none;
+  font-size:11px;font-weight:650;
+}
+.topbar .top-github-shortcut:hover,
+.topbar .top-launch-chatgpt:hover,
+.topbar .top-launch-orbit:hover{
+  background:var(--accent-dim);color:var(--text);border-color:var(--accent);
+}
+.topbar .top-github-shortcut:focus-visible{outline:2px solid var(--accent);}
+.topbar .top-launch-orbit.needs-setup::after{background:var(--accent);box-shadow:none;}
+.top-account{background:var(--surface);border-color:var(--line);color:var(--muted);}
+.top-account:hover{color:var(--text);}
+
+/* Shared surfaces, typography, and controls. */
+.eyebrow{color:var(--accent);letter-spacing:.13em;}
+.view-panel .page-head h1{font-family:var(--gr-serif);font-weight:500;letter-spacing:-.028em;}
+.module,.project-card,.stat-card,.watch-card,.setting-card,.routine-card,.connector-box{
+  background:var(--panel);
+  border:1px solid var(--line);
+  box-shadow:0 5px 18px var(--shadow);
+}
+.module:focus-within,.project-card:hover{border-color:rgba(215,183,123,.5);}
+.module h3{letter-spacing:-.015em;}
+.primary-button{background:var(--accent);color:var(--accent-text);border-color:var(--accent);box-shadow:none;}
+.primary-button:hover{background:color-mix(in srgb,var(--accent) 85%,white);filter:none;box-shadow:none;}
+.outline-button,.quiet-pill,.filter-button{border-color:var(--line);color:var(--text);}
+.outline-button:hover,.quiet-pill:hover{border-color:var(--accent);background:var(--accent-dim);}
+.subtle-link,.text-button{color:var(--accent);}
+.note-module textarea{background:var(--panel-alt);border-color:var(--line);color:var(--text);}
+:where(button,a,input,textarea,select):focus-visible{outline:2px solid var(--accent);outline-offset:3px;}
+
+/* Entryway: a simple illuminated title and a restrained archival seal. */
+.home-view .grimoire-intro{
+  min-height:240px;gap:28px;padding:32px clamp(24px,3.7vw,48px);
+  border:1px solid rgba(201,173,122,.35);border-radius:15px;
+  background:radial-gradient(ellipse 60% 82% at 104% 3%,rgba(170,145,88,.12),transparent 66%),
+    linear-gradient(120deg,#172a20 0%,#14241f 56%,#17221e 100%);
+  box-shadow:0 10px 35px rgba(0,0,0,.16);
+}
+.home-view .grimoire-intro::before{
+  opacity:.18;background:repeating-linear-gradient(90deg,transparent 0,transparent 57px,
+    rgba(226,206,164,.09) 58px,transparent 59px);
+}
+.home-view .grimoire-intro::after{
+  content:"";position:absolute;right:-140px;top:-160px;width:420px;height:420px;border-radius:50%;
+  border:1px solid rgba(213,187,135,.16);
+  box-shadow:0 0 0 33px rgba(0,0,0,0),0 0 0 34px rgba(213,187,135,.08),0 0 0 75px rgba(0,0,0,0),0 0 0 76px rgba(213,187,135,.055);
+  pointer-events:none;z-index:-1;
+}
+.home-view .grimoire-kicker{font-size:10px;letter-spacing:.18em;margin-bottom:17px;color:#cdbb96;}
+.home-view .grimoire-intro h1{
+  font-family:var(--gr-serif);font-size:clamp(35px,3.7vw,53px);
+  letter-spacing:-.035em;line-height:1.14;margin-bottom:13px;
+}
+.home-view .grimoire-intro h1 span{color:#ead9b7;}
+.home-view .grimoire-lede{font-size:13px;line-height:1.7;color:#c2cbbf;margin-bottom:20px;}
+.home-view .grimoire-action{min-height:42px;border-radius:8px;font-size:12px;}
+.home-view .grimoire-action-primary{background:#d6b67b;border-color:#d6b67b;color:#1a261c;}
+.home-view .grimoire-action-primary:hover{background:#ebcf9b;}
+.home-view .grimoire-action-secondary{border-color:rgba(226,202,155,.32);color:#eee7d9;background:rgba(227,204,161,.045);}
+.home-view .grimoire-intro-aside{border-left:1px solid rgba(211,184,137,.2);z-index:1;}
+.home-view #grimoire-date{font-size:clamp(22px,2.5vw,31px);}
+.home-view .grimoire-aside-label{color:#d7c098;letter-spacing:.18em;}
+.home-view .grimoire-aside-sub{color:#b7c1b4;}
+
+/* Chapters: six equally calm, readable doors with a subtle identity each. */
+.home-view .grimoire-section-heading{margin:26px 0 12px;}
+.home-view .grimoire-section-heading h2{font-family:var(--gr-serif);font-size:27px;font-weight:500;}
+.home-view .grimoire-section-heading p{font-size:12px;}
+.home-view .grimoire-section-heading .eyebrow{color:var(--accent);}
+.home-view .grimoire-chapters{gap:12px;}
+.home-view .grimoire-chapter{
+  --chapter-color:#b3c3a4;
+  min-height:167px;padding:18px 19px 16px;gap:7px;
+  border-radius:12px;border:1px solid var(--line);
+  background:linear-gradient(150deg,var(--panel),var(--panel-alt));
+  box-shadow:none;position:relative;overflow:hidden;
+}
+.home-view .grimoire-chapter::before{
+  content:"";position:absolute;left:19px;top:0;width:40px;height:2px;
+  background:var(--chapter-color);opacity:.65;
+}
+.home-view .grimoire-chapter:nth-child(2){--chapter-color:#bfa8c0;}
+.home-view .grimoire-chapter:nth-child(3){--chapter-color:#d2b783;}
+.home-view .grimoire-chapter:nth-child(4){--chapter-color:#b5c1b7;}
+.home-view .grimoire-chapter:nth-child(5){--chapter-color:#bcad91;}
+.home-view .grimoire-chapter:nth-child(6){--chapter-color:#aaa69b;}
+.home-view .grimoire-chapter:hover{transform:translateY(-2px);border-color:rgba(210,185,138,.56);box-shadow:0 9px 22px rgba(0,0,0,.13);}
+.home-view .grimoire-chapter-symbol{
+  width:35px;height:35px;flex-basis:35px;background:color-mix(in srgb,var(--chapter-color) 13%,transparent);
+  border-radius:9px;color:var(--chapter-color);
+}
+.home-view .grimoire-chapter-status{font-size:9px;color:var(--muted-dim);letter-spacing:.07em;}
+.home-view .grimoire-chapter h3{font-family:var(--gr-serif);font-size:21px;font-weight:500;line-height:1.2;letter-spacing:-.012em;}
+.home-view .grimoire-chapter p{font-size:12px;line-height:1.48;color:var(--muted);}
+.home-view .grimoire-chapter-links{margin-top:5px;}
+.home-view .grimoire-chapter-links a,.home-view .grimoire-chapter-links button{font-size:11.5px;color:var(--accent);}
+.home-view .grimoire-chapter-muted{opacity:1;}
+.home-view .grimoire-chapter-muted .grimoire-chapter-status{font-style:italic;}
+
+/* Daily data is the focus; its container should not resemble another portal. */
+.home-view .grimoire-day-heading{margin-top:27px;}
+.home-view .home-work-grid{grid-template-columns:minmax(0,1.6fr) minmax(230px,.72fr);gap:13px;}
+.home-view .home-main-stack,.home-view .home-side-stack{gap:13px;}
+.home-view .home-work-grid .module,.home-view .home-signals-grid .module,
+.home-view .grimoire-review-shortcut,.home-view .habits-home-module,
+.home-view .home-capture .module{border-radius:12px;}
+.home-view .home-agenda,.home-view .home-sidequests,.home-view .home-signal-mail,
+.home-view .home-mini-vita{border-top:1px solid var(--line);background:var(--panel);}
+.home-view .home-sidequests::before{content:none;}
+.home-view .home-agenda .eyebrow,.home-view .home-sidequests .eyebrow{color:var(--accent);}
+.home-view .home-sidequests h3,.home-view .home-signal-mail h3{color:var(--text);}
+.home-view .home-sidequests .module-head > a{color:var(--accent);}
+.home-view .sidequest-description{color:var(--muted);}
+.home-view .sidequest-description strong{color:var(--text);}
+.home-view .sidequest-row{background:var(--panel-alt);border-color:var(--line);}
+.home-view .sidequest-row-title{color:var(--text);font-size:12px;}
+.home-view .sidequest-row-sub{color:var(--muted);}
+.home-view .sidequest-row a{color:var(--accent);}
+.home-view .sidequest-create input{background:var(--panel-alt);color:var(--text);border-color:var(--line);}
+.home-view .sidequest-create input::placeholder{color:var(--muted-dim);}
+.home-view .sidequest-submit{background:var(--accent-dim);border-color:var(--line);color:var(--accent);}
+.home-view .sidequest-submit:not(:disabled):hover{background:var(--panel-light);}
+.home-view .sidequest-row input[type="checkbox"]{accent-color:var(--accent);}
+.home-view .live-task,.home-view .signal-item{background:var(--panel-alt);border-color:var(--line);}
+.home-view .live-task strong,.home-view .signal-item-copy strong{color:var(--text);}
+.home-view .live-task small,.home-view .signal-item-copy small,.home-view .signal-item-copy p{color:var(--muted);}
+.home-view .signal-item:hover{border-color:var(--accent);background:var(--panel-light);}
+.home-view .home-signal h3 svg{color:var(--accent);}
+.home-view .signal-count{color:var(--accent);background:var(--accent-dim);border-color:var(--line);}
+.home-view .signal-synced{color:var(--muted-dim);}
+.home-view .agenda-day h4{color:var(--text);}
+.home-view .agenda-task-title{font-size:12.5px;color:var(--text);}
+.home-view .agenda-system-label{color:var(--muted);}
+.home-view .agenda-count{color:var(--muted);border-color:var(--line);}
+.home-view .home-mini-vita .eyebrow{color:var(--accent);}
+.home-view .grimoire-review-shortcut{min-height:68px;}
+.home-view .grimoire-review-symbol{background:var(--accent-dim);color:var(--accent);}
+.home-view .grimoire-review-open{white-space:nowrap;}
+
+/* Responsive layouts with the same calm visual vocabulary. */
+.mobile-nav{background:var(--sidebar)!important;border-top:1px solid var(--line);}
+.mobile-nav-item{color:var(--muted);}
+.mobile-nav-item.active,.mobile-nav-item[data-view="focus"].active,
+.mobile-nav-item[data-view="gaia"].active,.mobile-nav-item[data-view="fuel"].active{
+  color:var(--accent);background:var(--accent-dim);
+}
+.mobile-system-sheet:not([hidden]){background:var(--panel);border:1px solid var(--line);}
+.mobile-system-link{border-radius:10px;}
+.mobile-system-link:hover{background:var(--accent-dim);}
+@media(max-width:1150px){
+  .home-view .home-work-grid{grid-template-columns:minmax(0,1fr) minmax(210px,.67fr);}
+}
+@media(max-width:760px){
+  .home-view .home-work-grid{grid-template-columns:1fr;}
+  .home-view .grimoire-intro{padding:27px 24px;}
+}
+@media(max-width:560px){
+  .home-view .grimoire-intro{padding:24px 20px;}
+  .home-view .grimoire-kicker{letter-spacing:.11em;font-size:9px;}
+  .home-view .grimoire-intro h1{font-size:37px;}
+  .home-view .grimoire-chapter{min-height:132px;padding:15px 17px;}
+  .home-view .grimoire-chapter h3{font-size:20px;}
+  .home-view .grimoire-section-heading h2{font-size:25px;}
+  .home-view .grimoire-section-heading p{font-size:11px;}
+  .home-view .grimoire-action{width:100%;}
+}
+
+/* The archived portal color treatments shouldn't leak into light mode. */
+body[data-theme="light"] .home-view .grimoire-chapter{
+  background:linear-gradient(145deg,var(--panel),var(--panel-alt));
+}
+body[data-theme="light"] .home-view .home-agenda,
+body[data-theme="light"] .home-view .home-sidequests,
+body[data-theme="light"] .home-view .home-signal-mail,
+body[data-theme="light"] .home-view .home-mini-vita,
+body[data-theme="light"] .home-view .signal-item,
+body[data-theme="light"] .home-view .sidequest-row,
+body[data-theme="light"] .home-view .live-task{
+  background:var(--panel);
+  color:var(--text);
+}
+body[data-theme="light"] .home-view .grimoire-chapter-links a,
+body[data-theme="light"] .home-view .grimoire-chapter-links button{color:var(--accent);}
+body[data-theme="light"] .home-view .grimoire-intro{color:#f1ecdf;}
+body[data-theme="light"] .home-view .home-agenda .eyebrow,
+body[data-theme="light"] .home-view .home-sidequests .eyebrow{color:var(--accent);}
+@media(prefers-reduced-motion:reduce){
+ .home-view .grimoire-chapter{transition:none;}
+ .home-view .grimoire-chapter:hover{transform:none;}
+}
+
+/* Sign-in must feel like the same place as the authenticated application. */
+.auth-screen{
+  background:radial-gradient(ellipse 65% 55% at 50% 15%,rgba(108,110,74,.16),transparent 70%),
+    var(--bg);
+}
+.auth-ring{display:none;}
+.auth-visual{opacity:.24;}
+.orbit-auth-watermark{
+  width:min(54vw,300px);height:auto;aspect-ratio:1;
+  mix-blend-mode:normal!important;opacity:.36;border-radius:0;
+}
+.auth-card{
+  background:var(--panel);border:1px solid var(--line);
+  box-shadow:0 20px 56px rgba(0,0,0,.2);border-radius:15px;
+}
+.auth-card h1{
+  font-family:var(--gr-serif);font-size:clamp(34px,5vw,45px);
+  font-weight:500;letter-spacing:-.025em;
+}
+.auth-form label{color:var(--muted);font-weight:650;}
+.auth-form input{background:var(--panel-alt);border-color:var(--line);}
+.auth-card .auth-help{color:var(--muted-dim);}
+body[data-theme="light"] .auth-screen{background:var(--bg);}
+body[data-theme="light"] .auth-card{box-shadow:0 18px 52px rgba(74,62,41,.10);}
+
+/* Inverse chapter icon tones for the parchment-colored theme. */
+body[data-theme="light"] .home-view .grimoire-chapter:nth-child(1){--chapter-color:#486e52;}
+body[data-theme="light"] .home-view .grimoire-chapter:nth-child(2){--chapter-color:#715579;}
+body[data-theme="light"] .home-view .grimoire-chapter:nth-child(3){--chapter-color:#846431;}
+body[data-theme="light"] .home-view .grimoire-chapter:nth-child(4){--chapter-color:#536658;}
+body[data-theme="light"] .home-view .grimoire-chapter:nth-child(5){--chapter-color:#75613d;}
+body[data-theme="light"] .home-view .grimoire-chapter:nth-child(6){--chapter-color:#696a63;}
+
+/* The emblem is a parchment diagram, not a neon badge or book illustration. */
+.home-view .grimoire-intro-aside{
+  align-items:flex-start;justify-content:center;
+  padding-top:9px;padding-bottom:9px;
+}
+.home-view .grimoire-arcane-plate{
+  display:block;width:146px;height:146px;max-width:100%;
+  object-fit:contain;flex-shrink:0;margin:0 0 12px;
+  border-radius:8px;
+  filter:drop-shadow(0 9px 16px rgba(0,0,0,.3));
+  transform:rotate(-2deg);
+}
+.home-view .grimoire-aside-label{margin-bottom:0;}
+.home-view .grimoire-aside-sub{margin-top:0;}
+@media(max-width:760px){
+  .home-view .grimoire-intro-aside{
+    display:grid;
+    grid-template-columns:92px minmax(0,1fr);
+    grid-template-rows:auto auto auto;
+    align-content:center;align-items:center;column-gap:18px;row-gap:5px;
+    padding-top:17px;padding-bottom:0;
+  }
+  .home-view .grimoire-arcane-plate{
+    grid-row:1 / 4;grid-column:1;
+    width:92px;height:92px;margin:0;
+  }
+  .home-view .grimoire-aside-label,
+  .home-view #grimoire-date,
+  .home-view .grimoire-aside-sub{grid-column:2;min-width:0;}
+}
+@media(max-width:560px){
+  .home-view .grimoire-intro-aside{
+    display:grid;grid-template-columns:72px minmax(0,1fr);
+    column-gap:13px;margin-top:2px;padding-top:14px;
+  }
+  .home-view .grimoire-arcane-plate{height:72px;width:72px;}
+  .home-view #grimoire-date{font-size:19px;}
+  .home-view .grimoire-aside-label{font-size:8px;letter-spacing:.1em;}
+  .home-view .grimoire-aside-sub{font-size:10px;line-height:1.3;}
+}
