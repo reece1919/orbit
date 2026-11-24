@@ -312,3 +312,44 @@ body[data-theme="light"] .home-view .grimoire-chapter:nth-child(3){--chapter-col
 body[data-theme="light"] .home-view .grimoire-chapter:nth-child(4){--chapter-color:#536658;}
 body[data-theme="light"] .home-view .grimoire-chapter:nth-child(5){--chapter-color:#75613d;}
 body[data-theme="light"] .home-view .grimoire-chapter:nth-child(6){--chapter-color:#696a63;}
+
+/* The emblem is a parchment diagram, not a neon badge or book illustration. */
+.home-view .grimoire-intro-aside{
+  align-items:flex-start;justify-content:center;
+  padding-top:9px;padding-bottom:9px;
+}
+.home-view .grimoire-arcane-plate{
+  display:block;width:146px;height:146px;max-width:100%;
+  object-fit:contain;flex-shrink:0;margin:0 0 12px;
+  border-radius:8px;
+  filter:drop-shadow(0 9px 16px rgba(0,0,0,.3));
+  transform:rotate(-2deg);
+}
+.home-view .grimoire-aside-label{margin-bottom:0;}
+.home-view .grimoire-aside-sub{margin-top:0;}
+@media(max-width:760px){
+  .home-view .grimoire-intro-aside{
+    display:grid;
+    grid-template-columns:92px minmax(0,1fr);
+    grid-template-rows:auto auto auto;
+    align-content:center;align-items:center;column-gap:18px;row-gap:5px;
+    padding-top:17px;padding-bottom:0;
+  }
+  .home-view .grimoire-arcane-plate{
+    grid-row:1 / 4;grid-column:1;
+    width:92px;height:92px;margin:0;
+  }
+  .home-view .grimoire-aside-label,
+  .home-view #grimoire-date,
+  .home-view .grimoire-aside-sub{grid-column:2;min-width:0;}
+}
+@media(max-width:560px){
+  .home-view .grimoire-intro-aside{
+    display:grid;grid-template-columns:72px minmax(0,1fr);
+    column-gap:13px;margin-top:2px;padding-top:14px;
+  }
+  .home-view .grimoire-arcane-plate{height:72px;width:72px;}
+  .home-view #grimoire-date{font-size:19px;}
+  .home-view .grimoire-aside-label{font-size:8px;letter-spacing:.1em;}
+  .home-view .grimoire-aside-sub{font-size:10px;line-height:1.3;}
+}
