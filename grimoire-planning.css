@@ -407,3 +407,5 @@
 .home-view .unified-planning #almanac-week-preview p{margin:3px 0;overflow-wrap:anywhere}
 @media(max-width:1130px){.home-view .unified-planning .grimoire-planning-grid{grid-template-columns:1fr}}
 @media(max-width:560px){.home-view .unified-planning .today-main{gap:13px}.home-view .unified-planning .grimoire-calendar-grid[data-mode="week"] .grimoire-calendar-day{min-height:48px}}
+
+.home-view .unified-planning .home-week-summary{display:grid;gap:3px;margin-top:10px}.home-view .unified-planning .home-week-summary[hidden]{display:none}.home-view .unified-planning .home-week-row{display:grid;grid-template-columns:62px minmax(0,1fr);gap:6px;text-align:left;background:transparent;border:0;border-bottom:1px solid var(--paper-line);padding:7px 2px;color:var(--paper-ink);font:inherit;font-size:11px;cursor:pointer}.home-view .unified-planning .home-week-row span{overflow-wrap:anywhere}.home-view .unified-planning .home-week-row:hover{background:var(--paper-surface)}
