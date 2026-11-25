@@ -10,10 +10,16 @@ The AI plans; the author writes. By default, creative assistance supplies short 
 
 The interface preserves the distinction between an author decision that remains open and uncertainty that belongs within the fictional world. Canon status is separate from writing status.
 
+## Scriptorium chat-first workflow
+
+Use The Scriptorium in ChatGPT for brainstorming, canon research, outlining, consistency checks, and critique. World Anvil remains the authoritative home for established lore; QUILL retains its private drafts, visual editing, BBCode export, and reviewed World Anvil writes. RUNE remains a separate character tool. No new data store is required.
+
+When using a connected World Anvil tool, read the actual article body before treating a statement as verified canon. A list entry, title, UUID, or empty response is not a successful content read. Use supplied excerpts or dated snapshots when live reads are unavailable, explicitly identify the source and distinguish approved canon, working notes, archived material, open author decisions, and proposals. Keep the planning brief read-only. Review changes in QUILL or World Anvil before applying them.
+
 ## Writing workflow (v0.6)
 
 1. Open or create an entry. Add the article's purpose, audience, and relevant atlas references.
-2. Choose **Prepare AI planning brief**, then copy the instructions into the existing Driftbound GPT or creative chat.
+2. Choose **Prepare AI planning brief**, then copy the instructions into The Scriptorium in ChatGPT or the existing Driftbound GPT.
 3. Bring back the JSON response through **Import AI brief**. Preview its points, questions, and prompts before applying it.
 4. Read the formatted World Anvil reference and work through the sections. Use the visual editor to write and format your own words beside the plan. **Use World Anvil text in this section** deliberately brings the attached article into the active draft; category fields have their own **Use current text as my starting draft** action. Existing drafts require confirmation before replacement. Record decisions and review each drafted section.
 5. **Save to cloud** to keep the plan, decisions, and prose together across devices.

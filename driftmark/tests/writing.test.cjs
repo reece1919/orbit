@@ -64,6 +64,15 @@ test("planning prompt includes only selected references and keeps source uncerta
   assert.match(prompt, /in_world_uncertainty/);
   assert.match(prompt, /Selected source/);
 });
+test("Scriptorium handoff requires content reads, preserves provenance and forbids writes", () => {
+  const prompt = W.planningPrompt({ title: "Test", category: "Lore", body: "", world_anvil: { id: "source-123", title: "Source", content: "Existing text", read_at: "2026-11-24" } }, W.starter("Lore"), []);
+  assert.match(prompt, /The Scriptorium World Anvil connection/);
+  assert.match(prompt, /empty response is not evidence/);
+  assert.match(prompt, /Do not claim live verification of cached text/);
+  assert.match(prompt, /Do not equate public or private visibility with canon status/);
+  assert.match(prompt, /Do not create, edit, publish, or delete World Anvil records/);
+  assert.match(prompt, /"id": "source-123"/);
+});
 test("fenced JSON is accepted and empty prose never counts as reviewed", () => {
   const fence = String.fromCharCode(96).repeat(3);
   assert.equal(W.parseBrief(fence + "json\n" + JSON.stringify(plan()) + "\n" + fence).version, 1);
